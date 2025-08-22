@@ -2104,17 +2104,139 @@ let BUSINESS_CASE_PROMPT = null;
 // Notion Prompts laden
 async function loadNotionPrompts() {
   try {
-    const response = await fetch('/api/notion-bundled');
+    const response = await fetch('https://albo-saa-s-backend.vercel.app/api/notion-bundled');
     const data = await response.json();
     
-    if (data.success && data.prompts.length > 0) {
-      console.log('✅ Notion Prompts geladen:', data.prompts);
-      // Zeige ersten Prompt
-      alert('Notion verbunden! ' + data.count + ' Prompts gefunden!');
-    }
+ if (data.success && data.prompts.length > 0) {
+  console.log('✅ Notion Prompts geladen:', data.prompts);
+  displayNotionPrompts(data.prompts);  // Neue Funktion aufrufen!
+}
   } catch (error) {
     console.error('Error:', error);
   }
+}
+
+// Notion Prompts im Dashboard anzeigen
+function displayNotionPrompts(prompts) {
+  // Container finden oder erstellen
+  let notionContainer = document.getElementById('notion-prompts-section');
+  
+  if (!notionContainer) {
+    // Erstelle neuen Container
+    notionContainer = document.createElement('div');
+    notionContainer.id = 'notion-prompts-section';
+    notionContainer.style.cssText = `
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 30px;
+      margin: 20px;
+      border-radius: 16px;
+      color: white;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    `;
+    
+    // Füge nach dem Role Selector ein
+    const roleSelector = document.querySelector('.role-selector');
+    if (roleSelector) {
+      roleSelector.parentNode.insertBefore(notionContainer, roleSelector.nextSibling);
+    } else {
+      document.querySelector('.container').prepend(notionContainer);
+    }
+  }
+  
+  // Zeige Prompts als schöne Cards
+  notionContainer.innerHTML = `
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+      <h2 style="margin: 0; display: flex; align-items: center; gap: 10px;">
+        <span style="font-size: 32px;">📚</span>
+        <span>Meine Notion Prompts (${prompts.length})</span>
+      </h2>
+      <div style="background: rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 8px;">
+        ✅ Live synchronisiert
+      </div>
+    </div>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
+      ${prompts.map(prompt => `
+        <div style="
+          background: white;
+          color: #333;
+          padding: 20px;
+          border-radius: 12px;
+          cursor: pointer;
+          transition: transform 0.3s;
+        " onmouseover="this.style.transform='translateY(-5px)'" 
+           onmouseout="this.style.transform='translateY(0)'"
+           onclick="executeNotionPrompt('${prompt.id}')">
+          
+          <h3 style="margin: 0 0 10px 0; color: #667eea;">
+            ${prompt.title || 'Unbenannt'}
+          </h3>
+          
+          <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+            <span style="
+              background: #e3f2fd;
+              color: #1976d2;
+              padding: 4px 8px;
+              border-radius: 4px;
+              font-size: 12px;
+            ">${prompt.category || 'Allgemein'}</span>
+            
+            <span style="
+              background: #fce4ec;
+              color: #c2185b;
+              padding: 4px 8px;
+              border-radius: 4px;
+              font-size: 12px;
+            ">${prompt.role || 'Controller'}</span>
+          </div>
+          
+          <p style="
+            color: #666;
+            font-size: 14px;
+            line-height: 1.4;
+            margin-bottom: 15px;
+          ">
+            ${prompt.promptText ? prompt.promptText.substring(0, 150) + '...' : 'Kein Text'}
+          </p>
+          
+          <button style="
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            width: 100%;
+          ">
+            🚀 Ausführen
+          </button>
+        </div>
+      `).join('')}
+    </div>
+  `;
+  
+  // Speichere Prompts global
+  window.notionPrompts = prompts;
+}
+
+// Notion Prompt ausführen
+function executeNotionPrompt(promptId) {
+  const prompt = window.notionPrompts?.find(p => p.id === promptId);
+  if (!prompt) return;
+  
+  // Nutze das bestehende Modal-System
+  currentPrompt = {
+    id: promptId,
+    title: prompt.title || 'Notion Prompt',
+    prompt: prompt.promptText || ''
+  };
+  
+  document.getElementById('modalTitle').textContent = prompt.title || 'Notion Prompt';
+  document.getElementById('modalPrompt').textContent = prompt.promptText || '';
+  document.getElementById('contextInput').value = '';
+  document.getElementById('aiResponse').classList.remove('active');
+  document.getElementById('executeModal').classList.add('active');
 }
 
 // Beim Laden aufrufen
