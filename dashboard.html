@@ -2096,5 +2096,75 @@ function displayNotionPrompts(prompts) {
 ">
   🔄 Notion Sync
 </button>
+<!-- Business Case Prompt Integration -->
+<script>
+// Prompts laden
+async function loadBusinessCasePrompt() {
+  try {
+    const response = await fetch('/api/prompts');
+    const data = await response.json();
+    
+    if (data.prompts && data.prompts.length > 0) {
+      // Füge Button ins Dashboard
+      addBusinessCaseButton(data.prompts[0]);
+    }
+  } catch (error) {
+    console.error('Error loading prompts:', error);
+  }
+}
+
+// Button ins Dashboard einfügen
+function addBusinessCaseButton(prompt) {
+  // Finde einen Container im Dashboard
+  const container = document.querySelector('.prompts-grid') || 
+                   document.querySelector('.dashboard-content') ||
+                   document.querySelector('main') ||
+                   document.body;
+  
+  // Erstelle schöne Karte
+  const card = document.createElement('div');
+  card.className = 'business-case-card';
+  card.style.cssText = `
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 25px;
+    border-radius: 12px;
+    margin: 20px;
+    cursor: pointer;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    transition: transform 0.3s;
+  `;
+  
+  card.innerHTML = `
+    <h2 style="margin: 0 0 10px 0;">📊 ${prompt.title}</h2>
+    <p style="opacity: 0.9;">${prompt.description}</p>
+    <button onclick="openBusinessCase()" style="
+      background: white;
+      color: #667eea;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      margin-top: 15px;
+      cursor: pointer;
+      font-weight: bold;
+    ">Business Case erstellen</button>
+  `;
+  
+  card.onmouseover = () => card.style.transform = 'translateY(-5px)';
+  card.onmouseout = () => card.style.transform = 'translateY(0)';
+  
+  // Füge am Anfang ein
+  container.insertBefore(card, container.firstChild);
+}
+
+// Business Case Modal öffnen
+function openBusinessCase() {
+  window.location.href = '#business-case';
+  alert('Business Case Feature kommt gleich! 🚀');
+}
+
+// Beim Laden
+window.addEventListener('DOMContentLoaded', loadBusinessCasePrompt);
+</script>
 </body>
 </html>
