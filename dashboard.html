@@ -2015,5 +2015,86 @@ function showNotification(message, type = 'success') {
             }
         });
     </script>
+
+    <script>
+// Notion Sync Function
+async function syncWithNotion() {
+  // Deine Credentials (später aus sicherer Quelle!)
+  const notionToken = prompt('Bitte Notion Token eingeben (secret_...)');
+  const databaseId = prompt('Bitte Database ID eingeben');
+  
+  if (!notionToken || !databaseId) {
+    alert('Token und Database ID sind erforderlich!');
+    return;
+  }
+  
+  console.log('🔄 Starte Notion Sync...');
+  
+  try {
+    const response = await fetch('https://albo-saa-s-backend.vercel.app/api/notion-sync', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        notionToken: notionToken,
+        databaseId: databaseId
+      })
+    });
+    
+    const result = await response.json();
+    
+    if (result.success) {
+      console.log(`✅ ${result.count} Prompts von Notion geladen!`);
+      console.log('Prompts:', result.prompts);
+      
+      // Zeige die Prompts an
+      displayNotionPrompts(result.prompts);
+    } else {
+      console.error('❌ Fehler:', result.error);
+      alert('Fehler beim Laden: ' + result.error);
+    }
+    
+  } catch (error) {
+    console.error('❌ Sync fehlgeschlagen:', error);
+    alert('Verbindung fehlgeschlagen!');
+  }
+}
+
+// Display Prompts
+function displayNotionPrompts(prompts) {
+  // Temporäre Anzeige
+  const container = document.createElement('div');
+  container.innerHTML = `
+    <h2>📚 Geladene Prompts von Notion (${prompts.length})</h2>
+    ${prompts.map(p => `
+      <div style="border: 1px solid #ddd; padding: 10px; margin: 10px;">
+        <h3>${p.metadata.title}</h3>
+        <p>Kategorie: ${p.metadata.category}</p>
+        <p>Rolle: ${p.metadata.role}</p>
+        <button onclick="window.open('${p.notionUrl}')">In Notion öffnen</button>
+      </div>
+    `).join('')}
+  `;
+  document.body.appendChild(container);
+}
+</script>
+
+<!-- Sync Button hinzufügen -->
+<button onclick="syncWithNotion()" style="
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border: none;
+  padding: 15px 30px;
+  border-radius: 30px;
+  font-size: 16px;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+">
+  🔄 Notion Sync
+</button>
 </body>
 </html>
