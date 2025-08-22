@@ -11,31 +11,31 @@ module.exports = async (req, res) => {
     return res.status(200).end();
   }
 
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
-
   try {
-    const { notionToken, databaseId } = req.body;
-
-    if (!notionToken || !databaseId) {
-      return res.status(400).json({ 
-        error: 'Missing required parameters',
-        required: ['notionToken', 'databaseId']
-      });
+    // HARDCODED für jetzt - später aus Environment Variables
+    const NOTION_TOKEN = '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';
+    const DATABASE_ID = '2578664b1ce78060b6ede4e0c35d1bb4';
+    
+    // Für POST mit custom Token/ID
+    if (req.method === 'POST' && req.body) {
+      const { notionToken, databaseId } = req.body;
+      if (notionToken && databaseId) {
+        NOTION_TOKEN = notionToken;
+        DATABASE_ID = databaseId;
+      }
     }
-
+    
     console.log('🔗 Connecting to Notion...');
     
     // Initialize Notion Client
     const notion = new Client({
-      auth: notionToken
+      auth: NOTION_TOKEN
     });
 
     // Query the database
     const response = await notion.databases.query({
-      database_id: databaseId,
-      page_size: 100 // Max 100 per request
+      database_id: DATABASE_ID,
+      page_size: 100
     });
 
     console.log(`📚 Found ${response.results.length} prompts in Notion`);
@@ -43,23 +43,35 @@ module.exports = async (req, res) => {
     // Transform Notion pages to our prompt format
     const prompts = response.results.map(page => {
       try {
-        // Extract properties (anpassen an deine Notion-Struktur!)
         const properties = page.properties;
+        
+        // Debug
+        console.log('Available properties:', Object.keys(properties));
         
         return {
           id: page.id,
           metadata: {
-            title: properties.Title?.title[0]?.text?.content || 'Untitled',
-            category: properties.Category?.select?.name || 'Uncategorized',
+            // WICHTIG: "Name" statt "Title"!
+            title: properties.Name?.title?.[0]?.plain_text || 
+                   properties.Title?.title?.[0]?.plain_text || 
+                   'Untitled',
+            category: properties.Category?.select?.name || 'General',
             role: properties.Role?.select?.name || 'Controller',
             complexity: properties.Complexity?.select?.name || 'medium',
             tags: properties.Tags?.multi_select?.map(tag => tag.name) || []
           },
           content: {
-            // Hier musst du an deine Struktur anpassen
-            full: properties.Content?.rich_text[0]?.text?.content || ''
+            // Versuche verschiedene Content-Felder
+            full: properties.Content?.rich_text?.[0]?.plain_text || 
+                  properties.Prompt?.rich_text?.[0]?.plain_text ||
+                  properties.Description?.rich_text?.[0]?.plain_text ||
+                  ''
           },
-          notionUrl: page.url
+          notionUrl: page.url,
+          // Füge raw properties für Debug hinzu
+          _debug: {
+            availableFields: Object.keys(properties)
+          }
         };
       } catch (error) {
         console.error('Error parsing page:', error);
@@ -70,14 +82,20 @@ module.exports = async (req, res) => {
     return res.status(200).json({
       success: true,
       count: prompts.length,
-      prompts: prompts
+      prompts: prompts,
+      database: {
+        id: DATABASE_ID,
+        propertiesAvailable: response.results[0] ? 
+          Object.keys(response.results[0].properties) : []
+      }
     });
 
   } catch (error) {
     console.error('Notion sync error:', error);
     return res.status(500).json({ 
       error: 'Failed to sync with Notion',
-      details: error.message 
+      details: error.message,
+      code: error.code
     });
   }
 };
