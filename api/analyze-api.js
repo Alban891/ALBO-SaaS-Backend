@@ -1,12 +1,11 @@
 // api/analyze-api.js
-const OpenAI = require('openai');
-
-// OpenAI Client initialisieren
-const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY
-});
 
 module.exports = async (req, res) => {
+    console.log('=== ANALYZE-API START ===');
+    console.log('Method:', req.method);
+    console.log('API Key exists:', !!process.env.OPENAI_API_KEY);
+    console.log('API Key first 10 chars:', process.env.OPENAI_API_KEY ? process.env.OPENAI_API_KEY.substring(0, 10) + '...' : 'NOT SET');
+    
     // CORS Headers
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -22,194 +21,272 @@ module.exports = async (req, res) => {
 
     try {
         const { emailContent, agent } = req.body;
+        console.log('Email Subject:', emailContent?.subject);
+        console.log('Agent:', agent);
 
         if (!emailContent) {
             return res.status(400).json({ error: 'Email content is required' });
         }
 
-        // System Prompt für Finance-Analyse
-        const systemPrompt = `Du bist ein spezialisierter Finance AI Agent mit Fokus auf ${agent || 'Controller'}-Aufgaben.
-        
-Analysiere die folgende E-Mail und gib eine strukturierte Antwort mit:
-1. Zusammenfassung (2-3 Sätze)
-2. Identifizierte Aufgaben/Action Items
-3. Empfohlene nächste Schritte
-4. Relevante Finance-Kategorien (z.B. Buchhaltung, Reporting, Compliance)
-5. Priorität (Hoch/Mittel/Niedrig)
-6. Geschätzter Zeitaufwand
-
-Antworte auf Deutsch und sei präzise und professionell.`;
-
-        // OpenAI API Aufruf
-        const completion = await openai.chat.completions.create({
-            model: "gpt-4o-mini", // Günstigeres Modell für schnelle Analysen
-            messages: [
-                { role: "system", content: systemPrompt },
-                { role: "user", content: `Analysiere diese E-Mail:\n\nBetreff: ${emailContent.subject}\nVon: ${emailContent.from}\n\nInhalt:\n${emailContent.body}` }
-            ],
-            temperature: 0.3, // Niedrige Temperature für konsistente Antworten
-            max_tokens: 800
-        });
-
-        const aiAnalysis = completion.choices[0].message.content;
-
-        // Strukturierte Antwort erstellen
-        const response = {
-            success: true,
-            analysis: {
-                summary: extractSection(aiAnalysis, "Zusammenfassung"),
-                actionItems: extractActionItems(aiAnalysis),
-                nextSteps: extractSection(aiAnalysis, "nächste Schritte"),
-                categories: extractCategories(aiAnalysis),
-                priority: extractPriority(aiAnalysis),
-                estimatedTime: extractTime(aiAnalysis),
-                fullAnalysis: aiAnalysis
-            },
-            metadata: {
-                agent: agent || 'Controller',
-                analyzedAt: new Date().toISOString(),
-                model: 'gpt-4o-mini',
-                emailLength: emailContent.body ? emailContent.body.length : 0
-            },
-            recommendations: {
-                suggestedPrompts: getSuggestedPrompts(aiAnalysis, agent),
-                automationPossible: checkAutomationPotential(aiAnalysis),
-                sapRelevant: checkSAPRelevance(aiAnalysis)
-            }
-        };
-
-        return res.status(200).json(response);
-
-    } catch (error) {
-        console.error('OpenAI API Error:', error);
-        
-        // Fallback auf Mock-Daten bei Fehler
-        if (error.message && error.message.includes('API key')) {
-            return res.status(500).json({
-                error: 'OpenAI API Key nicht konfiguriert',
-                mockData: true,
-                analysis: getMockAnalysis(req.body.agent)
+        // Check if OpenAI API key exists
+        if (!process.env.OPENAI_API_KEY) {
+            console.error('OPENAI_API_KEY is not set!');
+            return res.status(200).json({
+                success: true,
+                source: 'mock',
+                analysis: {
+                    summary: "⚠️ OpenAI API Key nicht konfiguriert. Dies sind Mock-Daten. Bitte OPENAI_API_KEY in Vercel Environment Variables hinzufügen.",
+                    actionItems: [
+                        "OpenAI API Key in Vercel Settings → Environment Variables eintragen",
+                        "Deployment neu starten nach dem Hinzufügen",
+                        "Diese Seite in 2 Minuten neu laden"
+                    ],
+                    nextSteps: "1. Vercel Dashboard öffnen\n2. Settings → Environment Variables\n3. OPENAI_API_KEY hinzufügen",
+                    categories: ["Setup Required"],
+                    priority: "Hoch",
+                    estimatedTime: "5 Minuten",
+                    fullAnalysis: "Der OpenAI API Key wurde noch nicht in Vercel konfiguriert. Ohne diesen Key können keine echten KI-Analysen durchgeführt werden."
+                },
+                metadata: {
+                    agent: agent || 'Controller',
+                    analyzedAt: new Date().toISOString(),
+                    model: 'MOCK - No API Key',
+                    error: 'OPENAI_API_KEY not configured'
+                }
             });
         }
 
-        return res.status(500).json({ 
-            error: 'Analyse fehlgeschlagen', 
-            details: error.message 
+        // Try to import OpenAI only if key exists
+        const OpenAI = require('openai');
+        const openai = new OpenAI({
+            apiKey: process.env.OPENAI_API_KEY
         });
+
+        console.log('Creating OpenAI completion...');
+
+        // Detaillierter System Prompt für Rechnungsanalyse
+        const systemPrompt = `Du bist ein spezialisierter ${agent || 'Debitorenbuchhalter'} AI-Agent für das deutsche Finanzwesen.
+
+AUFGABE: Analysiere die folgende E-Mail sehr genau und extrahiere ALLE relevanten Informationen.
+
+Gib eine strukturierte Antwort in diesem Format:
+
+ZUSAMMENFASSUNG: (2-3 präzise Sätze über den Kern der E-Mail)
+
+ERKANNTE DETAILS:
+- Rechnungsnummer: [Nummer falls vorhanden]
+- Betrag: [Betrag falls erwähnt]
+- Fälligkeitsstatus: [überfällig/offen/bezahlt]
+- Kunde/Lieferant: [Name falls erkennbar]
+- Datum: [relevante Daten]
+
+ACTION ITEMS:
+1. [Konkrete Aufgabe 1]
+2. [Konkrete Aufgabe 2]
+3. [Weitere falls nötig]
+
+NÄCHSTE SCHRITTE:
+[Klare Handlungsempfehlung in 1-2 Sätzen]
+
+KATEGORIEN: [Zutreffende aus: Mahnwesen, Zahlungseingang, Rechnungsprüfung, Buchhaltung, Reporting, Compliance]
+
+PRIORITÄT: [Hoch/Mittel/Niedrig basierend auf Dringlichkeit]
+
+GESCHÄTZTER ZEITAUFWAND: [Realistische Schätzung]
+
+SAP-RELEVANZ: [Ja/Nein - Muss dies in SAP gebucht werden?]
+
+Sei sehr präzise und professionell. Antworte auf Deutsch.`;
+
+        const userMessage = `E-Mail zur Analyse:
+Betreff: ${emailContent.subject}
+Von: ${emailContent.from}
+An: ${emailContent.to || 'Nicht angegeben'}
+
+Inhalt:
+${emailContent.body}`;
+
+        // OpenAI API Aufruf mit mehr Details
+        const completion = await openai.chat.completions.create({
+            model: "gpt-4o-mini",
+            messages: [
+                { role: "system", content: systemPrompt },
+                { role: "user", content: userMessage }
+            ],
+            temperature: 0.2, // Sehr niedrig für konsistente, faktische Antworten
+            max_tokens: 1000,
+            presence_penalty: 0.1,
+            frequency_penalty: 0.1
+        });
+
+        const aiAnalysis = completion.choices[0].message.content;
+        console.log('OpenAI Response received, length:', aiAnalysis.length);
+
+        // Parse die strukturierte Antwort
+        const response = {
+            success: true,
+            source: 'openai',
+            analysis: parseStructuredAnalysis(aiAnalysis),
+            metadata: {
+                agent: agent || 'Debitorenbuchhalter',
+                analyzedAt: new Date().toISOString(),
+                model: 'gpt-4o-mini',
+                emailLength: emailContent.body ? emailContent.body.length : 0,
+                tokensUsed: completion.usage?.total_tokens || 0
+            },
+            recommendations: {
+                suggestedPrompts: extractSuggestedPrompts(aiAnalysis, emailContent),
+                automationPossible: aiAnalysis.toLowerCase().includes('automatisch') || aiAnalysis.toLowerCase().includes('standard'),
+                sapRelevant: aiAnalysis.toLowerCase().includes('sap') || aiAnalysis.toLowerCase().includes('buchung')
+            },
+            debug: {
+                apiKeyPresent: true,
+                modelUsed: 'gpt-4o-mini',
+                timestamp: new Date().toISOString()
+            }
+        };
+
+        console.log('=== ANALYZE-API SUCCESS ===');
+        return res.status(200).json(response);
+
+    } catch (error) {
+        console.error('=== ANALYZE-API ERROR ===');
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
+        
+        // Detaillierte Fehlerbehandlung
+        let errorResponse = {
+            success: false,
+            source: 'error',
+            error: error.message,
+            analysis: {
+                summary: `Fehler bei der Analyse: ${error.message}`,
+                actionItems: ["Fehler überprüfen", "Support kontaktieren falls Problem besteht"],
+                nextSteps: "Bitte versuchen Sie es in wenigen Sekunden erneut.",
+                categories: ["Fehler"],
+                priority: "Hoch",
+                estimatedTime: "Unbekannt",
+                fullAnalysis: `Ein Fehler ist aufgetreten: ${error.message}`
+            }
+        };
+
+        // Spezifische Fehlerbehandlung
+        if (error.message?.includes('401')) {
+            errorResponse.analysis.summary = "API Key ungültig oder falsch formatiert";
+            errorResponse.analysis.actionItems = [
+                "OpenAI API Key in Vercel prüfen",
+                "Sicherstellen dass der Key mit 'sk-' beginnt",
+                "Key auf Gültigkeit prüfen auf platform.openai.com"
+            ];
+        } else if (error.message?.includes('429')) {
+            errorResponse.analysis.summary = "Rate Limit erreicht - zu viele Anfragen";
+            errorResponse.analysis.actionItems = ["Einen Moment warten", "Erneut versuchen"];
+        } else if (error.message?.includes('openai')) {
+            errorResponse.analysis.summary = "OpenAI Modul konnte nicht geladen werden";
+            errorResponse.analysis.actionItems = ["Package.json prüfen", "npm install openai ausführen"];
+        }
+
+        return res.status(200).json(errorResponse);
     }
 };
 
-// Hilfsfunktionen zum Extrahieren von Informationen
-function extractSection(text, keyword) {
-    const lines = text.split('\n');
-    for (let i = 0; i < lines.length; i++) {
-        if (lines[i].toLowerCase().includes(keyword.toLowerCase())) {
-            // Nächste 2-3 Zeilen nach dem Keyword zurückgeben
-            return lines.slice(i, i + 3).join(' ').replace(/[0-9]\./g, '').trim();
-        }
-    }
-    return text.substring(0, 200);
-}
-
-function extractActionItems(text) {
-    const items = [];
-    const lines = text.split('\n');
-    
-    for (const line of lines) {
-        if (line.match(/^[-•*]|^[0-9]\./)) {
-            items.push(line.replace(/^[-•*]|^[0-9]\./, '').trim());
-        }
-    }
-    
-    return items.slice(0, 5); // Maximal 5 Action Items
-}
-
-function extractCategories(text) {
-    const categories = [];
-    const keywords = {
-        'Buchhaltung': ['buchung', 'rechnung', 'beleg', 'konto'],
-        'Reporting': ['bericht', 'report', 'auswertung', 'analyse'],
-        'Compliance': ['compliance', 'richtlinie', 'vorschrift', 'audit'],
-        'Treasury': ['liquidität', 'zahlung', 'cash', 'treasury'],
-        'Steuern': ['steuer', 'tax', 'finanzamt', 'umsatzsteuer'],
-        'Controlling': ['budget', 'forecast', 'planung', 'controlling']
+// Hilfsfunktion zum Parsen der strukturierten Antwort
+function parseStructuredAnalysis(text) {
+    const analysis = {
+        summary: "",
+        actionItems: [],
+        nextSteps: "",
+        categories: [],
+        priority: "Mittel",
+        estimatedTime: "30 Minuten",
+        fullAnalysis: text,
+        extractedDetails: {}
     };
 
-    const lowerText = text.toLowerCase();
+    // Zusammenfassung extrahieren
+    const summaryMatch = text.match(/ZUSAMMENFASSUNG:?\s*(.+?)(?=ERKANNTE|ACTION|$)/si);
+    if (summaryMatch) {
+        analysis.summary = summaryMatch[1].trim();
+    }
+
+    // Details extrahieren
+    const detailsMatch = text.match(/ERKANNTE DETAILS:?\s*(.+?)(?=ACTION|NÄCHSTE|$)/si);
+    if (detailsMatch) {
+        const details = detailsMatch[1];
+        
+        // Rechnungsnummer
+        const invoiceMatch = details.match(/Rechnungsnummer:?\s*(\S+)/i);
+        if (invoiceMatch) analysis.extractedDetails.invoiceNumber = invoiceMatch[1];
+        
+        // Betrag
+        const amountMatch = details.match(/Betrag:?\s*([\d,\.]+\s*(?:EUR|€)?)/i);
+        if (amountMatch) analysis.extractedDetails.amount = amountMatch[1];
+        
+        // Status
+        const statusMatch = details.match(/status:?\s*(\S+)/i);
+        if (statusMatch) analysis.extractedDetails.status = statusMatch[1];
+    }
+
+    // Action Items extrahieren
+    const actionMatch = text.match(/ACTION ITEMS:?\s*(.+?)(?=NÄCHSTE|KATEGORIEN|$)/si);
+    if (actionMatch) {
+        const items = actionMatch[1].match(/\d\.\s*(.+?)(?=\d\.|$)/gi);
+        if (items) {
+            analysis.actionItems = items.map(item => item.replace(/^\d\.\s*/, '').trim());
+        }
+    }
+
+    // Nächste Schritte
+    const nextMatch = text.match(/NÄCHSTE SCHRITTE:?\s*(.+?)(?=KATEGORIEN|PRIORITÄT|$)/si);
+    if (nextMatch) {
+        analysis.nextSteps = nextMatch[1].trim();
+    }
+
+    // Kategorien
+    const catMatch = text.match(/KATEGORIEN:?\s*(.+?)(?=PRIORITÄT|GESCHÄTZ|$)/si);
+    if (catMatch) {
+        analysis.categories = catMatch[1].split(/[,;]/).map(c => c.trim()).filter(c => c);
+    }
+
+    // Priorität
+    const prioMatch = text.match(/PRIORITÄT:?\s*(Hoch|Mittel|Niedrig)/i);
+    if (prioMatch) {
+        analysis.priority = prioMatch[1];
+    }
+
+    // Zeitaufwand
+    const timeMatch = text.match(/ZEITAUFWAND:?\s*(.+?)(?=SAP|$)/si);
+    if (timeMatch) {
+        analysis.estimatedTime = timeMatch[1].trim();
+    }
+
+    return analysis;
+}
+
+// Verbesserte Prompt-Vorschläge basierend auf E-Mail-Inhalt
+function extractSuggestedPrompts(analysis, emailContent) {
+    const prompts = [];
+    const content = (analysis + ' ' + emailContent.body).toLowerCase();
     
-    for (const [category, words] of Object.entries(keywords)) {
-        if (words.some(word => lowerText.includes(word))) {
-            categories.push(category);
+    if (content.includes('rechnung')) {
+        if (content.includes('mahnung') || content.includes('überfällig')) {
+            prompts.push('Mahnprozess für überfällige Rechnung einleiten');
+            prompts.push('Zahlungserinnerung mit Verzugszinsen erstellen');
+        } else {
+            prompts.push('Rechnungsprüfung nach §14 UStG durchführen');
+            prompts.push('Rechnung zur Zahlung freigeben');
         }
     }
     
-    return categories.length > 0 ? categories : ['Allgemein'];
-}
-
-function extractPriority(text) {
-    const lowerText = text.toLowerCase();
-    if (lowerText.includes('dringend') || lowerText.includes('hoch') || lowerText.includes('asap')) {
-        return 'Hoch';
-    }
-    if (lowerText.includes('niedrig') || lowerText.includes('kann warten')) {
-        return 'Niedrig';
-    }
-    return 'Mittel';
-}
-
-function extractTime(text) {
-    const timeMatch = text.match(/(\d+)\s*(minuten|stunden|tage)/i);
-    if (timeMatch) {
-        return `${timeMatch[1]} ${timeMatch[2]}`;
-    }
-    return '30 Minuten';
-}
-
-function getSuggestedPrompts(analysis, agent) {
-    // Basierend auf der Analyse passende Prompts vorschlagen
-    const prompts = [];
-    const lowerAnalysis = analysis.toLowerCase();
-    
-    if (lowerAnalysis.includes('rechnung')) {
-        prompts.push('Rechnungsprüfung durchführen');
-        prompts.push('Zahlungsbedingungen analysieren');
+    if (content.includes('zahlung')) {
+        prompts.push('Zahlungseingang verbuchen');
+        prompts.push('Offene Posten abgleichen');
     }
     
-    if (lowerAnalysis.includes('report') || lowerAnalysis.includes('bericht')) {
-        prompts.push('Monatsbericht erstellen');
-        prompts.push('KPIs zusammenfassen');
-    }
-    
-    if (lowerAnalysis.includes('budget')) {
-        prompts.push('Budgetabweichung analysieren');
-        prompts.push('Forecast aktualisieren');
+    if (content.includes('kredit') || content.includes('limit')) {
+        prompts.push('Kreditlimit prüfen und anpassen');
+        prompts.push('Bonitätsprüfung durchführen');
     }
     
     return prompts.slice(0, 3);
-}
-
-function checkAutomationPotential(analysis) {
-    const automationKeywords = ['wiederkehrend', 'standard', 'routine', 'regelmäßig', 'automatisch'];
-    const lowerAnalysis = analysis.toLowerCase();
-    
-    return automationKeywords.some(keyword => lowerAnalysis.includes(keyword));
-}
-
-function checkSAPRelevance(analysis) {
-    const sapKeywords = ['buchung', 'sap', 'kreditor', 'debitor', 'kostenstelle', 'bestellung'];
-    const lowerAnalysis = analysis.toLowerCase();
-    
-    return sapKeywords.some(keyword => lowerAnalysis.includes(keyword));
-}
-
-function getMockAnalysis(agent) {
-    return {
-        summary: "Mock-Daten: OpenAI API Key fehlt. Bitte in Vercel Environment Variables eintragen.",
-        actionItems: ["OpenAI API Key konfigurieren", "Vercel Deployment neu starten"],
-        nextSteps: "API Key in Vercel Settings hinzufügen",
-        categories: ["Setup", "Konfiguration"],
-        priority: "Hoch",
-        estimatedTime: "5 Minuten",
-        fullAnalysis: "Dies sind Mock-Daten. Für echte KI-Analysen muss der OpenAI API Key in Vercel konfiguriert werden."
-    };
 }
