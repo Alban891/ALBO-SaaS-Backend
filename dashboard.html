@@ -1,0 +1,1312 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALBO Enterprise Dashboard - Finance Intelligence Platform</title>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #0078d4;
+            --primary-dark: #106ebe;
+            --secondary: #8b5cf6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #1e293b;
+            --light: #f8fafc;
+            --border: #e2e8f0;
+            --shadow: 0 1px 3px rgba(0,0,0,0.12);
+            --shadow-lg: 0 10px 40px rgba(0,0,0,0.15);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: var(--dark);
+        }
+
+        /* Loading Screen */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s;
+        }
+
+        .loading-content {
+            text-align: center;
+            color: white;
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .header-stats {
+            display: flex;
+            gap: 30px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #64748b;
+            text-transform: uppercase;
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Role Selector */
+        .role-selector {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .role-tabs {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+
+        .role-tab {
+            padding: 12px 24px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+
+        .role-tab:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .role-tab.active {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .role-description {
+            padding: 1rem;
+            background: var(--light);
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+
+        /* Search & Filter */
+        .search-section {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .search-container {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 12px 20px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .search-btn {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .filter-chips {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .chip {
+            padding: 6px 16px;
+            background: var(--light);
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .chip:hover {
+            border-color: var(--primary);
+        }
+
+        .chip.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Categories Grid */
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .category-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .category-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .category-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .category-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .category-icon {
+            font-size: 24px;
+        }
+
+        .category-count {
+            background: var(--light);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .prompt-list {
+            display: none;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .category-card.expanded .prompt-list {
+            display: block;
+        }
+
+        .prompt-item {
+            padding: 12px;
+            margin-bottom: 10px;
+            background: var(--light);
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+
+        .prompt-item:hover {
+            background: linear-gradient(135deg, rgba(0,120,212,0.1), rgba(139,92,246,0.1));
+        }
+
+        .prompt-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: var(--dark);
+        }
+
+        .prompt-description {
+            font-size: 14px;
+            color: #64748b;
+            margin-bottom: 8px;
+        }
+
+        .prompt-tags {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            padding: 2px 8px;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .complexity-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        .complexity-low {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .complexity-medium {
+            background: #fed7aa;
+            color: #9a3412;
+        }
+
+        .complexity-high {
+            background: #fecaca;
+            color: #991b1b;
+        }
+
+        /* Execute Button */
+        .execute-btn {
+            margin-top: 10px;
+            padding: 8px 16px;
+            background: linear-gradient(135deg, var(--success), #059669);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .execute-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16,185,129,0.3);
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 700px;
+            max-height: 80vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .close-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: none;
+            background: var(--light);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            transition: all 0.3s;
+        }
+
+        .close-btn:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .context-input {
+            width: 100%;
+            min-height: 100px;
+            padding: 12px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-size: 14px;
+            resize: vertical;
+            margin-bottom: 1rem;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+        }
+
+        .btn-primary {
+            padding: 10px 24px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-secondary {
+            padding: 10px 24px;
+            background: var(--light);
+            color: var(--dark);
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        /* AI Response */
+        .ai-response {
+            display: none;
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: linear-gradient(135deg, rgba(0,120,212,0.05), rgba(139,92,246,0.05));
+            border-radius: 10px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .ai-response.active {
+            display: block;
+        }
+
+        .response-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .response-content {
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: white;
+            margin-top: 4rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .categories-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header-stats {
+                display: none;
+            }
+            
+            .role-tabs {
+                flex-direction: column;
+            }
+
+            @keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(100px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.email-notification:hover button {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <h2>ALBO Enterprise Dashboard</h2>
+            <p>Lade Finance Intelligence Platform...</p>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <span>🚀</span>
+                <span>ALBO Enterprise</span>
+            </div>
+            <div class="header-stats">
+                <div class="stat-item">
+                    <div class="stat-value" id="totalPrompts">1000+</div>
+                    <div class="stat-label">Prompts</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">6</div>
+                    <div class="stat-label">Rollen</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="activeUsers">∞</div>
+                    <div class="stat-label">Potenzial</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Role Selector -->
+        <div class="role-selector">
+            <h2 style="margin-bottom: 1rem;">Wählen Sie Ihre Rolle</h2>
+            <div class="role-tabs" id="roleTabs">
+                <!-- Roles will be injected here -->
+            </div>
+            <div class="role-description" id="roleDescription">
+                Wählen Sie eine Rolle, um spezialisierte Finance-Prompts zu sehen.
+            </div>
+        </div>
+
+        <!-- Search & Filter -->
+        <div class="search-section">
+            <div class="search-container">
+                <input type="text" class="search-input" id="searchInput" placeholder="Suche nach Prompts, Keywords, Prozessen...">
+                <button class="search-btn" onclick="searchPrompts()">
+                    🔍 Suchen
+                </button>
+            </div>
+            <div class="filter-chips">
+                <span class="chip" onclick="toggleComplexity(this, 'low')">⚡ Einfach</span>
+                <span class="chip" onclick="toggleComplexity(this, 'medium')">📊 Mittel</span>
+                <span class="chip" onclick="toggleComplexity(this, 'high')">🚀 Komplex</span>
+            </div>
+        </div>
+
+        <!-- Categories Grid -->
+        <div class="categories-grid" id="categoriesGrid">
+            <!-- Categories will be injected here -->
+        </div>
+    </div>
+
+    <!-- Execute Modal -->
+    <div class="modal" id="executeModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">Prompt ausführen</h3>
+                <button class="close-btn" onclick="closeModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div style="margin-bottom: 1rem;">
+                    <strong>Prompt:</strong>
+                    <p id="modalPrompt" style="margin-top: 8px; color: #64748b;"></p>
+                </div>
+                
+                <label style="font-weight: 600; margin-bottom: 8px; display: block;">
+                    Kontext hinzufügen (optional):
+                </label>
+                <textarea class="context-input" id="contextInput" 
+                    placeholder="Fügen Sie spezifische Details, Zahlen oder Kontext hinzu..."></textarea>
+                
+                <div class="modal-actions">
+                    <button class="btn-secondary" onclick="executeWithoutAI()">
+                        📝 Template nutzen
+                    </button>
+                    <button class="btn-primary" onclick="executeWithAI()">
+                        🤖 Mit KI ausführen
+                    </button>
+                </div>
+                
+                <div class="ai-response" id="aiResponse">
+                    <div class="response-header">
+                        <span>🤖</span>
+                        <span>KI-Antwort</span>
+                    </div>
+                    <div class="response-content" id="responseContent">
+                        <!-- AI response will appear here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>© 2024 ALBO Solutions - Enterprise Finance Intelligence Platform</p>
+        <p style="margin-top: 8px; opacity: 0.8;">Transforming Finance with AI - One Prompt at a Time</p>
+    </footer>
+
+    <script>
+        // Finance Prompts Database
+        const FINANCE_PROMPTS = {
+            kreditor: {
+                name: "Kreditorenbuchhalter",
+                description: "Spezialisiert auf Rechnungsverarbeitung, Lieferantenzahlungen und SAP FI-AP",
+                icon: "💳",
+                categories: {
+                    rechnungsverarbeitung: {
+                        name: "Rechnungsverarbeitung",
+                        icon: "📄",
+                        prompts: [
+                            {
+                                id: "kred_001",
+                                title: "3-Wege-Abgleich durchführen",
+                                prompt: "Führe einen 3-Wege-Abgleich durch zwischen Bestellung, Lieferschein und Rechnung.",
+                                tags: ["validation", "invoice"],
+                                complexity: "medium"
+                            },
+                            {
+                                id: "kred_002",
+                                title: "Skonto-Optimierung",
+                                prompt: "Berechne optimale Zahlungsstrategie unter Berücksichtigung von Skonto.",
+                                tags: ["discount", "payment"],
+                                complexity: "high"
+                            },
+                            {
+                                id: "kred_003",
+                                title: "Duplicate Check",
+                                prompt: "Prüfe auf doppelte Rechnungen.",
+                                tags: ["validation"],
+                                complexity: "low"
+                            }
+                        ]
+                    },
+                    lieferantenmanagement: {
+                        name: "Lieferantenmanagement",
+                        icon: "🤝",
+                        prompts: [
+                            {
+                                id: "kred_010",
+                                title: "Vendor Validation",
+                                prompt: "Validiere Lieferantenstammdaten.",
+                                tags: ["vendor", "compliance"],
+                                complexity: "medium"
+                            }
+                        ]
+                    }
+                }
+            },
+            debitor: {
+                name: "Debitorenbuchhalter",
+                description: "Fokus auf Mahnwesen, Zahlungseingänge und Forderungsmanagement",
+                icon: "💰",
+                categories: {
+                    mahnwesen: {
+                        name: "Mahnwesen",
+                        icon: "⚠️",
+                        prompts: [
+                            {
+                                id: "deb_001",
+                                title: "Mahnstufe ermitteln",
+                                prompt: "Analysiere Zahlungshistorie und ermittle Mahnstufe.",
+                                tags: ["dunning", "analysis"],
+                                complexity: "medium"
+                            },
+                            {
+                                id: "deb_002",
+                                title: "Zahlungserinnerung",
+                                prompt: "Erstelle höfliche Zahlungserinnerung.",
+                                tags: ["communication"],
+                                complexity: "low"
+                            }
+                        ]
+                    }
+                }
+            },
+            controller: {
+                name: "Controller",
+                description: "Reporting, Planung, Analyse und Kostenmanagement",
+                icon: "📊",
+                categories: {
+                    reporting: {
+                        name: "Reporting & Analyse",
+                        icon: "📈",
+                        prompts: [
+                            {
+                                id: "ctrl_001",
+                                title: "Monatsabschluss-Analyse",
+                                prompt: "Analysiere Monatsabschluss und erstelle Management Summary.",
+                                tags: ["closing", "analysis"],
+                                complexity: "high"
+                            },
+                            {
+                                id: "ctrl_002",
+                                title: "KPI-Dashboard",
+                                prompt: "Aktualisiere KPIs: EBITDA, Working Capital, ROI.",
+                                tags: ["kpi", "metrics"],
+                                complexity: "medium"
+                            }
+                        ]
+                    },
+                    planung: {
+                        name: "Planung & Forecast",
+                        icon: "🎯",
+                        prompts: [
+                            {
+                                id: "ctrl_010",
+                                title: "Rolling Forecast",
+                                prompt: "Erstelle 12-Monats Rolling Forecast.",
+                                tags: ["forecast", "planning"],
+                                complexity: "high"
+                            }
+                        ]
+                    }
+                }
+            },
+            cfo: {
+                name: "CFO",
+                description: "Strategische Finanzplanung, Risk Management und Investor Relations",
+                icon: "👔",
+                categories: {
+                    strategie: {
+                        name: "Strategische Planung",
+                        icon: "🎯",
+                        prompts: [
+                            {
+                                id: "cfo_001",
+                                title: "Investment Case",
+                                prompt: "Bewerte Investment: NPV, IRR, Payback.",
+                                tags: ["investment", "valuation"],
+                                complexity: "high"
+                            }
+                        ]
+                    }
+                }
+            },
+            treasury: {
+                name: "Treasury Manager",
+                description: "Cash Management, FX-Hedging und Liquiditätsplanung",
+                icon: "🏦",
+                categories: {
+                    cashmanagement: {
+                        name: "Cash Management",
+                        icon: "💵",
+                        prompts: [
+                            {
+                                id: "trs_001",
+                                title: "Cash Flow Forecast",
+                                prompt: "Erstelle 13-Wochen Cash Flow Forecast.",
+                                tags: ["cashflow", "forecast"],
+                                complexity: "high"
+                            }
+                        ]
+                    }
+                }
+            },
+            ma: {
+                name: "M&A Berater",
+                description: "Due Diligence, Valuation und Post-Merger Integration",
+                icon: "🤝",
+                categories: {
+                    duediligence: {
+                        name: "Due Diligence",
+                        icon: "🔍",
+                        prompts: [
+                            {
+                                id: "ma_001",
+                                title: "Financial DD",
+                                prompt: "Führe Financial Due Diligence durch.",
+                                tags: ["dd", "analysis"],
+                                complexity: "high"
+                            }
+                        ]
+                    }
+                }
+            }
+        };
+
+        // Global variables
+        let currentRole = null;
+        let currentPrompt = null;
+        let selectedComplexity = null;
+
+// Initialize on load
+window.addEventListener('DOMContentLoaded', () => {
+    console.log('🎯 Dashboard geladen');
+    
+    // Loading screen
+    setTimeout(() => {
+        document.getElementById('loadingScreen').style.opacity = '0';
+        setTimeout(() => {
+            document.getElementById('loadingScreen').style.display = 'none';
+        }, 500);
+    }, 1000);
+
+    // Check for email data from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const sessionParam = urlParams.get('session');
+    
+    console.log('📧 Session Parameter gefunden:', sessionParam ? 'JA' : 'NEIN');
+    
+    if (sessionParam) {
+        try {
+            // Decode the session data
+            const sessionData = JSON.parse(atob(sessionParam));
+            console.log('✅ E-Mail-Daten dekodiert:', sessionData);
+            
+            // Show email notification in header
+            if (sessionData.email && sessionData.email.subject) {
+                const headerElement = document.querySelector('.header-content');
+                if (headerElement) {
+                    // Create notification box
+                    const emailBox = document.createElement('div');
+                    emailBox.className = 'email-notification';
+                    emailBox.style.cssText = `
+                        background: linear-gradient(135deg, #3b82f6, #2563eb);
+                        color: white;
+                        padding: 15px 20px;
+                        border-radius: 12px;
+                        margin: 20px 0;
+                        box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+                        animation: slideDown 0.5s ease;
+                    `;
+                    
+                    emailBox.innerHTML = `
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <div style="font-size: 32px;">📧</div>
+                            <div style="flex: 1;">
+                                <div style="font-size: 12px; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px;">
+                                    E-Mail aus Outlook geladen
+                                </div>
+                                <div style="font-size: 18px; font-weight: 600; margin: 5px 0;">
+                                    ${sessionData.email.subject}
+                                </div>
+                                <div style="font-size: 14px; opacity: 0.9;">
+                                    Von: ${sessionData.email.from || 'Unbekannt'} | 
+                                    Agent: <span style="background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 4px;">
+                                        ${sessionData.agent || 'controller'}
+                                    </span>
+                                </div>
+                            </div>
+                            <button onclick="analyzeEmail()" style="
+                                background: white;
+                                color: #3b82f6;
+                                border: none;
+                                padding: 10px 20px;
+                                border-radius: 8px;
+                                font-weight: 600;
+                                cursor: pointer;
+                                transition: all 0.3s;
+                            ">
+                                Analysieren
+                            </button>
+                        </div>
+                    `;
+                    
+                    // Insert after header title
+                    headerElement.appendChild(emailBox);
+                }
+                
+                // Store email data globally
+                window.currentEmailData = sessionData.email;
+                window.currentAgent = sessionData.agent;
+                
+                // Auto-select the agent
+                if (sessionData.agent) {
+                    setTimeout(() => {
+                        selectRole(sessionData.agent);
+                        console.log('🤖 Agent automatisch ausgewählt:', sessionData.agent);
+                    }, 1500);
+                }
+            }
+        } catch (error) {
+            console.error('❌ Fehler beim Dekodieren:', error);
+        }
+    } else {
+        console.log('ℹ️ Keine E-Mail-Daten übergeben - normaler Dashboard-Modus');
+    }
+
+    // Initialize dashboard
+    renderRoleTabs();
+    updateStats();
+});
+
+// Neue Funktion für E-Mail-Analyse
+function analyzeEmail() {
+    if (!window.currentEmailData) {
+        alert('Keine E-Mail-Daten vorhanden');
+        return;
+    }
+    
+    // Zeige Analyse-Modal
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+    `;
+    
+    modal.innerHTML = `
+        <div style="
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        ">
+            <h2 style="margin: 0 0 20px 0;">📧 E-Mail Analyse</h2>
+            <div style="background: #f3f4f6; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                <strong>Betreff:</strong> ${window.currentEmailData.subject}<br>
+                <strong>Von:</strong> ${window.currentEmailData.from}<br>
+                <strong>Agent:</strong> ${window.currentAgent}
+            </div>
+            <div style="background: #fef3c7; padding: 15px; border-radius: 8px;">
+                <strong>🤖 KI-Analyse:</strong><br>
+                Diese E-Mail betrifft eine Rückfrage zu einer Rechnung. 
+                Der Kreditor-Agent sollte die Anfrage bearbeiten und die angeforderte PDF-Kopie bereitstellen.
+            </div>
+            <button onclick="this.parentElement.parentElement.remove()" style="
+                margin-top: 20px;
+                background: #3b82f6;
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                border-radius: 8px;
+                cursor: pointer;
+            ">Schließen</button>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+}
+
+        // Render role tabs
+        function renderRoleTabs() {
+            const container = document.getElementById('roleTabs');
+            
+            Object.entries(FINANCE_PROMPTS).forEach(([key, role]) => {
+                const tab = document.createElement('div');
+                tab.className = 'role-tab';
+                tab.onclick = () => selectRole(key);
+                tab.innerHTML = `
+                    <span>${role.icon}</span>
+                    <span>${role.name}</span>
+                `;
+                container.appendChild(tab);
+            });
+        }
+
+        // Select role
+        function selectRole(roleKey) {
+            currentRole = roleKey;
+            
+            // Update tabs
+            document.querySelectorAll('.role-tab').forEach((tab, index) => {
+                tab.classList.toggle('active', Object.keys(FINANCE_PROMPTS)[index] === roleKey);
+            });
+            
+            // Update description
+            const role = FINANCE_PROMPTS[roleKey];
+            document.getElementById('roleDescription').innerHTML = `
+                <strong>${role.icon} ${role.name}</strong><br>
+                ${role.description}
+            `;
+            
+            // Render categories
+            renderCategories(roleKey);
+        }
+
+        // Render categories
+        function renderCategories(roleKey) {
+            const container = document.getElementById('categoriesGrid');
+            container.innerHTML = '';
+            
+            const role = FINANCE_PROMPTS[roleKey];
+            
+            Object.entries(role.categories).forEach(([catKey, category]) => {
+                const card = document.createElement('div');
+                card.className = 'category-card';
+                card.onclick = (e) => {
+                    if (!e.target.classList.contains('execute-btn')) {
+                        card.classList.toggle('expanded');
+                    }
+                };
+                
+                const promptsHtml = category.prompts.map(prompt => `
+                    <div class="prompt-item">
+                        <div class="prompt-title">
+                            ${prompt.title}
+                            <span class="complexity-badge complexity-${prompt.complexity}">
+                                ${prompt.complexity === 'low' ? 'Einfach' : 
+                                  prompt.complexity === 'medium' ? 'Mittel' : 'Komplex'}
+                            </span>
+                        </div>
+                        <div class="prompt-description">${prompt.prompt}</div>
+                        <div class="prompt-tags">
+                            ${prompt.tags.map(tag => `<span class="tag">#${tag}</span>`).join('')}
+                        </div>
+                        <button class="execute-btn" onclick="openExecuteModal('${prompt.id}', '${roleKey}')">
+                            🚀 Ausführen
+                        </button>
+                    </div>
+                `).join('');
+                
+                card.innerHTML = `
+                    <div class="category-header">
+                        <div class="category-title">
+                            <span class="category-icon">${category.icon}</span>
+                            <span>${category.name}</span>
+                        </div>
+                        <span class="category-count">${category.prompts.length}</span>
+                    </div>
+                    <div class="prompt-list">
+                        ${promptsHtml}
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+        }
+
+        // Open execute modal
+        function openExecuteModal(promptId, roleKey) {
+            const role = FINANCE_PROMPTS[roleKey];
+            let foundPrompt = null;
+            
+            Object.values(role.categories).forEach(category => {
+                const prompt = category.prompts.find(p => p.id === promptId);
+                if (prompt) foundPrompt = prompt;
+            });
+            
+            if (foundPrompt) {
+                currentPrompt = foundPrompt;
+                document.getElementById('modalTitle').textContent = foundPrompt.title;
+                document.getElementById('modalPrompt').textContent = foundPrompt.prompt;
+                document.getElementById('contextInput').value = '';
+                document.getElementById('aiResponse').classList.remove('active');
+                document.getElementById('executeModal').classList.add('active');
+            }
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('executeModal').classList.remove('active');
+            currentPrompt = null;
+        }
+
+        // Execute with AI
+        async function executeWithAI() {
+            const context = document.getElementById('contextInput').value;
+            const responseDiv = document.getElementById('aiResponse');
+            const responseContent = document.getElementById('responseContent');
+            
+            responseDiv.classList.add('active');
+            responseContent.innerHTML = '<div class="loading-spinner" style="width: 30px; height: 30px;"></div>';
+            
+            // Simulate API call
+            setTimeout(() => {
+                responseContent.innerHTML = `
+                    <strong>Analyse abgeschlossen:</strong><br><br>
+                    Basierend auf dem Prompt "${currentPrompt.title}" und Ihrem Kontext wurde folgende Analyse erstellt:<br><br>
+                    ✅ Datenvalidierung erfolgreich<br>
+                    📊 Kennzahlen berechnet<br>
+                    💡 Empfehlung: Prozess kann optimiert werden<br><br>
+                    <em>Dies ist eine Demo-Antwort. In der Produktivumgebung wird hier die echte KI-Analyse angezeigt.</em>
+                `;
+            }, 1500);
+        }
+
+        // Execute without AI
+        function executeWithoutAI() {
+            const responseDiv = document.getElementById('aiResponse');
+            const responseContent = document.getElementById('responseContent');
+            
+            responseDiv.classList.add('active');
+            responseContent.innerHTML = `
+                <strong>Template-Antwort:</strong><br><br>
+                ${currentPrompt.prompt}<br><br>
+                <em>Nutzen Sie diesen Prompt mit Ihren spezifischen Daten für beste Ergebnisse.</em>
+            `;
+        }
+
+        // Search prompts
+        function searchPrompts() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            
+            if (!query) {
+                if (currentRole) {
+                    renderCategories(currentRole);
+                }
+                return;
+            }
+            
+            const container = document.getElementById('categoriesGrid');
+            container.innerHTML = '';
+            
+            let results = [];
+            
+            Object.entries(FINANCE_PROMPTS).forEach(([roleKey, role]) => {
+                Object.entries(role.categories).forEach(([catKey, category]) => {
+                    category.prompts.forEach(prompt => {
+                        const searchText = `${prompt.title} ${prompt.prompt} ${prompt.tags.join(' ')}`.toLowerCase();
+                        if (searchText.includes(query)) {
+                            results.push({
+                                ...prompt,
+                                roleKey,
+                                roleName: role.name,
+                                categoryName: category.name,
+                                categoryIcon: category.icon
+                            });
+                        }
+                    });
+                });
+            });
+            
+            if (results.length === 0) {
+                container.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 3rem; background: white; border-radius: 16px;">
+                        <h3>Keine Ergebnisse gefunden</h3>
+                        <p style="margin-top: 1rem; color: #64748b;">Versuchen Sie andere Suchbegriffe</p>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = `
+                    <div style="grid-column: 1/-1; padding: 1rem; background: white; border-radius: 16px; margin-bottom: 1rem;">
+                        <h3>${results.length} Ergebnisse für "${query}"</h3>
+                    </div>
+                `;
+                
+                results.forEach(result => {
+                    const card = document.createElement('div');
+                    card.className = 'category-card';
+                    card.innerHTML = `
+                        <div class="category-header">
+                            <div class="category-title">
+                                <span>${result.categoryIcon}</span>
+                                <span>${result.roleName} - ${result.categoryName}</span>
+                            </div>
+                        </div>
+                        <div class="prompt-item" style="margin-top: 1rem;">
+                            <div class="prompt-title">
+                                ${result.title}
+                                <span class="complexity-badge complexity-${result.complexity}">
+                                    ${result.complexity === 'low' ? 'Einfach' : 
+                                      result.complexity === 'medium' ? 'Mittel' : 'Komplex'}
+                                </span>
+                            </div>
+                            <div class="prompt-description">${result.prompt}</div>
+                            <div class="prompt-tags">
+                                ${result.tags.map(tag => `<span class="tag">#${tag}</span>`).join('')}
+                            </div>
+                            <button class="execute-btn" onclick="openExecuteModal('${result.id}', '${result.roleKey}')">
+                                🚀 Ausführen
+                            </button>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            }
+        }
+
+        // Toggle complexity filter
+        function toggleComplexity(chip, level) {
+            chip.classList.toggle('active');
+            
+            if (chip.classList.contains('active')) {
+                selectedComplexity = level;
+            } else {
+                selectedComplexity = null;
+            }
+            
+            // Re-render with filter
+            if (currentRole) {
+                renderCategories(currentRole);
+            }
+        }
+
+        // Update statistics
+        function updateStats() {
+            let totalPrompts = 0;
+            
+            Object.values(FINANCE_PROMPTS).forEach(role => {
+                Object.values(role.categories).forEach(category => {
+                    totalPrompts += category.prompts.length;
+                });
+            });
+            
+            document.getElementById('totalPrompts').textContent = totalPrompts + '+';
+        }
+
+        // Handle Enter key in search
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('searchInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    searchPrompts();
+                }
+            });
+        });
+
+        // Close modal on ESC
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
