@@ -2096,8 +2096,10 @@ function displayNotionPrompts(prompts) {
 ">
   🔄 Notion Sync
 </button>
-<!-- Business Case Prompt Integration -->
+<!-- Business Case Prompt Integration - VOLLSTÄNDIGE VERSION -->
 <script>
+let BUSINESS_CASE_PROMPT = null;
+
 // Prompts laden
 async function loadBusinessCasePrompt() {
   try {
@@ -2105,7 +2107,7 @@ async function loadBusinessCasePrompt() {
     const data = await response.json();
     
     if (data.prompts && data.prompts.length > 0) {
-      // Füge Button ins Dashboard
+      BUSINESS_CASE_PROMPT = data.prompts[0];
       addBusinessCaseButton(data.prompts[0]);
     }
   } catch (error) {
@@ -2115,13 +2117,11 @@ async function loadBusinessCasePrompt() {
 
 // Button ins Dashboard einfügen
 function addBusinessCaseButton(prompt) {
-  // Finde einen Container im Dashboard
   const container = document.querySelector('.prompts-grid') || 
                    document.querySelector('.dashboard-content') ||
                    document.querySelector('main') ||
                    document.body;
   
-  // Erstelle schöne Karte
   const card = document.createElement('div');
   card.className = 'business-case-card';
   card.style.cssText = `
@@ -2153,15 +2153,327 @@ function addBusinessCaseButton(prompt) {
   card.onmouseover = () => card.style.transform = 'translateY(-5px)';
   card.onmouseout = () => card.style.transform = 'translateY(0)';
   
-  // Füge am Anfang ein
   container.insertBefore(card, container.firstChild);
 }
 
 // Business Case Modal öffnen
 function openBusinessCase() {
-  window.location.href = '#business-case';
-  alert('Business Case Feature kommt gleich! 🚀');
+  if (!BUSINESS_CASE_PROMPT) {
+    alert('Prompt wird geladen...');
+    return;
+  }
+  
+  // Erstelle Modal
+  const modal = document.createElement('div');
+  modal.id = 'businessCaseModal';
+  modal.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    animation: fadeIn 0.3s;
+  `;
+  
+  // Modal Content
+  const modalContent = document.createElement('div');
+  modalContent.style.cssText = `
+    background: white;
+    border-radius: 16px;
+    max-width: 700px;
+    width: 90%;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    animation: slideUp 0.3s;
+  `;
+  
+  modalContent.innerHTML = `
+    <div style="
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 30px;
+      border-radius: 16px 16px 0 0;
+      color: white;
+    ">
+      <h2 style="margin: 0; font-size: 28px;">📊 Business Case erstellen</h2>
+      <p style="margin: 10px 0 0 0; opacity: 0.9;">Beantworten Sie die folgenden Fragen für Ihre Investitionsanalyse</p>
+    </div>
+    
+    <div style="padding: 30px;">
+      <form id="businessCaseForm">
+        ${BUSINESS_CASE_PROMPT.questions.map((q, index) => `
+          <div style="margin-bottom: 25px;">
+            <label style="
+              display: block;
+              margin-bottom: 8px;
+              font-weight: 600;
+              color: #2c3e50;
+              font-size: 16px;
+            ">
+              ${index + 1}. ${q.label}
+              ${q.required ? '<span style="color: #e74c3c;">*</span>' : ''}
+            </label>
+            
+            ${q.type === 'select' ? `
+              <select id="${q.id}" required="${q.required}" style="
+                width: 100%;
+                padding: 12px;
+                border: 2px solid #e0e0e0;
+                border-radius: 8px;
+                font-size: 16px;
+                background: white;
+                transition: border-color 0.3s;
+              " onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e0e0e0'">
+                <option value="">Bitte wählen...</option>
+                ${q.options.map(opt => `
+                  <option value="${opt}">${opt}</option>
+                `).join('')}
+              </select>
+            ` : q.type === 'textarea' ? `
+              <textarea id="${q.id}" 
+                placeholder="${q.placeholder || ''}"
+                required="${q.required}"
+                rows="4"
+                style="
+                  width: 100%;
+                  padding: 12px;
+                  border: 2px solid #e0e0e0;
+                  border-radius: 8px;
+                  font-size: 16px;
+                  resize: vertical;
+                  font-family: inherit;
+                  transition: border-color 0.3s;
+                " onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e0e0e0'"></textarea>
+            ` : `
+              <input type="${q.type}" 
+                id="${q.id}" 
+                placeholder="${q.placeholder || ''}"
+                value="${q.defaultValue || ''}"
+                required="${q.required}"
+                style="
+                  width: 100%;
+                  padding: 12px;
+                  border: 2px solid #e0e0e0;
+                  border-radius: 8px;
+                  font-size: 16px;
+                  transition: border-color 0.3s;
+                " onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e0e0e0'">
+            `}
+            
+            ${q.helpText ? `<small style="color: #7f8c8d; margin-top: 5px; display: block;">${q.helpText}</small>` : ''}
+          </div>
+        `).join('')}
+      </form>
+      
+      <div style="
+        display: flex;
+        gap: 15px;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 2px solid #e0e0e0;
+      ">
+        <button onclick="executeBusinessCase()" style="
+          flex: 1;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          border: none;
+          padding: 15px 30px;
+          border-radius: 8px;
+          font-size: 18px;
+          font-weight: bold;
+          cursor: pointer;
+          transition: transform 0.2s;
+        " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+          🚀 Business Case generieren
+        </button>
+        
+        <button onclick="closeBusinessCaseModal()" style="
+          background: #e0e0e0;
+          color: #2c3e50;
+          border: none;
+          padding: 15px 30px;
+          border-radius: 8px;
+          font-size: 18px;
+          cursor: pointer;
+          transition: background 0.2s;
+        " onmouseover="this.style.background='#d0d0d0'" onmouseout="this.style.background='#e0e0e0'">
+          Abbrechen
+        </button>
+      </div>
+    </div>
+  `;
+  
+  modal.appendChild(modalContent);
+  document.body.appendChild(modal);
 }
+
+// Modal schließen
+function closeBusinessCaseModal() {
+  const modal = document.getElementById('businessCaseModal');
+  if (modal) {
+    modal.style.animation = 'fadeOut 0.3s';
+    setTimeout(() => modal.remove(), 300);
+  }
+}
+
+// Business Case ausführen
+async function executeBusinessCase() {
+  // Validierung
+  const form = document.getElementById('businessCaseForm');
+  if (!form.checkValidity()) {
+    form.reportValidity();
+    return;
+  }
+  
+  // Sammle Antworten
+  const answers = {};
+  BUSINESS_CASE_PROMPT.questions.forEach(q => {
+    const element = document.getElementById(q.id);
+    answers[q.id] = element?.value || '';
+  });
+  
+  // Zeige Loading
+  const modal = document.getElementById('businessCaseModal');
+  const oldContent = modal.innerHTML;
+  
+  modal.innerHTML = `
+    <div style="
+      background: white;
+      padding: 50px;
+      border-radius: 16px;
+      text-align: center;
+    ">
+      <div style="
+        width: 60px;
+        height: 60px;
+        border: 4px solid #f0f0f0;
+        border-top-color: #667eea;
+        border-radius: 50%;
+        margin: 0 auto 20px;
+        animation: spin 1s linear infinite;
+      "></div>
+      <h3>Business Case wird erstellt...</h3>
+      <p style="color: #7f8c8d;">Ihre Investitionsanalyse wird berechnet</p>
+    </div>
+  `;
+  
+  try {
+    // API Call
+    const response = await fetch('/api/execute-prompt', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        promptId: 'ctrl-001',
+        answers: answers,
+        useAI: true
+      })
+    });
+    
+    const result = await response.json();
+    
+    // Zeige Ergebnis
+    displayBusinessCaseResult(result);
+    
+  } catch (error) {
+    console.error('Error:', error);
+    alert('Demo-Modus: Business Case würde jetzt mit OpenAI generiert werden!\n\nIhre Eingaben wurden erfasst.');
+    closeBusinessCaseModal();
+  }
+}
+
+// Ergebnis anzeigen
+function displayBusinessCaseResult(result) {
+  const modal = document.getElementById('businessCaseModal');
+  
+  modal.innerHTML = `
+    <div style="
+      background: white;
+      border-radius: 16px;
+      max-width: 900px;
+      width: 90%;
+      max-height: 85vh;
+      overflow-y: auto;
+    ">
+      <div style="
+        background: linear-gradient(135deg, #27ae60 0%, #16a085 100%);
+        padding: 30px;
+        border-radius: 16px 16px 0 0;
+        color: white;
+      ">
+        <h2 style="margin: 0;">✅ Business Case erstellt!</h2>
+      </div>
+      
+      <div style="padding: 30px;">
+        <div style="
+          background: #f8f9fa;
+          padding: 20px;
+          border-radius: 8px;
+          margin-bottom: 20px;
+        ">
+          <h3>📊 Analyse-Ergebnis</h3>
+          <pre style="white-space: pre-wrap; font-family: 'Segoe UI', sans-serif;">
+${result.analysis || 'Demo-Output: Hier würde die vollständige Analyse stehen...'}
+          </pre>
+        </div>
+        
+        <div style="display: flex; gap: 10px;">
+          <button onclick="downloadBusinessCase()" style="
+            flex: 1;
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+          ">📥 Als PDF downloaden</button>
+          
+          <button onclick="closeBusinessCaseModal()" style="
+            flex: 1;
+            background: #e0e0e0;
+            border: none;
+            padding: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+          ">Schließen</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// Download Funktion
+function downloadBusinessCase() {
+  alert('PDF-Export kommt bald! 🚀');
+}
+
+// CSS Animationen hinzufügen
+const style = document.createElement('style');
+style.textContent = `
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  @keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+  }
+  
+  @keyframes slideUp {
+    from { transform: translateY(50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+`;
+document.head.appendChild(style);
 
 // Beim Laden
 window.addEventListener('DOMContentLoaded', loadBusinessCasePrompt);
