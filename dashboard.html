@@ -2101,19 +2101,24 @@ function displayNotionPrompts(prompts) {
 let BUSINESS_CASE_PROMPT = null;
 
 // Prompts laden
-async function loadBusinessCasePrompt() {
+// Notion Prompts laden
+async function loadNotionPrompts() {
   try {
-    const response = await fetch('/api/prompts');
+    const response = await fetch('/api/notion-bundled');
     const data = await response.json();
     
-    if (data.prompts && data.prompts.length > 0) {
-      BUSINESS_CASE_PROMPT = data.prompts[0];
-      addBusinessCaseButton(data.prompts[0]);
+    if (data.success && data.prompts.length > 0) {
+      console.log('✅ Notion Prompts geladen:', data.prompts);
+      // Zeige ersten Prompt
+      alert('Notion verbunden! ' + data.count + ' Prompts gefunden!');
     }
   } catch (error) {
-    console.error('Error loading prompts:', error);
+    console.error('Error:', error);
   }
 }
+
+// Beim Laden aufrufen
+loadNotionPrompts();
 
 // Button ins Dashboard einfügen
 function addBusinessCaseButton(prompt) {
