@@ -1,18 +1,13 @@
 export default function handler(req, res) {
+  // CORS Headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
   res.status(200).json({
     success: true,
-    message: 'ALBO Multi-Tenant SaaS Backend läuft auf Vercel!',
+    message: 'ALBO Backend läuft auf Vercel!',
     timestamp: new Date().toISOString(),
-    features: {
-      tenant_management: true,
-      ai_processing: true,
-      analytics: true
-    },
-    endpoints: [
-      '/api/status',
-      '/api/analyze-ai',
-      '/api/execute-prompt',
-      '/dashboard'
-    ]
+    version: '1.0.0'
   });
 }
