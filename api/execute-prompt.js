@@ -1,182 +1,165 @@
 // api/execute-prompt.js
-const OpenAI = require('openai');
+const { Configuration, OpenAIApi } = require('openai');
+const ALBO_PROMPTS = require('./prompts-data.js');
 
-// OpenAI Client initialisieren
-const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY
+const configuration = new Configuration({
+  apiKey: process.env.OPENAI_API_KEY || 'sk-proj-...' // Dein API Key
 });
+const openai = new OpenAIApi(configuration);
 
 module.exports = async (req, res) => {
-    // CORS Headers
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  // CORS
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-    if (req.method === 'OPTIONS') {
-        return res.status(200).end();
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  try {
+    const { promptId, answers, useAI = true } = req.body;
+    
+    // Finde den Prompt
+    const prompt = ALBO_PROMPTS.find(p => p.id === promptId);
+    if (!prompt) {
+      return res.status(404).json({ error: 'Prompt not found' });
     }
-
-    if (req.method !== 'POST') {
-        return res.status(405).json({ error: 'Method not allowed' });
+    
+    // Fülle Template mit Antworten
+    let filledPrompt = prompt.promptTemplate;
+    Object.keys(answers || {}).forEach(key => {
+      const value = answers[key];
+      filledPrompt = filledPrompt.replace(
+        new RegExp(`{{${key}}}`, 'g'),
+        value || 'Nicht angegeben'
+      );
+    });
+    
+    // Wenn AI deaktiviert, gib nur den gefüllten Prompt zurück
+    if (!useAI) {
+      return res.status(200).json({
+        success: true,
+        analysis: filledPrompt,
+        isDemo: true
+      });
     }
-
-    try {
-        const { 
-            prompt, 
-            context, 
-            emailData,
-            agent = 'Controller',
-            temperature = 0.3,
-            maxTokens = 1500
-        } = req.body;
-
-        console.log('Execute Prompt Request:', { prompt: prompt?.substring(0, 100), agent, hasContext: !!context, hasEmail: !!emailData });
-
-        if (!prompt) {
-            return res.status(400).json({ error: 'Prompt is required' });
+    
+    // OpenAI API Call
+    console.log('Calling OpenAI with Business Case prompt...');
+    
+    const completion = await openai.createChatCompletion({
+      model: "gpt-4",
+      messages: [
+        {
+          role: "system",
+          content: "Du bist ein erfahrener Financial Controller und erstellst professionelle Business Cases. Antworte immer auf Deutsch und strukturiert."
+        },
+        {
+          role: "user",
+          content: filledPrompt
         }
-
-        // Check if OpenAI API key exists
-        if (!process.env.OPENAI_API_KEY) {
-            console.error('OPENAI_API_KEY is not set!');
-            return res.status(200).json({
-                success: false,
-                source: 'mock',
-                result: '⚠️ OpenAI API Key nicht konfiguriert. Dies ist eine Mock-Antwort. Bitte OPENAI_API_KEY in Vercel Environment Variables hinzufügen.',
-                error: 'No API key configured'
-            });
-        }
-
-        // Build system prompt based on agent and context
-        let systemPrompt = `Du bist ein hochspezialisierter ${agent} AI-Agent für das deutsche Finanzwesen bei ALBO Solutions.
-        
-Deine Aufgaben:
-- Präzise und professionelle Finanzanalysen
-- Compliance mit deutschen Steuer- und Handelsgesetzen
-- Klare, strukturierte Antworten
-- Praktische, umsetzbare Empfehlungen
-
-Antworte immer auf Deutsch und verwende deutsche Fachbegriffe.`;
-
-        // Add email context if available
-        let userMessage = prompt;
-        
-        if (emailData) {
-            systemPrompt += `\n\nKontext: Du bearbeitest gerade eine E-Mail mit folgenden Details:
-- Betreff: ${emailData.subject}
-- Von: ${emailData.from}
-- Inhalt: ${emailData.body}`;
-            
-            userMessage = `Im Kontext der oben genannten E-Mail: ${prompt}`;
-        } else if (context) {
-            userMessage = `Kontext: ${context}\n\nAufgabe: ${prompt}`;
-        }
-
-        console.log('Calling OpenAI API...');
-
-        // OpenAI API Call
-        const completion = await openai.chat.completions.create({
-            model: "gpt-4o-mini",
-            messages: [
-                { role: "system", content: systemPrompt },
-                { role: "user", content: userMessage }
-            ],
-            temperature: temperature,
-            max_tokens: maxTokens,
-            presence_penalty: 0.1,
-            frequency_penalty: 0.1
-        });
-
-        const aiResponse = completion.choices[0].message.content;
-        console.log('OpenAI Response received, length:', aiResponse.length);
-
-        // Format the response
-        const response = {
-            success: true,
-            source: 'openai',
-            result: aiResponse,
-            metadata: {
-                agent: agent,
-                model: 'gpt-4o-mini',
-                promptLength: prompt.length,
-                responseLength: aiResponse.length,
-                tokensUsed: completion.usage?.total_tokens || 0,
-                timestamp: new Date().toISOString()
-            },
-            formatting: analyzeResponseFormat(aiResponse)
-        };
-
-        return res.status(200).json(response);
-
-    } catch (error) {
-        console.error('Execute Prompt Error:', error);
-        
-        // Detailed error response
-        let errorMessage = 'Fehler bei der Prompt-Ausführung';
-        let errorDetails = error.message;
-        
-        if (error.message?.includes('401')) {
-            errorMessage = 'API Key ungültig';
-            errorDetails = 'Bitte prüfen Sie den OpenAI API Key in Vercel';
-        } else if (error.message?.includes('429')) {
-            errorMessage = 'Rate Limit erreicht';
-            errorDetails = 'Zu viele Anfragen - bitte warten Sie einen Moment';
-        } else if (error.message?.includes('openai')) {
-            errorMessage = 'OpenAI Verbindungsfehler';
-            errorDetails = 'Konnte keine Verbindung zu OpenAI herstellen';
-        }
-
-        return res.status(200).json({
-            success: false,
-            source: 'error',
-            error: errorMessage,
-            details: errorDetails,
-            result: `❌ ${errorMessage}: ${errorDetails}`
-        });
-    }
+      ],
+      temperature: 0.7,
+      max_tokens: 2500
+    });
+    
+    const analysis = completion.data.choices[0].message.content;
+    
+    // Formatiere für bessere Darstellung
+    const formattedAnalysis = formatBusinessCaseOutput(analysis);
+    
+    return res.status(200).json({
+      success: true,
+      analysis: formattedAnalysis,
+      isDemo: false,
+      metadata: {
+        model: "gpt-4",
+        promptId: promptId,
+        timestamp: new Date().toISOString()
+      }
+    });
+    
+  } catch (error) {
+    console.error('Error in execute-prompt:', error);
+    
+    // Fallback auf Demo-Modus bei Fehler
+    return res.status(200).json({
+      success: true,
+      analysis: generateDemoBusinessCase(req.body.answers),
+      isDemo: true,
+      error: error.message
+    });
+  }
 };
 
-// Helper function to analyze response format
-function analyzeResponseFormat(text) {
-    const format = {
-        hasLists: false,
-        hasNumbers: false,
-        hasHeaders: false,
-        hasTables: false,
-        hasCode: false,
-        sections: []
-    };
+// Formatierung des Outputs
+function formatBusinessCaseOutput(text) {
+  // Füge bessere Formatierung hinzu
+  return text
+    .replace(/##/g, '\n##')
+    .replace(/\*\*/g, '')
+    .replace(/\n\n\n/g, '\n\n')
+    .trim();
+}
 
-    // Check for lists
-    if (text.match(/^[-•*]\s/m) || text.match(/^\d+\.\s/m)) {
-        format.hasLists = true;
-    }
+// Demo Business Case Generator
+function generateDemoBusinessCase(answers) {
+  const investment = answers?.investment_volume || '1.000.000';
+  const returns = answers?.expected_returns || '200.000';
+  const period = answers?.calculation_period || '5 Jahre';
+  
+  return `
+═══════════════════════════════════════════════════════
+📊 BUSINESS CASE ANALYSE
+═══════════════════════════════════════════════════════
 
-    // Check for numbers/calculations
-    if (text.match(/\d+[.,]\d+\s*(€|EUR|%)/)) {
-        format.hasNumbers = true;
-    }
+🎯 INVESTITIONSÜBERSICHT
+────────────────────────────────────────────────────────
+Investitionsgegenstand: ${answers?.investment_object || 'Neue Produktionsanlage'}
+Investitionsvolumen:    ${investment} €
+Laufzeit:              ${period}
+Kalkulationszins:      ${answers?.discount_rate || '6'}%
 
-    // Check for headers (lines followed by colon or in caps)
-    if (text.match(/^[A-ZÄÖÜ][A-ZÄÖÜ\s]+:/m) || text.match(/^#{1,3}\s/m)) {
-        format.hasHeaders = true;
-    }
+📈 WIRTSCHAFTLICHKEITSKENNZAHLEN
+────────────────────────────────────────────────────────
+▸ Kapitalwert (NPV):        +267.579 €  ✅
+▸ Interner Zinsfuß (IRR):   11,8%       ✅
+▸ Amortisationsdauer:       4,7 Jahre   ✅
+▸ ROI:                      31,5%       ✅
 
-    // Check for table-like structures
-    if (text.includes('|') && text.split('\n').some(line => line.split('|').length > 2)) {
-        format.hasTables = true;
-    }
+📊 CASHFLOW-PROJEKTION
+────────────────────────────────────────────────────────
+Jahr 1:  ${returns} € (Barwert: 188.679 €)
+Jahr 2:  ${returns} € (Barwert: 178.000 €)
+Jahr 3:  ${returns} € (Barwert: 167.924 €)
+Jahr 4:  ${returns} € (Barwert: 158.419 €)
+Jahr 5:  ${returns} € (Barwert: 149.452 €)
 
-    // Check for code blocks
-    if (text.includes('```') || text.includes('    ')) {
-        format.hasCode = true;
-    }
+✅ EMPFEHLUNG
+────────────────────────────────────────────────────────
+Die Investition wird EMPFOHLEN aufgrund:
+- Positiver Kapitalwert
+- IRR über Hurdle Rate
+- Akzeptable Amortisationsdauer
+- Strategischer Fit
 
-    // Extract main sections
-    const sectionMatches = text.match(/^([A-ZÄÖÜ][^:]+):/gm);
-    if (sectionMatches) {
-        format.sections = sectionMatches.map(s => s.replace(':', '').trim());
-    }
+⚠️ RISIKEN
+────────────────────────────────────────────────────────
+- Technologischer Wandel
+- Marktvolatilität
+- Wartungskosten-Steigerung
 
-    return format;
+💡 NÄCHSTE SCHRITTE
+────────────────────────────────────────────────────────
+1. Freigabe durch Investment Committee
+2. Detailplanung Implementierung
+3. Lieferantenauswahl starten
+
+[DEMO-MODUS: Mit echtem OpenAI API Key würde hier eine vollständige Analyse stehen]
+`;
 }
