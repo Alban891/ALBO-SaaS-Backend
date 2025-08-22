@@ -5,24 +5,30 @@ const fs = require('fs');
 require('dotenv').config();
 
 const app = express();
-const PORT = process.env.PORT || 3001;
 
-// Middleware - WICHTIG: CORS richtig konfigurieren für Outlook
+// Middleware
 app.use(cors({
-    origin: [
-        'https://albo-ki-agent.vercel.app',
-        'https://alban891.github.io',
-        'http://localhost:3000',
-        'https://localhost:3001',
-        'https://outlook.office.com',
-        'https://outlook.office365.com',
-        '*' // Für Entwicklung - später einschränken
-    ],
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Tenant-ID']
+    origin: '*',  // Vereinfacht für Vercel
+    credentials: true
 }));
 app.use(express.json());
+
+// Dashboard Route
+app.get('/dashboard', (req, res) => {
+    res.sendFile(path.join(__dirname, 'dashboard.html'));
+});
+
+// Health Check
+app.get('/', (req, res) => {
+    res.json({
+        message: 'ALBO Backend Running',
+        dashboard: '/dashboard',
+        api: '/api/status'
+    });
+});
+
+// Export für Vercel
+module.exports = app;
 
 // ===== EXISTING STATUS ROUTE =====
 app.get('/api/status', (req, res) => {
