@@ -1,2609 +1,658 @@
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ALBO Enterprise Dashboard - Finance Intelligence Platform</title>
-    
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --primary: #0078d4;
-            --primary-dark: #106ebe;
-            --secondary: #8b5cf6;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --dark: #1e293b;
-            --light: #f8fafc;
-            --border: #e2e8f0;
-            --shadow: 0 1px 3px rgba(0,0,0,0.12);
-            --shadow-lg: 0 10px 40px rgba(0,0,0,0.15);
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            color: var(--dark);
-        }
-
-        /* Loading Screen */
-        .loading-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-            transition: opacity 0.5s;
-        }
-
-        .loading-content {
-            text-align: center;
-            color: white;
-        }
-
-        .loading-spinner {
-            width: 60px;
-            height: 60px;
-            border: 4px solid rgba(255,255,255,0.3);
-            border-top-color: white;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* Header */
-        .header {
-            background: white;
-            box-shadow: var(--shadow);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .header-content {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 24px;
-            font-weight: bold;
-            color: var(--primary);
-        }
-
-        .header-stats {
-            display: flex;
-            gap: 30px;
-        }
-
-        .stat-item {
-            text-align: center;
-        }
-
-        .stat-value {
-            font-size: 24px;
-            font-weight: bold;
-            color: var(--primary);
-        }
-
-        .stat-label {
-            font-size: 12px;
-            color: #64748b;
-            text-transform: uppercase;
-        }
-
-        /* Main Container */
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-
-        /* Role Selector */
-        .role-selector {
-            background: white;
-            border-radius: 16px;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-            box-shadow: var(--shadow-lg);
-        }
-
-        .role-tabs {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-bottom: 1rem;
-        }
-
-        .role-tab {
-            padding: 12px 24px;
-            border: 2px solid var(--border);
-            border-radius: 12px;
-            background: white;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: 500;
-        }
-
-        .role-tab:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow);
-        }
-
-        .role-tab.active {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
-            border-color: var(--primary);
-        }
-
-        .role-description {
-            padding: 1rem;
-            background: var(--light);
-            border-radius: 8px;
-            margin-top: 1rem;
-        }
-
-        /* Search & Filter */
-        .search-section {
-            background: white;
-            border-radius: 16px;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-            box-shadow: var(--shadow-lg);
-        }
-
-        .search-container {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 1rem;
-        }
-
-        .search-input {
-            flex: 1;
-            padding: 12px 20px;
-            border: 2px solid var(--border);
-            border-radius: 10px;
-            font-size: 16px;
-            transition: border-color 0.3s;
-        }
-
-        .search-input:focus {
-            outline: none;
-            border-color: var(--primary);
-        }
-
-        .search-btn {
-            padding: 12px 30px;
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.3s;
-        }
-
-        .search-btn:hover {
-            transform: translateY(-2px);
-        }
-
-        .filter-chips {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .chip {
-            padding: 6px 16px;
-            background: var(--light);
-            border-radius: 20px;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.3s;
-            border: 2px solid transparent;
-        }
-
-        .chip:hover {
-            border-color: var(--primary);
-        }
-
-        .chip.active {
-            background: var(--primary);
-            color: white;
-        }
-
-        /* Categories Grid */
-        .categories-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .category-card {
-            background: white;
-            border-radius: 16px;
-            padding: 1.5rem;
-            box-shadow: var(--shadow);
-            transition: all 0.3s;
-            cursor: pointer;
-        }
-
-        .category-card:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--shadow-lg);
-        }
-
-        .category-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-
-        .category-title {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 18px;
-            font-weight: 600;
-        }
-
-        .category-icon {
-            font-size: 24px;
-        }
-
-        .category-count {
-            background: var(--light);
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 14px;
-            color: var(--primary);
-            font-weight: 600;
-        }
-
-        .prompt-list {
-            display: none;
-            margin-top: 1rem;
-            padding-top: 1rem;
-            border-top: 1px solid var(--border);
-        }
-
-        .category-card.expanded .prompt-list {
-            display: block;
-        }
-
-        .prompt-item {
-            padding: 12px;
-            margin-bottom: 10px;
-            background: var(--light);
-            border-radius: 10px;
-            transition: all 0.3s;
-        }
-
-        .prompt-item:hover {
-            background: linear-gradient(135deg, rgba(0,120,212,0.1), rgba(139,92,246,0.1));
-        }
-
-        .prompt-title {
-            font-weight: 600;
-            margin-bottom: 4px;
-            color: var(--dark);
-        }
-
-        .prompt-description {
-            font-size: 14px;
-            color: #64748b;
-            margin-bottom: 8px;
-        }
-
-        .prompt-tags {
-            display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
-        }
-
-        .tag {
-            padding: 2px 8px;
-            background: white;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            font-size: 12px;
-            color: #64748b;
-        }
-
-        .complexity-badge {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: 600;
-            margin-left: 8px;
-        }
-
-        .complexity-low {
-            background: #d1fae5;
-            color: #065f46;
-        }
-
-        .complexity-medium {
-            background: #fed7aa;
-            color: #9a3412;
-        }
-
-        .complexity-high {
-            background: #fecaca;
-            color: #991b1b;
-        }
-
-        /* Execute Button */
-        .execute-btn {
-            margin-top: 10px;
-            padding: 8px 16px;
-            background: linear-gradient(135deg, var(--success), #059669);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .execute-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(16,185,129,0.3);
-        }
-
-        /* Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.5);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal.active {
-            display: flex;
-        }
-
-        .modal-content {
-            background: white;
-            border-radius: 16px;
-            width: 90%;
-            max-width: 700px;
-            max-height: 80vh;
-            overflow-y: auto;
-            animation: slideUp 0.3s ease;
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .modal-header {
-            padding: 1.5rem;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .modal-title {
-            font-size: 20px;
-            font-weight: 600;
-        }
-
-        .close-btn {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            border: none;
-            background: var(--light);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            transition: all 0.3s;
-        }
-
-        .close-btn:hover {
-            background: var(--danger);
-            color: white;
-        }
-
-        .modal-body {
-            padding: 1.5rem;
-        }
-
-        .context-input {
-            width: 100%;
-            min-height: 100px;
-            padding: 12px;
-            border: 2px solid var(--border);
-            border-radius: 10px;
-            font-size: 14px;
-            resize: vertical;
-            margin-bottom: 1rem;
-        }
-
-        .modal-actions {
-            display: flex;
-            gap: 1rem;
-            justify-content: flex-end;
-        }
-
-        .btn-primary {
-            padding: 10px 24px;
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .btn-secondary {
-            padding: 10px 24px;
-            background: var(--light);
-            color: var(--dark);
-            border: 2px solid var(--border);
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        /* AI Response */
-        .ai-response {
-            display: none;
-            margin-top: 1.5rem;
-            padding: 1rem;
-            background: linear-gradient(135deg, rgba(0,120,212,0.05), rgba(139,92,246,0.05));
-            border-radius: 10px;
-            border-left: 4px solid var(--primary);
-        }
-
-        .ai-response.active {
-            display: block;
-        }
-
-        .response-header {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 10px;
-            font-weight: 600;
-            color: var(--primary);
-        }
-
-        .response-content {
-            color: var(--dark);
-            line-height: 1.6;
-        }
-
-        /* Footer */
-        .footer {
-            text-align: center;
-            padding: 2rem;
-            color: white;
-            margin-top: 4rem;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .container {
-                padding: 1rem;
-            }
-            
-            .categories-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .header-stats {
-                display: none;
-            }
-            
-            .role-tabs {
-                flex-direction: column;
-            }
-
-            @keyframes slideIn {
-    from {
-        opacity: 0;
-        transform: translateX(100px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-@keyframes slideDown {
-    from {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.email-notification:hover button {
-    transform: scale(1.05);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
-        }
-    </style>
-</head>
-<body>
-    <!-- Loading Screen -->
-    <div class="loading-screen" id="loadingScreen">
-        <div class="loading-content">
-            <div class="loading-spinner"></div>
-            <h2>ALBO Enterprise Dashboard</h2>
-            <p>Lade Finance Intelligence Platform...</p>
+<!-- Header -->
+<header class="header">
+    <div class="header-content">
+        <div class="logo">
+            <span>🚀</span>
+            <span>ALBO AI</span>
         </div>
-    </div>
-
-    <!-- Header -->
-    <header class="header">
-        <div class="header-content">
-            <div class="logo">
-                <span>🚀</span>
-                <span>ALBO Enterprise</span>
-            </div>
-            <div class="header-stats">
-                <div class="stat-item">
-                    <div class="stat-value" id="totalPrompts">1000+</div>
-                    <div class="stat-label">Prompts</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value">6</div>
-                    <div class="stat-label">Rollen</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value" id="activeUsers">∞</div>
-                    <div class="stat-label">Potenzial</div>
-                </div>
-            </div>
+        
+        <div class="mode-switcher">
+            <button class="mode-btn active" onclick="switchMode('executive')">
+                <span>📊</span>
+                <span>Executive</span>
+            </button>
+            <button class="mode-btn" onclick="switchMode('team')">
+                <span>👥</span>
+                <span>Team</span>
+            </button>
+            <button class="mode-btn" onclick="switchMode('workflow')">
+                <span>⚡</span>
+                <span>Workflows</span>
+            </button>
+            <button class="mode-btn" onclick="switchMode('legacy')">
+                <span>📚</span>
+                <span>Prompts</span>
+            </button>
         </div>
-    </header>
-
-    <!-- Main Container -->
-    <div class="container">
-        <!-- Role Selector -->
-        <div class="role-selector">
-            <h2 style="margin-bottom: 1rem;">Wählen Sie Ihre Rolle</h2>
-            <div class="role-tabs" id="roleTabs">
-                <!-- Roles will be injected here -->
+        
+        <div class="header-actions">
+            <div class="notification-badge">
+                <span>🔔</span>
+                <span class="badge-count">3</span>
             </div>
-            <div class="role-description" id="roleDescription">
-                Wählen Sie eine Rolle, um spezialisierte Finance-Prompts zu sehen.
-            </div>
-        </div>
-
-        <!-- Search & Filter -->
-        <div class="search-section">
-            <div class="search-container">
-                <input type="text" class="search-input" id="searchInput" placeholder="Suche nach Prompts, Keywords, Prozessen...">
-                <button class="search-btn" onclick="searchPrompts()">
-                    🔍 Suchen
-                </button>
-            </div>
-            <div class="filter-chips">
-                <span class="chip" onclick="toggleComplexity(this, 'low')">⚡ Einfach</span>
-                <span class="chip" onclick="toggleComplexity(this, 'medium')">📊 Mittel</span>
-                <span class="chip" onclick="toggleComplexity(this, 'high')">🚀 Komplex</span>
-            </div>
-        </div>
-
-        <!-- Categories Grid -->
-        <div class="categories-grid" id="categoriesGrid">
-            <!-- Categories will be injected here -->
-        </div>
-    </div>
-
-    <!-- Execute Modal -->
-    <div class="modal" id="executeModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title" id="modalTitle">Prompt ausführen</h3>
-                <button class="close-btn" onclick="closeModal()">×</button>
-            </div>
-            <div class="modal-body">
-                <div style="margin-bottom: 1rem;">
-                    <strong>Prompt:</strong>
-                    <p id="modalPrompt" style="margin-top: 8px; color: #64748b;"></p>
-                </div>
-                
-                <label style="font-weight: 600; margin-bottom: 8px; display: block;">
-                    Kontext hinzufügen (optional):
-                </label>
-                <textarea class="context-input" id="contextInput" 
-                    placeholder="Fügen Sie spezifische Details, Zahlen oder Kontext hinzu..."></textarea>
-                
-                <div class="modal-actions">
-                    <button class="btn-secondary" onclick="executeWithoutAI()">
-                        📝 Template nutzen
-                    </button>
-                    <button class="btn-primary" onclick="executeWithAI()">
-                        🤖 Mit KI ausführen
-                    </button>
-                </div>
-                
-                <div class="ai-response" id="aiResponse">
-                    <div class="response-header">
-                        <span>🤖</span>
-                        <span>KI-Antwort</span>
-                    </div>
-                    <div class="response-content" id="responseContent">
-                        <!-- AI response will appear here -->
-                    </div>
-                </div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span>👤</span>
+                <span style="font-weight: 600;">CFO</span>
             </div>
         </div>
     </div>
+</header>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <p>© 2024 ALBO Solutions - Enterprise Finance Intelligence Platform</p>
-        <p style="margin-top: 8px; opacity: 0.8;">Transforming Finance with AI - One Prompt at a Time</p>
-    </footer>
-
-    <script>
-        // Finance Prompts Database
-        const FINANCE_PROMPTS = {
-            kreditor: {
-                name: "Kreditorenbuchhalter",
-                description: "Spezialisiert auf Rechnungsverarbeitung, Lieferantenzahlungen und SAP FI-AP",
-                icon: "💳",
-                categories: {
-                    rechnungsverarbeitung: {
-                        name: "Rechnungsverarbeitung",
-                        icon: "📄",
-                        prompts: [
-                            {
-                                id: "kred_001",
-                                title: "3-Wege-Abgleich durchführen",
-                                prompt: "Führe einen 3-Wege-Abgleich durch zwischen Bestellung, Lieferschein und Rechnung.",
-                                tags: ["validation", "invoice"],
-                                complexity: "medium"
-                            },
-                            {
-                                id: "kred_002",
-                                title: "Skonto-Optimierung",
-                                prompt: "Berechne optimale Zahlungsstrategie unter Berücksichtigung von Skonto.",
-                                tags: ["discount", "payment"],
-                                complexity: "high"
-                            },
-                            {
-                                id: "kred_003",
-                                title: "Duplicate Check",
-                                prompt: "Prüfe auf doppelte Rechnungen.",
-                                tags: ["validation"],
-                                complexity: "low"
-                            }
-                        ]
-                    },
-                    lieferantenmanagement: {
-                        name: "Lieferantenmanagement",
-                        icon: "🤝",
-                        prompts: [
-                            {
-                                id: "kred_010",
-                                title: "Vendor Validation",
-                                prompt: "Validiere Lieferantenstammdaten.",
-                                tags: ["vendor", "compliance"],
-                                complexity: "medium"
-                            }
-                        ]
-                    }
-                }
-            },
-            debitor: {
-                name: "Debitorenbuchhalter",
-                description: "Fokus auf Mahnwesen, Zahlungseingänge und Forderungsmanagement",
-                icon: "💰",
-                categories: {
-                    mahnwesen: {
-                        name: "Mahnwesen",
-                        icon: "⚠️",
-                        prompts: [
-                            {
-                                id: "deb_001",
-                                title: "Mahnstufe ermitteln",
-                                prompt: "Analysiere Zahlungshistorie und ermittle Mahnstufe.",
-                                tags: ["dunning", "analysis"],
-                                complexity: "medium"
-                            },
-                            {
-                                id: "deb_002",
-                                title: "Zahlungserinnerung",
-                                prompt: "Erstelle höfliche Zahlungserinnerung.",
-                                tags: ["communication"],
-                                complexity: "low"
-                            }
-                        ]
-                    }
-                }
-            },
-            controller: {
-                name: "Controller",
-                description: "Reporting, Planung, Analyse und Kostenmanagement",
-                icon: "📊",
-                categories: {
-                    reporting: {
-                        name: "Reporting & Analyse",
-                        icon: "📈",
-                        prompts: [
-                            {
-                                id: "ctrl_001",
-                                title: "Monatsabschluss-Analyse",
-                                prompt: "Analysiere Monatsabschluss und erstelle Management Summary.",
-                                tags: ["closing", "analysis"],
-                                complexity: "high"
-                            },
-                            {
-                                id: "ctrl_002",
-                                title: "KPI-Dashboard",
-                                prompt: "Aktualisiere KPIs: EBITDA, Working Capital, ROI.",
-                                tags: ["kpi", "metrics"],
-                                complexity: "medium"
-                            }
-                        ]
-                    },
-                    planung: {
-                        name: "Planung & Forecast",
-                        icon: "🎯",
-                        prompts: [
-                            {
-                                id: "ctrl_010",
-                                title: "Rolling Forecast",
-                                prompt: "Erstelle 12-Monats Rolling Forecast.",
-                                tags: ["forecast", "planning"],
-                                complexity: "high"
-                            }
-                        ]
-                    }
-                }
-            },
-            cfo: {
-                name: "CFO",
-                description: "Strategische Finanzplanung, Risk Management und Investor Relations",
-                icon: "👔",
-                categories: {
-                    strategie: {
-                        name: "Strategische Planung",
-                        icon: "🎯",
-                        prompts: [
-                            {
-                                id: "cfo_001",
-                                title: "Investment Case",
-                                prompt: "Bewerte Investment: NPV, IRR, Payback.",
-                                tags: ["investment", "valuation"],
-                                complexity: "high"
-                            }
-                        ]
-                    }
-                }
-            },
-            treasury: {
-                name: "Treasury Manager",
-                description: "Cash Management, FX-Hedging und Liquiditätsplanung",
-                icon: "🏦",
-                categories: {
-                    cashmanagement: {
-                        name: "Cash Management",
-                        icon: "💵",
-                        prompts: [
-                            {
-                                id: "trs_001",
-                                title: "Cash Flow Forecast",
-                                prompt: "Erstelle 13-Wochen Cash Flow Forecast.",
-                                tags: ["cashflow", "forecast"],
-                                complexity: "high"
-                            }
-                        ]
-                    }
-                }
-            },
-            ma: {
-                name: "M&A Berater",
-                description: "Due Diligence, Valuation und Post-Merger Integration",
-                icon: "🤝",
-                categories: {
-                    duediligence: {
-                        name: "Due Diligence",
-                        icon: "🔍",
-                        prompts: [
-                            {
-                                id: "ma_001",
-                                title: "Financial DD",
-                                prompt: "Führe Financial Due Diligence durch.",
-                                tags: ["dd", "analysis"],
-                                complexity: "high"
-                            }
-                        ]
-                    }
-                }
-            }
-        };
-
-        // Global variables
-        let currentRole = null;
-        let currentPrompt = null;
-        let selectedComplexity = null;
-
-// Initialize on load
-window.addEventListener('DOMContentLoaded', () => {
-    console.log('🎯 Dashboard geladen');
+<!-- Main Container -->
+<div class="main-container">
     
-    // Loading screen
-    setTimeout(() => {
-        document.getElementById('loadingScreen').style.opacity = '0';
-        setTimeout(() => {
-            document.getElementById('loadingScreen').style.display = 'none';
-        }, 500);
-    }, 1000);
-
-    // Check for email data from URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const sessionParam = urlParams.get('session');
-    
-    console.log('📧 Session Parameter gefunden:', sessionParam ? 'JA' : 'NEIN');
-    
-    if (sessionParam) {
-        try {
-            // Decode the session data
-            const sessionData = JSON.parse(atob(sessionParam));
-            console.log('✅ E-Mail-Daten dekodiert:', sessionData);
-            
-            // Show email notification in header
-            if (sessionData.email && sessionData.email.subject) {
-                const headerElement = document.querySelector('.header-content');
-                if (headerElement) {
-                    // Create notification box
-                    const emailBox = document.createElement('div');
-                    emailBox.className = 'email-notification';
-                    emailBox.style.cssText = `
-                        background: linear-gradient(135deg, #3b82f6, #2563eb);
-                        color: white;
-                        padding: 15px 20px;
-                        border-radius: 12px;
-                        margin: 20px 0;
-                        box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
-                        animation: slideDown 0.5s ease;
-                    `;
-                    
-                    emailBox.innerHTML = `
-                        <div style="display: flex; align-items: center; gap: 15px;">
-                            <div style="font-size: 32px;">📧</div>
-                            <div style="flex: 1;">
-                                <div style="font-size: 12px; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px;">
-                                    E-Mail aus Outlook geladen
-                                </div>
-                                <div style="font-size: 18px; font-weight: 600; margin: 5px 0;">
-                                    ${sessionData.email.subject}
-                                </div>
-                                <div style="font-size: 14px; opacity: 0.9;">
-                                    Von: ${sessionData.email.from || 'Unbekannt'} | 
-                                    Agent: <span style="background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 4px;">
-                                        ${sessionData.agent || 'controller'}
-                                    </span>
-                                </div>
-                            </div>
-                            <button onclick="analyzeEmail()" style="
-                                background: white;
-                                color: #3b82f6;
-                                border: none;
-                                padding: 10px 20px;
-                                border-radius: 8px;
-                                font-weight: 600;
-                                cursor: pointer;
-                                transition: all 0.3s;
-                            ">
-                                Analysieren
-                            </button>
+    <!-- Executive View -->
+    <div class="mode-content active" id="executive-view">
+        <!-- Notion Prompts Section (wenn geladen) -->
+        <div id="notion-prompts-section" style="display: none;"></div>
+        
+        <div class="executive-layout">
+            <div class="main-section">
+                <!-- KPI Cards -->
+                <div class="executive-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-label">Umsatz YTD</div>
+                        <div class="kpi-value">€12.4M</div>
+                        <div class="kpi-change positive">
+                            <span>↑</span>
+                            <span>23% vs VJ</span>
                         </div>
-                    `;
+                    </div>
                     
-                    // Insert after header title
-                    headerElement.appendChild(emailBox);
-                }
+                    <div class="kpi-card">
+                        <div class="kpi-label">EBITDA</div>
+                        <div class="kpi-value">€2.3M</div>
+                        <div class="kpi-change positive">
+                            <span>↑</span>
+                            <span>18% vs Plan</span>
+                        </div>
+                    </div>
+                    
+                    <div class="kpi-card">
+                        <div class="kpi-label">Cash Position</div>
+                        <div class="kpi-value">€4.7M</div>
+                        <div class="kpi-change negative">
+                            <span>↓</span>
+                            <span>5% vs Vormonat</span>
+                        </div>
+                    </div>
+                    
+                    <div class="kpi-card">
+                        <div class="kpi-label">Working Capital</div>
+                        <div class="kpi-value">€1.2M</div>
+                        <div class="kpi-change positive">
+                            <span>↑</span>
+                            <span>Optimiert</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Agent Performance -->
+                <div class="workflow-container">
+                    <div class="workflow-header">
+                        <div class="workflow-title">🤖 Agent Performance Today</div>
+                    </div>
+                    
+                    <div class="executive-grid">
+                        <div class="kpi-card">
+                            <div class="kpi-label">Aktive Agenten</div>
+                            <div class="kpi-value">11/11</div>
+                            <div class="kpi-change positive">
+                                <span>●</span>
+                                <span>Alle Online</span>
+                            </div>
+                        </div>
+                        
+                        <div class="kpi-card">
+                            <div class="kpi-label">Tasks Completed</div>
+                            <div class="kpi-value">1,247</div>
+                            <div class="kpi-change positive">
+                                <span>↑</span>
+                                <span>99.7% Success</span>
+                            </div>
+                        </div>
+                        
+                        <div class="kpi-card">
+                            <div class="kpi-label">Zeit gespart</div>
+                            <div class="kpi-value">147h</div>
+                            <div class="kpi-change positive">
+                                <span>⚡</span>
+                                <span>Diese Woche</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="side-section">
+                <!-- Critical Decisions -->
+                <div class="decision-container">
+                    <div class="decision-header">
+                        <span>⚠️</span>
+                        <span>Kritische Entscheidungen</span>
+                    </div>
+                    
+                    <div class="decision-item">
+                        <div class="decision-content">
+                            <div class="decision-title">Investment Freigabe</div>
+                            <div class="decision-desc">€2M für neue Produktionslinie</div>
+                        </div>
+                        <div class="decision-actions">
+                            <button class="btn btn-approve" onclick="handleDecision('approve')">Freigeben</button>
+                            <button class="btn btn-delegate" onclick="handleDecision('delegate')">Delegieren</button>
+                        </div>
+                    </div>
+                    
+                    <div class="decision-item">
+                        <div class="decision-content">
+                            <div class="decision-title">Kreditlinie Erhöhung</div>
+                            <div class="decision-desc">Treasury empfiehlt +€3M</div>
+                        </div>
+                        <div class="decision-actions">
+                            <button class="btn btn-approve" onclick="handleDecision('approve')">Freigeben</button>
+                            <button class="btn btn-delegate" onclick="handleDecision('delegate')">Analyse</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Activity Feed -->
+                <div class="activity-feed">
+                    <div class="activity-header">📈 Live Activity</div>
+                    
+                    <div class="activity-item">
+                        <div class="activity-icon success">✓</div>
+                        <div class="activity-content">
+                            <div class="activity-title">Monatsabschluss Oktober</div>
+                            <div class="activity-desc">Controller Agent: Abgeschlossen</div>
+                            <div class="activity-time">vor 5 Minuten</div>
+                        </div>
+                    </div>
+                    
+                    <div class="activity-item">
+                        <div class="activity-icon warning">!</div>
+                        <div class="activity-content">
+                            <div class="activity-title">Liquiditätswarnung</div>
+                            <div class="activity-desc">Treasury: Engpass in 30 Tagen möglich</div>
+                            <div class="activity-time">vor 12 Minuten</div>
+                        </div>
+                    </div>
+                    
+                    <div class="activity-item">
+                        <div class="activity-icon info">📧</div>
+                        <div class="activity-content">
+                            <div class="activity-title">234 Rechnungen verarbeitet</div>
+                            <div class="activity-desc">Kreditor Agent: Skonto €4,500 realisiert</div>
+                            <div class="activity-time">vor 23 Minuten</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Team View -->
+    <div class="mode-content" id="team-view">
+        <h2 style="color: white; margin-bottom: 30px;">Mein Finance Team - 11 KI-Agenten</h2>
+        
+        <div class="team-grid">
+            <div class="agent-card" onclick="selectAgent('CFO')">
+                <div class="agent-avatar">👔</div>
+                <div class="agent-name">CFO</div>
+                <div><span class="agent-status status-online"></span>Online</div>
+                <div class="agent-tasks">5 Entscheidungen</div>
+            </div>
+            
+            <div class="agent-card" onclick="selectAgent('Controller')">
+                <div class="agent-avatar">📊</div>
+                <div class="agent-name">Controller</div>
+                <div><span class="agent-status status-busy"></span>Working</div>
+                <div class="agent-tasks">23 Reports</div>
+            </div>
+            
+            <div class="agent-card" onclick="selectAgent('Treasury')">
+                <div class="agent-avatar">🏦</div>
+                <div class="agent-name">Treasury</div>
+                <div><span class="agent-status status-online"></span>Online</div>
+                <div class="agent-tasks">Cash Forecast</div>
+            </div>
+            
+            <div class="agent-card" onclick="selectAgent('Bilanzbuchhalter')">
+                <div class="agent-avatar">📚</div>
+                <div class="agent-name">Bilanz</div>
+                <div><span class="agent-status status-online"></span>Online</div>
+                <div class="agent-tasks">Monatsabschluss</div>
+            </div>
+            
+            <div class="agent-card" onclick="selectAgent('Kreditor')">
+                <div class="agent-avatar">💳</div>
+                <div class="agent-name">Kreditor</div>
+                <div><span class="agent-status status-busy"></span>Busy</div>
+                <div class="agent-tasks">47 Rechnungen</div>
+            </div>
+            
+            <div class="agent-card" onclick="selectAgent('Debitor')">
+                <div class="agent-avatar">💰</div>
+                <div class="agent-name">Debitor</div>
+                <div><span class="agent-status status-online"></span>Online</div>
+                <div class="agent-tasks">Mahnlauf</div>
+            </div>
+            
+            <div class="agent-card" onclick="selectAgent('Anlagen')">
+                <div class="agent-avatar">🏭</div>
+                <div class="agent-name">Anlagen</div>
+                <div><span class="agent-status status-offline"></span>Idle</div>
+                <div class="agent-tasks">AfA berechnet</div>
+            </div>
+            
+            <div class="agent-card" onclick="selectAgent('Business Dev')">
+                <div class="agent-avatar">🚀</div>
+                <div class="agent-name">Business Dev</div>
+                <div><span class="agent-status status-online"></span>Online</div>
+                <div class="agent-tasks">M&A Analyse</div>
+            </div>
+            
+            <div class="agent-card" onclick="selectAgent('M&A')">
+                <div class="agent-avatar">🤝</div>
+                <div class="agent-name">M&A Berater</div>
+                <div><span class="agent-status status-busy"></span>Analyzing</div>
+                <div class="agent-tasks">Due Diligence</div>
+            </div>
+            
+            <div class="agent-card" onclick="selectAgent('Anwalt')">
+                <div class="agent-avatar">⚖️</div>
+                <div class="agent-name">Anwalt</div>
+                <div><span class="agent-status status-online"></span>Online</div>
+                <div class="agent-tasks">Vertragsreview</div>
+            </div>
+            
+            <div class="agent-card" onclick="selectAgent('Steuerberater')">
+                <div class="agent-avatar">📋</div>
+                <div class="agent-name">Steuerberater</div>
+                <div><span class="agent-status status-online"></span>Online</div>
+                <div class="agent-tasks">Tax Compliance</div>
+            </div>
+        </div>
+
+        <!-- Team Chat -->
+        <div class="team-chat">
+            <div class="chat-header">💬 Team Communication</div>
+            <div class="chat-messages" id="chat-messages">
+                <div class="chat-message">
+                    <div class="message-author">CFO Agent</div>
+                    <div class="message-content">Team, bitte Monatsabschluss Oktober priorisieren.</div>
+                    <div class="message-time">10:23</div>
+                </div>
                 
-                // Store email data globally
-                window.currentEmailData = sessionData.email;
-                window.currentAgent = sessionData.agent;
+                <div class="chat-message">
+                    <div class="message-author">Controller Agent</div>
+                    <div class="message-content">Verstanden. Koordiniere mit Buchhaltung. ETA: 4 Stunden.</div>
+                    <div class="message-time">10:24</div>
+                </div>
                 
-                // Auto-select the agent
-                if (sessionData.agent) {
-                    setTimeout(() => {
-                        selectRole(sessionData.agent);
-                        console.log('🤖 Agent automatisch ausgewählt:', sessionData.agent);
-                    }, 1500);
-                }
+                <div class="chat-message">
+                    <div class="message-author">Kreditor Agent</div>
+                    <div class="message-content">47 offene Rechnungen. Benötige Freigabe für 3 über €10k.</div>
+                    <div class="message-time">10:25</div>
+                </div>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <input type="text" placeholder="Nachricht an Team..." style="flex: 1; padding: 10px; border: 1px solid var(--light); border-radius: 8px;">
+                <button class="btn btn-delegate">Senden</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Workflow View -->
+    <div class="mode-content" id="workflow-view">
+        <div class="workflow-container">
+            <div class="workflow-header">
+                <div class="workflow-title">⚡ Aktive Workflows</div>
+                <button class="btn btn-delegate" onclick="createWorkflow()">+ Neuer Workflow</button>
+            </div>
+            
+            <div class="workflow-item">
+                <div class="workflow-name">📊 Monatsabschluss Oktober 2024</div>
+                <div class="workflow-progress">
+                    <div class="workflow-progress-bar" style="width: 78%"></div>
+                </div>
+                <div class="workflow-stats">
+                    <span>Step 7/9 - Konsolidierung läuft...</span>
+                    <span>ETA: 45 Minuten</span>
+                </div>
+            </div>
+            
+            <div class="workflow-item">
+                <div class="workflow-name">💳 Rechnungsverarbeitung Batch #4521</div>
+                <div class="workflow-progress">
+                    <div class="workflow-progress-bar" style="width: 100%"></div>
+                </div>
+                <div class="workflow-stats">
+                    <span>✅ Abgeschlossen - 234 Rechnungen verarbeitet</span>
+                    <span>Zeit: 23 Minuten</span>
+                </div>
+            </div>
+            
+            <div class="workflow-item">
+                <div class="workflow-name">🤝 M&A Due Diligence - TechStartup GmbH</div>
+                <div class="workflow-progress">
+                    <div class="workflow-progress-bar" style="width: 45%"></div>
+                </div>
+                <div class="workflow-stats">
+                    <span>Step 4/9 - Financial Analysis</span>
+                    <span>3 Agenten aktiv</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Workflow Templates -->
+        <div class="workflow-container">
+            <div class="workflow-header">
+                <div class="workflow-title">📋 Quick Start Templates</div>
+            </div>
+            
+            <div class="executive-grid">
+                <div class="kpi-card" style="cursor: pointer;" onclick="startTemplate('monthly-close')">
+                    <div class="kpi-label">Standard Process</div>
+                    <div style="font-size: 24px; margin: 10px 0;">📊</div>
+                    <div style="font-weight: bold; color: var(--dark);">Monatsabschluss</div>
+                    <div style="color: var(--gray); font-size: 14px; margin-top: 8px;">9 Steps • 4-6 Stunden • 5 Agenten</div>
+                </div>
+                
+                <div class="kpi-card" style="cursor: pointer;" onclick="startTemplate('invoice-processing')">
+                    <div class="kpi-label">Automation</div>
+                    <div style="font-size: 24px; margin: 10px 0;">💳</div>
+                    <div style="font-weight: bold; color: var(--dark);">Rechnungsverarbeitung</div>
+                    <div style="color: var(--gray); font-size: 14px; margin-top: 8px;">5 Steps • 30 Min • 3 Agenten</div>
+                </div>
+                
+                <div class="kpi-card" style="cursor: pointer;" onclick="startTemplate('ma-evaluation')">
+                    <div class="kpi-label">Complex Analysis</div>
+                    <div style="font-size: 24px; margin: 10px 0;">🤝</div>
+                    <div style="font-weight: bold; color: var(--dark);">M&A Evaluation</div>
+                    <div style="color: var(--gray); font-size: 14px; margin-top: 8px;">12 Steps • 2-3 Tage • 7 Agenten</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Legacy View (Original Prompts) -->
+    <div class="mode-content" id="legacy-view">
+        <!-- Diese Sektion wird von deinen bestehenden Funktionen gefüllt -->
+        <div id="legacy-dashboard-content"></div>
+    </div>
+</div>
+
+<!-- Quick Actions FAB -->
+<div class="quick-actions">
+    <button class="fab" onclick="quickAction()">+</button>
+</div>
+
+<!-- Notion Sync Button -->
+<button onclick="syncWithNotion()" style="
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 30px;
+    font-size: 16px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+">
+    🔄 Notion Sync
+</button>
+
+<script>
+    // Global variables
+    let currentMode = 'executive';
+    let notionPrompts = [];
+
+    // Initialize
+    window.addEventListener('DOMContentLoaded', () => {
+        console.log('🎯 ALBO AI Dashboard geladen');
+        
+        // Hide loading screen
+        setTimeout(() => {
+            document.getElementById('loadingScreen').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('loadingScreen').style.display = 'none';
+            }, 500);
+        }, 1000);
+
+        // Load Notion prompts
+        loadNotionPrompts();
+        
+        // Initialize legacy content if needed
+        initializeLegacyDashboard();
+    });
+
+    // Mode Switching
+    function switchMode(mode) {
+        currentMode = mode;
+        
+        // Update buttons
+        document.querySelectorAll('.mode-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        event.target.closest('.mode-btn').classList.add('active');
+        
+        // Update content
+        document.querySelectorAll('.mode-content').forEach(content => {
+            content.classList.remove('active');
+        });
+        document.getElementById(mode + '-view').classList.add('active');
+        
+        // Animate transition
+        document.getElementById(mode + '-view').style.animation = 'fadeIn 0.5s ease';
+    }
+
+    // Handle Decision
+    function handleDecision(action) {
+        if (action === 'approve') {
+            alert('✅ Entscheidung freigegeben und an relevante Agenten weitergeleitet.');
+        } else {
+            alert('📤 An Controller Agent zur detaillierten Analyse delegiert.');
+        }
+        // Remove the decision item
+        event.target.closest('.decision-item').style.animation = 'fadeOut 0.3s ease';
+        setTimeout(() => {
+            event.target.closest('.decision-item').remove();
+        }, 300);
+    }
+
+    // Select Agent
+    function selectAgent(agentName) {
+        alert(`Agent ${agentName} ausgewählt. Detailansicht würde hier öffnen.`);
+    }
+
+    // Create Workflow
+    function createWorkflow() {
+        const workflowName = prompt('Name des neuen Workflows:');
+        if (workflowName) {
+            alert(`Workflow "${workflowName}" wird erstellt. Workflow-Builder würde hier öffnen.`);
+        }
+    }
+
+    // Start Template
+    function startTemplate(template) {
+        const templates = {
+            'monthly-close': 'Monatsabschluss Workflow',
+            'invoice-processing': 'Rechnungsverarbeitung Workflow',
+            'ma-evaluation': 'M&A Evaluation Workflow'
+        };
+        alert(`Template "${templates[template]}" wird gestartet. Agenten werden aktiviert...`);
+    }
+
+    // Quick Action
+    function quickAction() {
+        const action = prompt('Quick Action:\n1. Neue Rechnung\n2. Report erstellen\n3. Agent Chat\n\nWählen Sie (1-3):');
+        if (action) {
+            alert(`Quick Action ${action} wird ausgeführt...`);
+        }
+    }
+
+    // Notion Integration
+    async function loadNotionPrompts() {
+        try {
+            const response = await fetch('https://albo-saa-s-backend.vercel.app/api/notion-bundled');
+            const data = await response.json();
+            
+            if (data.success && data.prompts.length > 0) {
+                console.log('✅ Notion Prompts geladen:', data.prompts);
+                notionPrompts = data.prompts;
+                displayNotionPrompts(data.prompts);
             }
         } catch (error) {
-            console.error('❌ Fehler beim Dekodieren:', error);
+            console.error('Error loading Notion prompts:', error);
         }
-    } else {
-        console.log('ℹ️ Keine E-Mail-Daten übergeben - normaler Dashboard-Modus');
     }
 
-    // Initialize dashboard
-    renderRoleTabs();
-    updateStats();
-});
-
-// Verbesserte E-Mail-Analyse Funktion
-function analyzeEmail() {
-    if (!window.currentEmailData) {
-        alert('Keine E-Mail-Daten vorhanden');
-        return;
-    }
-    
-    console.log('📧 Analysiere E-Mail:', window.currentEmailData);
-    
-    // Erstelle ein großes Modal für die E-Mail-Anzeige
-    const modal = document.createElement('div');
-    modal.id = 'emailAnalysisModal';
-    modal.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0,0,0,0.7);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 10000;
-        animation: fadeIn 0.3s ease;
-    `;
-    
-    modal.innerHTML = `
-        <div style="
-            background: white;
-            border-radius: 20px;
-            width: 90%;
-            max-width: 1200px;
-            height: 85vh;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            animation: slideUp 0.3s ease;
-        ">
-            <!-- Header -->
-            <div style="
-                background: linear-gradient(135deg, #0078d4, #106ebe);
-                color: white;
-                padding: 25px 30px;
-                border-radius: 20px 20px 0 0;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-            ">
-                <div>
-                    <h2 style="margin: 0 0 8px 0; font-size: 24px; display: flex; align-items: center; gap: 12px;">
-                        📧 E-Mail Analyse & Verarbeitung
-                    </h2>
-                    <div style="opacity: 0.9; font-size: 14px;">
-                        Agent: <span style="background: rgba(255,255,255,0.2); padding: 3px 10px; border-radius: 5px; margin-left: 5px;">
-                            ${window.currentAgent || 'Controller'}
-                        </span>
-                    </div>
+    function displayNotionPrompts(prompts) {
+        const container = document.getElementById('notion-prompts-section');
+        if (!container) return;
+        
+        container.style.display = 'block';
+        container.innerHTML = `
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+                <h2 style="margin: 0; display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 32px;">📚</span>
+                    <span>Meine Notion Prompts (${prompts.length})</span>
+                </h2>
+                <div style="background: rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 8px;">
+                    ✅ Live synchronisiert
                 </div>
-                <button onclick="document.getElementById('emailAnalysisModal').remove()" style="
-                    background: rgba(255,255,255,0.2);
-                    border: none;
-                    color: white;
-                    width: 40px;
-                    height: 40px;
-                    border-radius: 50%;
-                    font-size: 24px;
-                    cursor: pointer;
-                    transition: all 0.3s;
-                ">×</button>
             </div>
             
-            <!-- Body -->
-            <div style="
-                flex: 1;
-                display: flex;
-                gap: 20px;
-                padding: 20px;
-                overflow: hidden;
-            ">
-                <!-- Linke Seite: E-Mail-Details -->
-                <div style="
-                    flex: 1;
-                    display: flex;
-                    flex-direction: column;
-                    gap: 15px;
-                    overflow-y: auto;
-                    padding-right: 10px;
-                ">
-                    <!-- E-Mail Metadaten -->
-                    <div style="
-                        background: #f8f9fa;
-                        padding: 15px;
-                        border-radius: 12px;
-                        border-left: 4px solid #0078d4;
-                    ">
-                        <h4 style="margin: 0 0 12px 0; color: #0078d4;">📋 E-Mail Details</h4>
-                        <div style="display: grid; gap: 8px; font-size: 14px;">
-                            <div><strong>Betreff:</strong> ${window.currentEmailData.subject || 'Kein Betreff'}</div>
-                            <div><strong>Von:</strong> ${window.currentEmailData.from || 'Unbekannt'}</div>
-                            <div><strong>An:</strong> ${window.currentEmailData.to || 'Nicht angegeben'}</div>
-                            <div><strong>Datum:</strong> ${new Date().toLocaleString('de-DE')}</div>
-                        </div>
-                    </div>
-                    
-                    <!-- E-Mail Body -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
+                ${prompts.map(prompt => `
                     <div style="
                         background: white;
-                        border: 1px solid #e1e1e1;
+                        color: #333;
                         padding: 20px;
                         border-radius: 12px;
-                        flex: 1;
-                        overflow-y: auto;
-                    ">
-                        <h4 style="margin: 0 0 15px 0; color: #323130;">📝 E-Mail Inhalt</h4>
-                        <div style="
-                            white-space: pre-wrap;
-                            line-height: 1.6;
-                            color: #323130;
-                            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-                        ">${window.currentEmailData.body || 'Kein Inhalt vorhanden'}</div>
-                    </div>
-                </div>
-                
-                <!-- Rechte Seite: KI-Analyse & Aktionen -->
-                <div style="
-                    flex: 1;
-                    display: flex;
-                    flex-direction: column;
-                    gap: 15px;
-                    overflow-y: auto;
-                ">
-                    <!-- KI-Analyse Bereich -->
-                    <div id="aiAnalysisSection" style="
-                        background: linear-gradient(135deg, rgba(0,120,212,0.05), rgba(139,92,246,0.05));
-                        padding: 20px;
-                        border-radius: 12px;
-                        border: 1px solid rgba(0,120,212,0.2);
-                    ">
-                        <h4 style="margin: 0 0 15px 0; color: #0078d4; display: flex; align-items: center; gap: 8px;">
-                            🤖 KI-Analyse
-                        </h4>
-                        <div id="aiAnalysisContent">
-                            <div style="text-align: center; padding: 20px;">
-                                <button onclick="performFullEmailAnalysis()" style="
-                                    background: linear-gradient(135deg, #0078d4, #106ebe);
-                                    color: white;
-                                    border: none;
-                                    padding: 12px 30px;
-                                    border-radius: 8px;
-                                    font-size: 16px;
-                                    font-weight: 600;
-                                    cursor: pointer;
-                                    transition: all 0.3s;
-                                ">
-                                    🚀 Jetzt mit KI analysieren
-                                </button>
-                            </div>
+                        cursor: pointer;
+                        transition: transform 0.3s;
+                    " onmouseover="this.style.transform='translateY(-5px)'" 
+                       onmouseout="this.style.transform='translateY(0)'"
+                       onclick="executeNotionPrompt('${prompt.id}')">
+                        
+                        <h3 style="margin: 0 0 10px 0; color: #667eea;">
+                            ${prompt.title || 'Unbenannt'}
+                        </h3>
+                        
+                        <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                            <span style="
+                                background: #e3f2fd;
+                                color: #1976d2;
+                                padding: 4px 8px;
+                                border-radius: 4px;
+                                font-size: 12px;
+                            ">${prompt.category || 'Allgemein'}</span>
+                            
+                            <span style="
+                                background: #fce4ec;
+                                color: #c2185b;
+                                padding: 4px 8px;
+                                border-radius: 4px;
+                                font-size: 12px;
+                            ">${prompt.role || 'Controller'}</span>
                         </div>
-                    </div>
-                    
-                    <!-- Verfügbare Prompts -->
-                    <div style="
-                        background: #f8f9fa;
-                        padding: 20px;
-                        border-radius: 12px;
-                        flex: 1;
-                    ">
-                        <h4 style="margin: 0 0 15px 0; color: #323130;">💡 Empfohlene Aktionen</h4>
-                        <div id="recommendedPrompts" style="display: flex; flex-direction: column; gap: 10px;">
-                            <!-- Prompts werden hier eingefügt -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    document.body.appendChild(modal);
-    
-    // Lade empfohlene Prompts basierend auf E-Mail-Kontext
-    loadRecommendedPrompts();
-}
-
-// Neue Funktion: Vollständige E-Mail-Analyse mit KI
-async function performFullEmailAnalysis() {
-    const contentDiv = document.getElementById('aiAnalysisContent');
-    
-    contentDiv.innerHTML = `
-        <div style="text-align: center; padding: 20px;">
-            <div class="loading-spinner" style="width: 40px; height: 40px; margin: 0 auto;"></div>
-            <p style="margin-top: 15px; color: #0078d4; font-weight: 600;">
-                🤖 Verbinde mit OpenAI GPT-4...
-            </p>
-            <p style="font-size: 13px; color: #64748b; margin-top: 8px;">
-                Analysiere E-Mail mit künstlicher Intelligenz
-            </p>
-        </div>
-    `;
-    
-    try {
-        // API-Aufruf zur E-Mail-Analyse
-        const response = await fetch('https://albo-saa-s-backend.vercel.app/api/analyze-api', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                emailContent: {
-                    subject: window.currentEmailData.subject || '',
-                    from: window.currentEmailData.from || '',
-                    to: window.currentEmailData.to || '',
-                    body: window.currentEmailData.body || ''
-                },
-                agent: window.currentAgent || 'controller'
-            })
-        });
-        
-        if (!response.ok) {
-            throw new Error(`API Error: ${response.status}`);
-        }
-        
-        const result = await response.json();
-        console.log('✅ KI-Analyse erhalten:', result);
-        
-        // Zeige die Analyse-Ergebnisse
-        displayEmailAnalysisResults(result);
-        
-    } catch (error) {
-        console.error('❌ Analyse-Fehler:', error);
-        contentDiv.innerHTML = `
-            <div style="background: #ffebee; padding: 15px; border-radius: 8px;">
-                <p style="color: #c62828; font-weight: 600;">❌ Fehler bei der Analyse</p>
-                <p style="color: #424242; margin-top: 8px;">${error.message}</p>
-            </div>
-        `;
-    }
-}
-
-// Neue Funktion: Zeige Analyse-Ergebnisse
-function displayEmailAnalysisResults(result) {
-    const contentDiv = document.getElementById('aiAnalysisContent');
-    const analysis = result.analysis;
-    
-    let detailsHtml = '';
-    if (analysis.extractedDetails) {
-        const details = analysis.extractedDetails;
-        if (details.invoiceNumber) detailsHtml += `<li><strong>Rechnungsnr:</strong> ${details.invoiceNumber}</li>`;
-        if (details.amount) detailsHtml += `<li><strong>Betrag:</strong> <span style="background: #fff4ce; padding: 2px 6px; border-radius: 3px; font-weight: 600;">${details.amount}</span></li>`;
-        if (details.status) detailsHtml += `<li><strong>Status:</strong> ${details.status}</li>`;
-    }
-    
-    contentDiv.innerHTML = `
-        <div style="background: white; padding: 15px; border-radius: 8px;">
-            <div style="margin-bottom: 15px;">
-                <h5 style="color: #0078d4; margin: 0 0 8px 0;">📊 Zusammenfassung</h5>
-                <p style="line-height: 1.6;">${analysis.summary}</p>
-            </div>
-            
-            ${detailsHtml ? `
-            <div style="margin-bottom: 15px;">
-                <h5 style="color: #0078d4; margin: 0 0 8px 0;">📋 Erkannte Details</h5>
-                <ul style="margin: 0; padding-left: 20px;">
-                    ${detailsHtml}
-                </ul>
-            </div>
-            ` : ''}
-            
-            ${analysis.actionItems && analysis.actionItems.length > 0 ? `
-            <div style="margin-bottom: 15px;">
-                <h5 style="color: #0078d4; margin: 0 0 8px 0;">✅ Empfohlene Aktionen</h5>
-                <ol style="margin: 0; padding-left: 20px;">
-                    ${analysis.actionItems.map(item => `<li>${item}</li>`).join('')}
-                </ol>
-            </div>
-            ` : ''}
-            
-            <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e1e1e1;">
-                <div style="display: flex; gap: 10px; align-items: center;">
-                    <span style="background: #e3f2fd; padding: 4px 10px; border-radius: 6px; font-size: 12px;">
-                        ⚡ ${result.metadata?.model || 'GPT-4'}
-                    </span>
-                    <span style="background: #f3e5f5; padding: 4px 10px; border-radius: 6px; font-size: 12px;">
-                        📊 ${result.metadata?.tokensUsed || 0} Tokens
-                    </span>
-                    <span style="background: ${analysis.priority === 'Hoch' ? '#ffebee' : '#e8f5e9'}; padding: 4px 10px; border-radius: 6px; font-size: 12px;">
-                        🎯 Priorität: ${analysis.priority || 'Normal'}
-                    </span>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    // Update empfohlene Prompts basierend auf Analyse
-    updateRecommendedPrompts(result);
-}
-
-// Neue Funktion: Lade empfohlene Prompts
-function loadRecommendedPrompts() {
-    const promptsDiv = document.getElementById('recommendedPrompts');
-    const emailText = (window.currentEmailData.subject + ' ' + window.currentEmailData.body).toLowerCase();
-    
-    // Intelligente Prompt-Empfehlungen basierend auf E-Mail-Inhalt
-    const prompts = [];
-    
-    if (emailText.includes('rechnung') || emailText.includes('invoice')) {
-        prompts.push({
-            title: '🧾 Rechnung prüfen',
-            prompt: 'Prüfe diese Rechnung auf Vollständigkeit und Richtigkeit gemäß §14 UStG.',
-            action: 'executePromptWithEmail'
-        });
-        prompts.push({
-            title: '💰 Zahlungsstatus prüfen',
-            prompt: 'Prüfe ob diese Rechnung bereits bezahlt wurde und erstelle eine Statusübersicht.',
-            action: 'executePromptWithEmail'
-        });
-    }
-    
-    if (emailText.includes('mahnung') || emailText.includes('überfällig')) {
-        prompts.push({
-            title: '⚠️ Mahnung bearbeiten',
-            prompt: 'Analysiere diese Mahnung und erstelle einen Aktionsplan zur Klärung.',
-            action: 'executePromptWithEmail'
-        });
-        prompts.push({
-            title: '📧 Antwort formulieren',
-            prompt: 'Erstelle eine professionelle Antwort auf diese Zahlungserinnerung.',
-            action: 'executePromptWithEmail'
-        });
-    }
-    
-    // Standard-Prompts
-    prompts.push({
-        title: '📊 Detailanalyse',
-        prompt: 'Führe eine detaillierte Finanzanalyse dieser E-Mail durch.',
-        action: 'executePromptWithEmail'
-    });
-    
-    promptsDiv.innerHTML = prompts.map(prompt => `
-        <button onclick="${prompt.action}('${prompt.prompt}')" style="
-            background: white;
-            border: 1px solid #e1e1e1;
-            padding: 12px 15px;
-            border-radius: 8px;
-            text-align: left;
-            cursor: pointer;
-            transition: all 0.3s;
-        " onmouseover="this.style.background='#f0f9ff'; this.style.borderColor='#0078d4';" 
-           onmouseout="this.style.background='white'; this.style.borderColor='#e1e1e1';">
-            <div style="font-weight: 600; color: #323130; margin-bottom: 4px;">${prompt.title}</div>
-            <div style="font-size: 13px; color: #64748b;">${prompt.prompt}</div>
-        </button>
-    `).join('');
-}
-
-// Neue Funktion: Update Prompts nach Analyse
-function updateRecommendedPrompts(analysisResult) {
-    const promptsDiv = document.getElementById('recommendedPrompts');
-    const analysis = analysisResult.analysis;
-    
-    // Füge spezifische Prompts basierend auf der Analyse hinzu
-    if (analysisResult.recommendations?.suggestedPrompts) {
-        const additionalPrompts = analysisResult.recommendations.suggestedPrompts.map(prompt => `
-            <button onclick="executePromptWithEmail('${prompt}')" style="
-                background: linear-gradient(135deg, rgba(16,185,129,0.1), rgba(5,150,105,0.1));
-                border: 1px solid #10b981;
-                padding: 12px 15px;
-                border-radius: 8px;
-                text-align: left;
-                cursor: pointer;
-                transition: all 0.3s;
-            ">
-                <div style="font-weight: 600; color: #065f46; margin-bottom: 4px;">
-                    ✨ KI-Empfehlung
-                </div>
-                <div style="font-size: 13px; color: #047857;">${prompt}</div>
-            </button>
-        `).join('');
-        
-        promptsDiv.innerHTML = additionalPrompts + promptsDiv.innerHTML;
-    }
-}
-
-// Neue Funktion: Führe Prompt mit E-Mail-Kontext aus
-async function executePromptWithEmail(promptText) {
-    // Schließe das E-Mail-Modal
-    document.getElementById('emailAnalysisModal')?.remove();
-    
-    // Öffne das Execute-Modal mit dem Prompt und E-Mail-Kontext
-    currentPrompt = {
-        title: 'E-Mail-basierter Prompt',
-        prompt: promptText
-    };
-    
-    document.getElementById('modalTitle').textContent = 'E-Mail-Verarbeitung';
-    document.getElementById('modalPrompt').textContent = promptText;
-    
-    // Füge E-Mail-Kontext automatisch ein
-    const contextInput = document.getElementById('contextInput');
-    contextInput.value = `E-Mail von: ${window.currentEmailData.from}
-Betreff: ${window.currentEmailData.subject}
-
-Inhalt:
-${window.currentEmailData.body}`;
-    
-    document.getElementById('aiResponse').classList.remove('active');
-    document.getElementById('executeModal').classList.add('active');
-    
-    // Führe automatisch mit KI aus
-    setTimeout(() => {
-        executeWithAI();
-    }, 500);
-}
-
-        // Render role tabs
-        function renderRoleTabs() {
-            const container = document.getElementById('roleTabs');
-            
-            Object.entries(FINANCE_PROMPTS).forEach(([key, role]) => {
-                const tab = document.createElement('div');
-                tab.className = 'role-tab';
-                tab.onclick = () => selectRole(key);
-                tab.innerHTML = `
-                    <span>${role.icon}</span>
-                    <span>${role.name}</span>
-                `;
-                container.appendChild(tab);
-            });
-        }
-
-        // Select role
-        function selectRole(roleKey) {
-            currentRole = roleKey;
-            
-            // Update tabs
-            document.querySelectorAll('.role-tab').forEach((tab, index) => {
-                tab.classList.toggle('active', Object.keys(FINANCE_PROMPTS)[index] === roleKey);
-            });
-            
-            // Update description
-            const role = FINANCE_PROMPTS[roleKey];
-            document.getElementById('roleDescription').innerHTML = `
-                <strong>${role.icon} ${role.name}</strong><br>
-                ${role.description}
-            `;
-            
-            // Render categories
-            renderCategories(roleKey);
-        }
-
-        // Render categories
-        function renderCategories(roleKey) {
-            const container = document.getElementById('categoriesGrid');
-            container.innerHTML = '';
-            
-            const role = FINANCE_PROMPTS[roleKey];
-            
-            Object.entries(role.categories).forEach(([catKey, category]) => {
-                const card = document.createElement('div');
-                card.className = 'category-card';
-                card.onclick = (e) => {
-                    if (!e.target.classList.contains('execute-btn')) {
-                        card.classList.toggle('expanded');
-                    }
-                };
-                
-                const promptsHtml = category.prompts.map(prompt => `
-                    <div class="prompt-item">
-                        <div class="prompt-title">
-                            ${prompt.title}
-                            <span class="complexity-badge complexity-${prompt.complexity}">
-                                ${prompt.complexity === 'low' ? 'Einfach' : 
-                                  prompt.complexity === 'medium' ? 'Mittel' : 'Komplex'}
-                            </span>
-                        </div>
-                        <div class="prompt-description">${prompt.prompt}</div>
-                        <div class="prompt-tags">
-                            ${prompt.tags.map(tag => `<span class="tag">#${tag}</span>`).join('')}
-                        </div>
-                        <button class="execute-btn" onclick="openExecuteModal('${prompt.id}', '${roleKey}')">
+                        
+                        <p style="
+                            color: #666;
+                            font-size: 14px;
+                            line-height: 1.4;
+                            margin-bottom: 15px;
+                        ">
+                            ${prompt.promptText ? prompt.promptText.substring(0, 150) + '...' : 'Kein Text'}
+                        </p>
+                        
+                        <button style="
+                            background: linear-gradient(135deg, #667eea, #764ba2);
+                            color: white;
+                            border: none;
+                            padding: 8px 16px;
+                            border-radius: 6px;
+                            cursor: pointer;
+                            font-weight: 600;
+                            width: 100%;
+                        ">
                             🚀 Ausführen
                         </button>
                     </div>
-                `).join('');
-                
-                card.innerHTML = `
-                    <div class="category-header">
-                        <div class="category-title">
-                            <span class="category-icon">${category.icon}</span>
-                            <span>${category.name}</span>
-                        </div>
-                        <span class="category-count">${category.prompts.length}</span>
-                    </div>
-                    <div class="prompt-list">
-                        ${promptsHtml}
-                    </div>
-                `;
-                
-                container.appendChild(card);
-            });
-        }
-
-        // Open execute modal
-        function openExecuteModal(promptId, roleKey) {
-            const role = FINANCE_PROMPTS[roleKey];
-            let foundPrompt = null;
-            
-            Object.values(role.categories).forEach(category => {
-                const prompt = category.prompts.find(p => p.id === promptId);
-                if (prompt) foundPrompt = prompt;
-            });
-            
-            if (foundPrompt) {
-                currentPrompt = foundPrompt;
-                document.getElementById('modalTitle').textContent = foundPrompt.title;
-                document.getElementById('modalPrompt').textContent = foundPrompt.prompt;
-                document.getElementById('contextInput').value = '';
-                document.getElementById('aiResponse').classList.remove('active');
-                document.getElementById('executeModal').classList.add('active');
-            }
-        }
-
-        // Close modal
-        function closeModal() {
-            document.getElementById('executeModal').classList.remove('active');
-            currentPrompt = null;
-        }
-
-        // Finde diese Funktion in deinem dashboard.html und ersetze sie komplett:
-// Die Funktion heißt "executeWithAI" (etwa Zeile 1050)
-
-// Execute with AI - ECHTE OPENAI INTEGRATION
-async function executeWithAI() {
-    const context = document.getElementById('contextInput').value;
-    const responseDiv = document.getElementById('aiResponse');
-    const responseContent = document.getElementById('responseContent');
-    
-    // Show loading state
-    responseDiv.classList.add('active');
-    responseContent.innerHTML = `
-        <div style="text-align: center; padding: 20px;">
-            <div class="loading-spinner" style="width: 40px; height: 40px; margin: 0 auto;"></div>
-            <p style="margin-top: 15px; color: #0078d4; font-weight: 600;">
-                🤖 Verbinde mit OpenAI GPT-4...
-            </p>
-            <p style="font-size: 13px; color: #64748b; margin-top: 8px;">
-                Analysiere Ihren Finance-Prompt mit künstlicher Intelligenz
-            </p>
-        </div>
-    `;
-    
-    try {
-        // Prepare the request
-        const requestData = {
-            prompt: currentPrompt.prompt,
-            context: context,
-            agent: currentRole || 'controller',
-            temperature: 0.3,
-            maxTokens: 1500
-        };
-        
-        // Add email context if available
-        if (window.currentEmailData) {
-            requestData.emailData = window.currentEmailData;
-            console.log('📧 Füge E-Mail-Kontext hinzu:', window.currentEmailData.subject);
-        }
-        
-        console.log('🚀 Sende an OpenAI API:', requestData);
-        
-        // Call the execute-prompt API endpoint
-        const response = await fetch('https://albo-saa-s-backend.vercel.app/api/execute-prompt', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(requestData)
-        });
-        
-        console.log('📡 API Response Status:', response.status);
-        
-        if (!response.ok) {
-            throw new Error(`API Error: ${response.status}`);
-        }
-        
-        const result = await response.json();
-        console.log('✅ KI-Antwort erhalten:', result);
-        
-        // Check if we got real AI response or mock
-        if (result.success && result.result) {
-            // Display the AI response with nice formatting
-            displayAIResponse(result);
-        } else if (result.source === 'mock') {
-            // Mock mode - no API key
-            responseContent.innerHTML = `
-                <div style="background: #fff4e5; padding: 15px; border-radius: 8px; border-left: 4px solid #ff9800;">
-                    <h4 style="color: #e65100; margin: 0 0 10px 0;">⚠️ Mock-Modus aktiv</h4>
-                    <p style="color: #424242;">${result.result || 'OpenAI API Key nicht konfiguriert'}</p>
-                    <p style="font-size: 13px; color: #757575; margin-top: 10px;">
-                        Für echte KI-Analysen muss der OpenAI API Key in Vercel konfiguriert werden.
-                    </p>
-                </div>
-            `;
-        } else {
-            throw new Error(result.error || 'Unbekannter Fehler');
-        }
-        
-    } catch (error) {
-        console.error('❌ KI-Ausführung fehlgeschlagen:', error);
-        
-        // Show error message
-        responseContent.innerHTML = `
-            <div style="background: #ffebee; padding: 15px; border-radius: 8px; border-left: 4px solid #f44336;">
-                <h4 style="color: #c62828; margin: 0 0 10px 0;">❌ Fehler bei der KI-Analyse</h4>
-                <p style="color: #424242;">${error.message}</p>
-                <p style="font-size: 13px; color: #757575; margin-top: 10px;">
-                    Bitte versuchen Sie es erneut oder prüfen Sie die Browser-Konsole für Details.
-                </p>
-            </div>
-        `;
-    }
-}
-
-// Neue Funktion: Display formatted AI response
-function displayAIResponse(result) {
-    const responseContent = document.getElementById('responseContent');
-    
-    // Format the response nicely
-    let formattedResponse = result.result;
-    
-    // Convert markdown-style formatting to HTML
-    formattedResponse = formattedResponse
-        .replace(/^### (.+)$/gm, '<h4 style="color: #0078d4; margin: 15px 0 10px 0;">$1</h4>')
-        .replace(/^## (.+)$/gm, '<h3 style="color: #0078d4; margin: 15px 0 10px 0;">$1</h3>')
-        .replace(/^# (.+)$/gm, '<h2 style="color: #0078d4; margin: 15px 0 10px 0;">$1</h2>')
-        .replace(/^\* (.+)$/gm, '<li>$1</li>')
-        .replace(/^- (.+)$/gm, '<li>$1</li>')
-        .replace(/^\d+\. (.+)$/gm, '<li>$1</li>');
-    
-    // Wrap lists in <ul> tags
-    formattedResponse = formattedResponse.replace(/(<li>.*<\/li>\s*)+/g, function(match) {
-        return '<ul style="margin: 10px 0 10px 20px;">' + match + '</ul>';
-    });
-    
-    // Convert line breaks to paragraphs
-    formattedResponse = formattedResponse
-        .split('\n\n')
-        .map(para => para.trim())
-        .filter(para => para)
-        .map(para => `<p style="margin-bottom: 10px; line-height: 1.6;">${para}</p>`)
-        .join('');
-    
-    // Highlight numbers and amounts
-    formattedResponse = formattedResponse.replace(
-        /(\d{1,3}(?:\.\d{3})*(?:,\d{2})?\s*(?:€|EUR|%|Tsd\.|Mio\.|Mrd\.))/g,
-        '<span style="background: #fff4ce; padding: 2px 6px; border-radius: 3px; font-weight: 600; color: #b7791f;">$1</span>'
-    );
-    
-    // Build the complete response HTML
-    responseContent.innerHTML = `
-        <div style="background: linear-gradient(135deg, #f0f9ff, #e0f2fe); padding: 20px; border-radius: 10px; border-left: 4px solid #0078d4;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <h4 style="margin: 0; color: #0078d4; display: flex; align-items: center; gap: 8px;">
-                    <span>🤖</span>
-                    <span>KI-Analyse Ergebnis</span>
-                </h4>
-                <div style="display: flex; gap: 10px;">
-                    <span style="background: rgba(0,120,212,0.1); padding: 4px 10px; border-radius: 6px; font-size: 12px; color: #0078d4;">
-                        📊 ${result.metadata?.tokensUsed || 0} Tokens
-                    </span>
-                    <span style="background: rgba(139,92,246,0.1); padding: 4px 10px; border-radius: 6px; font-size: 12px; color: #8b5cf6;">
-                        ⚡ ${result.metadata?.model || 'GPT-4'}
-                    </span>
-                    <span style="background: rgba(16,185,129,0.1); padding: 4px 10px; border-radius: 6px; font-size: 12px; color: #10b981;">
-                        👤 ${result.metadata?.agent || 'Agent'}
-                    </span>
-                </div>
-            </div>
-            
-            <div style="background: white; padding: 15px; border-radius: 8px; max-height: 400px; overflow-y: auto;">
-                ${formattedResponse}
-            </div>
-            
-            <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(0,120,212,0.2); display: flex; gap: 10px;">
-                <button onclick="copyAIResponse()" style="
-                    padding: 8px 16px;
-                    background: white;
-                    border: 1px solid #d1d5db;
-                    border-radius: 6px;
-                    cursor: pointer;
-                    font-size: 14px;
-                    transition: all 0.2s;
-                    display: flex;
-                    align-items: center;
-                    gap: 6px;
-                ">
-                    📋 Kopieren
-                </button>
-                <button onclick="downloadAIResponse()" style="
-                    padding: 8px 16px;
-                    background: white;
-                    border: 1px solid #d1d5db;
-                    border-radius: 6px;
-                    cursor: pointer;
-                    font-size: 14px;
-                    transition: all 0.2s;
-                    display: flex;
-                    align-items: center;
-                    gap: 6px;
-                ">
-                    💾 Speichern
-                </button>
-                ${window.currentEmailData ? `
-                <button onclick="useAsEmailReply()" style="
-                    padding: 8px 16px;
-                    background: #0078d4;
-                    color: white;
-                    border: none;
-                    border-radius: 6px;
-                    cursor: pointer;
-                    font-size: 14px;
-                    transition: all 0.2s;
-                    display: flex;
-                    align-items: center;
-                    gap: 6px;
-                ">
-                    ✉️ Als E-Mail-Antwort
-                </button>
-                ` : ''}
-            </div>
-        </div>
-    `;
-    
-    // Store the response for copy/download functions
-    window.lastAIResponse = result.result;
-}
-
-// Helper function: Copy AI response to clipboard
-function copyAIResponse() {
-    if (window.lastAIResponse) {
-        navigator.clipboard.writeText(window.lastAIResponse).then(() => {
-            showNotification('✅ In Zwischenablage kopiert!', 'success');
-        }).catch(err => {
-            console.error('Kopieren fehlgeschlagen:', err);
-            showNotification('❌ Kopieren fehlgeschlagen', 'error');
-        });
-    }
-}
-
-// Helper function: Download AI response as file
-function downloadAIResponse() {
-    if (window.lastAIResponse) {
-        const timestamp = new Date().toISOString().split('T')[0];
-        const filename = `ALBO_KI_Analyse_${currentRole}_${timestamp}.txt`;
-        
-        const blob = new Blob([window.lastAIResponse], { type: 'text/plain;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        
-        showNotification('✅ Datei wird heruntergeladen!', 'success');
-    }
-}
-
-// Helper function: Use as email reply
-function useAsEmailReply() {
-    if (window.lastAIResponse && window.currentEmailData) {
-        const emailReply = `
-Betreff: RE: ${window.currentEmailData.subject}
-
-${window.lastAIResponse}
-
----
-Erstellt mit ALBO Finance AI Agent
-        `;
-        
-        navigator.clipboard.writeText(emailReply).then(() => {
-            showNotification('✅ E-Mail-Antwort in Zwischenablage kopiert!', 'success');
-        });
-    }
-}
-
-// Helper function: Show notification
-function showNotification(message, type = 'success') {
-    // Remove existing notifications
-    const existing = document.querySelector('.notification-toast');
-    if (existing) existing.remove();
-    
-    const notification = document.createElement('div');
-    notification.className = 'notification-toast';
-    notification.style.cssText = `
-        position: fixed;
-        bottom: 30px;
-        right: 30px;
-        padding: 15px 20px;
-        background: ${type === 'success' ? '#10b981' : '#ef4444'};
-        color: white;
-        border-radius: 10px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-        z-index: 10000;
-        font-weight: 500;
-        animation: slideInRight 0.3s ease;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    `;
-    notification.innerHTML = message;
-    
-    document.body.appendChild(notification);
-    
-    // Auto-remove after 3 seconds
-    setTimeout(() => {
-        notification.style.animation = 'slideOutRight 0.3s ease';
-        setTimeout(() => {
-            notification.remove();
-        }, 300);
-    }, 3000);
-}
-
-// Add these animations to your CSS (in the <style> section)
-const additionalAnimations = `
-@keyframes slideInRight {
-    from {
-        transform: translateX(100%);
-        opacity: 0;
-    }
-    to {
-        transform: translateX(0);
-        opacity: 1;
-    }
-}
-
-@keyframes slideOutRight {
-    from {
-        transform: translateX(0);
-        opacity: 1;
-    }
-    to {
-        transform: translateX(100%);
-        opacity: 0;
-    }
-}
-`;
-
-// Also update the executeWithoutAI function for consistency
-function executeWithoutAI() {
-    const context = document.getElementById('contextInput').value;
-    const responseDiv = document.getElementById('aiResponse');
-    const responseContent = document.getElementById('responseContent');
-    
-    responseDiv.classList.add('active');
-    responseContent.innerHTML = `
-        <div style="background: #e3f2fd; padding: 20px; border-radius: 10px; border-left: 4px solid #2196f3;">
-            <h4 style="margin: 0 0 10px 0; color: #0d47a1;">📋 Template-Modus (ohne KI)</h4>
-            <div style="background: white; padding: 15px; border-radius: 8px; margin-top: 10px;">
-                <p><strong>Prompt:</strong></p>
-                <p style="background: #f5f5f5; padding: 12px; border-radius: 6px; margin: 10px 0;">
-                    ${currentPrompt.prompt}
-                </p>
-                ${context ? `
-                <p><strong>Ihr Kontext:</strong></p>
-                <p style="background: #f5f5f5; padding: 12px; border-radius: 6px; margin: 10px 0;">
-                    ${context}
-                </p>
-                ` : ''}
-                <p style="color: #64748b; font-style: italic; margin-top: 15px;">
-                    💡 Tipp: Aktivieren Sie "Mit KI ausführen" für eine intelligente Analyse Ihrer Finance-Daten.
-                </p>
-            </div>
-        </div>
-    `;
-}
-
-        // Execute without AI
-        function executeWithoutAI() {
-            const responseDiv = document.getElementById('aiResponse');
-            const responseContent = document.getElementById('responseContent');
-            
-            responseDiv.classList.add('active');
-            responseContent.innerHTML = `
-                <strong>Template-Antwort:</strong><br><br>
-                ${currentPrompt.prompt}<br><br>
-                <em>Nutzen Sie diesen Prompt mit Ihren spezifischen Daten für beste Ergebnisse.</em>
-            `;
-        }
-
-        // Neue Funktion: Display formatted AI response
-function displayAIResponse(result) {
-    // ... der Code aus dem Artifact
-}
-
-// Helper function: Copy AI response to clipboard
-function copyAIResponse() {
-    // ... der Code aus dem Artifact
-}
-
-// Helper function: Download AI response as file
-function downloadAIResponse() {
-    // ... der Code aus dem Artifact
-}
-
-// Helper function: Use as email reply
-function useAsEmailReply() {
-    // ... der Code aus dem Artifact
-}
-
-// Helper function: Show notification
-function showNotification(message, type = 'success') {
-    // ... der Code aus dem Artifact
-}
-
-        // Search prompts
-        function searchPrompts() {
-            const query = document.getElementById('searchInput').value.toLowerCase();
-            
-            if (!query) {
-                if (currentRole) {
-                    renderCategories(currentRole);
-                }
-                return;
-            }
-            
-            const container = document.getElementById('categoriesGrid');
-            container.innerHTML = '';
-            
-            let results = [];
-            
-            Object.entries(FINANCE_PROMPTS).forEach(([roleKey, role]) => {
-                Object.entries(role.categories).forEach(([catKey, category]) => {
-                    category.prompts.forEach(prompt => {
-                        const searchText = `${prompt.title} ${prompt.prompt} ${prompt.tags.join(' ')}`.toLowerCase();
-                        if (searchText.includes(query)) {
-                            results.push({
-                                ...prompt,
-                                roleKey,
-                                roleName: role.name,
-                                categoryName: category.name,
-                                categoryIcon: category.icon
-                            });
-                        }
-                    });
-                });
-            });
-            
-            if (results.length === 0) {
-                container.innerHTML = `
-                    <div style="grid-column: 1/-1; text-align: center; padding: 3rem; background: white; border-radius: 16px;">
-                        <h3>Keine Ergebnisse gefunden</h3>
-                        <p style="margin-top: 1rem; color: #64748b;">Versuchen Sie andere Suchbegriffe</p>
-                    </div>
-                `;
-            } else {
-                container.innerHTML = `
-                    <div style="grid-column: 1/-1; padding: 1rem; background: white; border-radius: 16px; margin-bottom: 1rem;">
-                        <h3>${results.length} Ergebnisse für "${query}"</h3>
-                    </div>
-                `;
-                
-                results.forEach(result => {
-                    const card = document.createElement('div');
-                    card.className = 'category-card';
-                    card.innerHTML = `
-                        <div class="category-header">
-                            <div class="category-title">
-                                <span>${result.categoryIcon}</span>
-                                <span>${result.roleName} - ${result.categoryName}</span>
-                            </div>
-                        </div>
-                        <div class="prompt-item" style="margin-top: 1rem;">
-                            <div class="prompt-title">
-                                ${result.title}
-                                <span class="complexity-badge complexity-${result.complexity}">
-                                    ${result.complexity === 'low' ? 'Einfach' : 
-                                      result.complexity === 'medium' ? 'Mittel' : 'Komplex'}
-                                </span>
-                            </div>
-                            <div class="prompt-description">${result.prompt}</div>
-                            <div class="prompt-tags">
-                                ${result.tags.map(tag => `<span class="tag">#${tag}</span>`).join('')}
-                            </div>
-                            <button class="execute-btn" onclick="openExecuteModal('${result.id}', '${result.roleKey}')">
-                                🚀 Ausführen
-                            </button>
-                        </div>
-                    `;
-                    container.appendChild(card);
-                });
-            }
-        }
-
-        // Toggle complexity filter
-        function toggleComplexity(chip, level) {
-            chip.classList.toggle('active');
-            
-            if (chip.classList.contains('active')) {
-                selectedComplexity = level;
-            } else {
-                selectedComplexity = null;
-            }
-            
-            // Re-render with filter
-            if (currentRole) {
-                renderCategories(currentRole);
-            }
-        }
-
-        // Update statistics
-        function updateStats() {
-            let totalPrompts = 0;
-            
-            Object.values(FINANCE_PROMPTS).forEach(role => {
-                Object.values(role.categories).forEach(category => {
-                    totalPrompts += category.prompts.length;
-                });
-            });
-            
-            document.getElementById('totalPrompts').textContent = totalPrompts + '+';
-        }
-
-        // Handle Enter key in search
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('searchInput').addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    searchPrompts();
-                }
-            });
-        });
-
-        // Close modal on ESC
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                closeModal();
-            }
-        });
-    </script>
-
-    <script>
-// Notion Sync Function
-async function syncWithNotion() {
-  // Deine Credentials (später aus sicherer Quelle!)
-  const notionToken = prompt('Bitte Notion Token eingeben (secret_...)');
-  const databaseId = prompt('Bitte Database ID eingeben');
-  
-  if (!notionToken || !databaseId) {
-    alert('Token und Database ID sind erforderlich!');
-    return;
-  }
-  
-  console.log('🔄 Starte Notion Sync...');
-  
-  try {
-    const response = await fetch('https://albo-saa-s-backend.vercel.app/api/notion-sync', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        notionToken: notionToken,
-        databaseId: databaseId
-      })
-    });
-    
-    const result = await response.json();
-    
-    if (result.success) {
-      console.log(`✅ ${result.count} Prompts von Notion geladen!`);
-      console.log('Prompts:', result.prompts);
-      
-      // Zeige die Prompts an
-      displayNotionPrompts(result.prompts);
-    } else {
-      console.error('❌ Fehler:', result.error);
-      alert('Fehler beim Laden: ' + result.error);
-    }
-    
-  } catch (error) {
-    console.error('❌ Sync fehlgeschlagen:', error);
-    alert('Verbindung fehlgeschlagen!');
-  }
-}
-
-// Display Prompts
-function displayNotionPrompts(prompts) {
-  // Temporäre Anzeige
-  const container = document.createElement('div');
-  container.innerHTML = `
-    <h2>📚 Geladene Prompts von Notion (${prompts.length})</h2>
-    ${prompts.map(p => `
-      <div style="border: 1px solid #ddd; padding: 10px; margin: 10px;">
-        <h3>${p.metadata.title}</h3>
-        <p>Kategorie: ${p.metadata.category}</p>
-        <p>Rolle: ${p.metadata.role}</p>
-        <button onclick="window.open('${p.notionUrl}')">In Notion öffnen</button>
-      </div>
-    `).join('')}
-  `;
-  document.body.appendChild(container);
-}
-</script>
-
-<!-- Sync Button hinzufügen -->
-<button onclick="syncWithNotion()" style="
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  color: white;
-  border: none;
-  padding: 15px 30px;
-  border-radius: 30px;
-  font-size: 16px;
-  cursor: pointer;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-">
-  🔄 Notion Sync
-</button>
-<!-- Business Case Prompt Integration - VOLLSTÄNDIGE VERSION -->
-<script>
-let BUSINESS_CASE_PROMPT = null;
-
-// Prompts laden
-// Notion Prompts laden
-async function loadNotionPrompts() {
-  try {
-    const response = await fetch('https://albo-saa-s-backend.vercel.app/api/notion-bundled');
-    const data = await response.json();
-    
- if (data.success && data.prompts.length > 0) {
-  console.log('✅ Notion Prompts geladen:', data.prompts);
-  displayNotionPrompts(data.prompts);  // Neue Funktion aufrufen!
-}
-  } catch (error) {
-    console.error('Error:', error);
-  }
-}
-
-// Notion Prompts im Dashboard anzeigen
-function displayNotionPrompts(prompts) {
-  // Container finden oder erstellen
-  let notionContainer = document.getElementById('notion-prompts-section');
-  
-  if (!notionContainer) {
-    // Erstelle neuen Container
-    notionContainer = document.createElement('div');
-    notionContainer.id = 'notion-prompts-section';
-    notionContainer.style.cssText = `
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      padding: 30px;
-      margin: 20px;
-      border-radius: 16px;
-      color: white;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    `;
-    
-    // Füge nach dem Role Selector ein
-    const roleSelector = document.querySelector('.role-selector');
-    if (roleSelector) {
-      roleSelector.parentNode.insertBefore(notionContainer, roleSelector.nextSibling);
-    } else {
-      document.querySelector('.container').prepend(notionContainer);
-    }
-  }
-  
-  // Zeige Prompts als schöne Cards
-  notionContainer.innerHTML = `
-    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
-      <h2 style="margin: 0; display: flex; align-items: center; gap: 10px;">
-        <span style="font-size: 32px;">📚</span>
-        <span>Meine Notion Prompts (${prompts.length})</span>
-      </h2>
-      <div style="background: rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 8px;">
-        ✅ Live synchronisiert
-      </div>
-    </div>
-    
-    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
-      ${prompts.map(prompt => `
-        <div style="
-          background: white;
-          color: #333;
-          padding: 20px;
-          border-radius: 12px;
-          cursor: pointer;
-          transition: transform 0.3s;
-        " onmouseover="this.style.transform='translateY(-5px)'" 
-           onmouseout="this.style.transform='translateY(0)'"
-           onclick="executeNotionPrompt('${prompt.id}')">
-          
-          <h3 style="margin: 0 0 10px 0; color: #667eea;">
-            ${prompt.title || 'Unbenannt'}
-          </h3>
-          
-          <div style="display: flex; gap: 8px; margin-bottom: 12px;">
-            <span style="
-              background: #e3f2fd;
-              color: #1976d2;
-              padding: 4px 8px;
-              border-radius: 4px;
-              font-size: 12px;
-            ">${prompt.category || 'Allgemein'}</span>
-            
-            <span style="
-              background: #fce4ec;
-              color: #c2185b;
-              padding: 4px 8px;
-              border-radius: 4px;
-              font-size: 12px;
-            ">${prompt.role || 'Controller'}</span>
-          </div>
-          
-          <p style="
-            color: #666;
-            font-size: 14px;
-            line-height: 1.4;
-            margin-bottom: 15px;
-          ">
-            ${prompt.promptText ? prompt.promptText.substring(0, 150) + '...' : 'Kein Text'}
-          </p>
-          
-          <button style="
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            width: 100%;
-          ">
-            🚀 Ausführen
-          </button>
-        </div>
-      `).join('')}
-    </div>
-  `;
-  
-  // Speichere Prompts global
-  window.notionPrompts = prompts;
-}
-
-// Notion Prompt ausführen
-function executeNotionPrompt(promptId) {
-  const prompt = window.notionPrompts?.find(p => p.id === promptId);
-  if (!prompt) return;
-  
-  // Nutze das bestehende Modal-System
-  currentPrompt = {
-    id: promptId,
-    title: prompt.title || 'Notion Prompt',
-    prompt: prompt.promptText || ''
-  };
-  
-  document.getElementById('modalTitle').textContent = prompt.title || 'Notion Prompt';
-  document.getElementById('modalPrompt').textContent = prompt.promptText || '';
-  document.getElementById('contextInput').value = '';
-  document.getElementById('aiResponse').classList.remove('active');
-  document.getElementById('executeModal').classList.add('active');
-}
-
-// Beim Laden aufrufen
-loadNotionPrompts();
-
-// Button ins Dashboard einfügen
-function addBusinessCaseButton(prompt) {
-  const container = document.querySelector('.prompts-grid') || 
-                   document.querySelector('.dashboard-content') ||
-                   document.querySelector('main') ||
-                   document.body;
-  
-  const card = document.createElement('div');
-  card.className = 'business-case-card';
-  card.style.cssText = `
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 25px;
-    border-radius: 12px;
-    margin: 20px;
-    cursor: pointer;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-    transition: transform 0.3s;
-  `;
-  
-  card.innerHTML = `
-    <h2 style="margin: 0 0 10px 0;">📊 ${prompt.title}</h2>
-    <p style="opacity: 0.9;">${prompt.description}</p>
-    <button onclick="openBusinessCase()" style="
-      background: white;
-      color: #667eea;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 6px;
-      margin-top: 15px;
-      cursor: pointer;
-      font-weight: bold;
-    ">Business Case erstellen</button>
-  `;
-  
-  card.onmouseover = () => card.style.transform = 'translateY(-5px)';
-  card.onmouseout = () => card.style.transform = 'translateY(0)';
-  
-  container.insertBefore(card, container.firstChild);
-}
-
-// Business Case Modal öffnen
-function openBusinessCase() {
-  if (!BUSINESS_CASE_PROMPT) {
-    alert('Prompt wird geladen...');
-    return;
-  }
-  
-  // Erstelle Modal
-  const modal = document.createElement('div');
-  modal.id = 'businessCaseModal';
-  modal.style.cssText = `
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0,0,0,0.7);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 10000;
-    animation: fadeIn 0.3s;
-  `;
-  
-  // Modal Content
-  const modalContent = document.createElement('div');
-  modalContent.style.cssText = `
-    background: white;
-    border-radius: 16px;
-    max-width: 700px;
-    width: 90%;
-    max-height: 85vh;
-    overflow-y: auto;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-    animation: slideUp 0.3s;
-  `;
-  
-  modalContent.innerHTML = `
-    <div style="
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      padding: 30px;
-      border-radius: 16px 16px 0 0;
-      color: white;
-    ">
-      <h2 style="margin: 0; font-size: 28px;">📊 Business Case erstellen</h2>
-      <p style="margin: 10px 0 0 0; opacity: 0.9;">Beantworten Sie die folgenden Fragen für Ihre Investitionsanalyse</p>
-    </div>
-    
-    <div style="padding: 30px;">
-      <form id="businessCaseForm">
-        ${BUSINESS_CASE_PROMPT.questions.map((q, index) => `
-          <div style="margin-bottom: 25px;">
-            <label style="
-              display: block;
-              margin-bottom: 8px;
-              font-weight: 600;
-              color: #2c3e50;
-              font-size: 16px;
-            ">
-              ${index + 1}. ${q.label}
-              ${q.required ? '<span style="color: #e74c3c;">*</span>' : ''}
-            </label>
-            
-            ${q.type === 'select' ? `
-              <select id="${q.id}" required="${q.required}" style="
-                width: 100%;
-                padding: 12px;
-                border: 2px solid #e0e0e0;
-                border-radius: 8px;
-                font-size: 16px;
-                background: white;
-                transition: border-color 0.3s;
-              " onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e0e0e0'">
-                <option value="">Bitte wählen...</option>
-                ${q.options.map(opt => `
-                  <option value="${opt}">${opt}</option>
                 `).join('')}
-              </select>
-            ` : q.type === 'textarea' ? `
-              <textarea id="${q.id}" 
-                placeholder="${q.placeholder || ''}"
-                required="${q.required}"
-                rows="4"
-                style="
-                  width: 100%;
-                  padding: 12px;
-                  border: 2px solid #e0e0e0;
-                  border-radius: 8px;
-                  font-size: 16px;
-                  resize: vertical;
-                  font-family: inherit;
-                  transition: border-color 0.3s;
-                " onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e0e0e0'"></textarea>
-            ` : `
-              <input type="${q.type}" 
-                id="${q.id}" 
-                placeholder="${q.placeholder || ''}"
-                value="${q.defaultValue || ''}"
-                required="${q.required}"
-                style="
-                  width: 100%;
-                  padding: 12px;
-                  border: 2px solid #e0e0e0;
-                  border-radius: 8px;
-                  font-size: 16px;
-                  transition: border-color 0.3s;
-                " onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e0e0e0'">
-            `}
+            </div>
+        `;
+    }
+
+    function executeNotionPrompt(promptId) {
+        const prompt = notionPrompts.find(p => p.id === promptId);
+        if (!prompt) return;
+        
+        alert(`Prompt "${prompt.title}" wird ausgeführt...`);
+        // Hier würde die Modal-Logik kommen
+    }
+
+    async function syncWithNotion() {
+        alert('Notion Sync wird ausgeführt...');
+        await loadNotionPrompts();
+    }
+
+    // Initialize Legacy Dashboard
+    function initializeLegacyDashboard() {
+        const legacyContainer = document.getElementById('legacy-dashboard-content');
+        if (legacyContainer) {
+            legacyContainer.innerHTML = `
+                <div style="padding: 20px; background: white; border-radius: 16px;">
+                    <h2>Finance Prompts Library</h2>
+                    <p>Hier werden deine Original-Prompts angezeigt...</p>
+                </div>
+            `;
+        }
+    }
+
+    // Simulate real-time updates
+    setInterval(() => {
+        // Update random KPI
+        const kpis = document.querySelectorAll('.kpi-value');
+        if (kpis.length > 0 && currentMode === 'executive') {
+            const randomKpi = kpis[Math.floor(Math.random() * kpis.length)];
+            randomKpi.style.transform = 'scale(1.05)';
+            setTimeout(() => {
+                randomKpi.style.transform = 'scale(1)';
+            }, 300);
+        }
+    }, 5000);
+
+    // Simulate chat messages
+    const chatMessages = [
+        { author: 'Bilanz Agent', content: 'Konsolidierung abgeschlossen. Zahlen sehen gut aus.' },
+        { author: 'CFO Agent', content: 'Excellent! Bitte Report an Board vorbereiten.' },
+        { author: 'Steuerberater Agent', content: 'Steuerliche Optimierung: €45k Ersparnis identifiziert.' },
+        { author: 'Anwalt Agent', content: 'Alle Compliance-Checks bestanden ✓' },
+        { author: 'Debitor Agent', content: '€234k Zahlungseingänge heute verbucht.' }
+    ];
+
+    let messageIndex = 0;
+    setInterval(() => {
+        const chatContainer = document.getElementById('chat-messages');
+        if (chatContainer && currentMode === 'team') {
+            const message = chatMessages[messageIndex % chatMessages.length];
+            const time = new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
             
-            ${q.helpText ? `<small style="color: #7f8c8d; margin-top: 5px; display: block;">${q.helpText}</small>` : ''}
-          </div>
-        `).join('')}
-      </form>
-      
-      <div style="
-        display: flex;
-        gap: 15px;
-        margin-top: 30px;
-        padding-top: 20px;
-        border-top: 2px solid #e0e0e0;
-      ">
-        <button onclick="executeBusinessCase()" style="
-          flex: 1;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          color: white;
-          border: none;
-          padding: 15px 30px;
-          border-radius: 8px;
-          font-size: 18px;
-          font-weight: bold;
-          cursor: pointer;
-          transition: transform 0.2s;
-        " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-          🚀 Business Case generieren
-        </button>
-        
-        <button onclick="closeBusinessCaseModal()" style="
-          background: #e0e0e0;
-          color: #2c3e50;
-          border: none;
-          padding: 15px 30px;
-          border-radius: 8px;
-          font-size: 18px;
-          cursor: pointer;
-          transition: background 0.2s;
-        " onmouseover="this.style.background='#d0d0d0'" onmouseout="this.style.background='#e0e0e0'">
-          Abbrechen
-        </button>
-      </div>
-    </div>
-  `;
-  
-  modal.appendChild(modalContent);
-  document.body.appendChild(modal);
-}
-
-// Modal schließen
-function closeBusinessCaseModal() {
-  const modal = document.getElementById('businessCaseModal');
-  if (modal) {
-    modal.style.animation = 'fadeOut 0.3s';
-    setTimeout(() => modal.remove(), 300);
-  }
-}
-
-// Business Case ausführen
-async function executeBusinessCase() {
-  // Validierung
-  const form = document.getElementById('businessCaseForm');
-  if (!form.checkValidity()) {
-    form.reportValidity();
-    return;
-  }
-  
-  // Sammle Antworten
-  const answers = {};
-  BUSINESS_CASE_PROMPT.questions.forEach(q => {
-    const element = document.getElementById(q.id);
-    answers[q.id] = element?.value || '';
-  });
-  
-  // Zeige Loading
-  const modal = document.getElementById('businessCaseModal');
-  const oldContent = modal.innerHTML;
-  
-  modal.innerHTML = `
-    <div style="
-      background: white;
-      padding: 50px;
-      border-radius: 16px;
-      text-align: center;
-    ">
-      <div style="
-        width: 60px;
-        height: 60px;
-        border: 4px solid #f0f0f0;
-        border-top-color: #667eea;
-        border-radius: 50%;
-        margin: 0 auto 20px;
-        animation: spin 1s linear infinite;
-      "></div>
-      <h3>Business Case wird erstellt...</h3>
-      <p style="color: #7f8c8d;">Ihre Investitionsanalyse wird berechnet</p>
-    </div>
-  `;
-  
-  try {
-    // API Call
-    const response = await fetch('/api/execute-prompt', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        promptId: 'ctrl-001',
-        answers: answers,
-        useAI: true
-      })
-    });
-    
-    const result = await response.json();
-    
-    // Zeige Ergebnis
-    displayBusinessCaseResult(result);
-    
-  } catch (error) {
-    console.error('Error:', error);
-    alert('Demo-Modus: Business Case würde jetzt mit OpenAI generiert werden!\n\nIhre Eingaben wurden erfasst.');
-    closeBusinessCaseModal();
-  }
-}
-
-// Ergebnis anzeigen
-function displayBusinessCaseResult(result) {
-  const modal = document.getElementById('businessCaseModal');
-  
-  modal.innerHTML = `
-    <div style="
-      background: white;
-      border-radius: 16px;
-      max-width: 900px;
-      width: 90%;
-      max-height: 85vh;
-      overflow-y: auto;
-    ">
-      <div style="
-        background: linear-gradient(135deg, #27ae60 0%, #16a085 100%);
-        padding: 30px;
-        border-radius: 16px 16px 0 0;
-        color: white;
-      ">
-        <h2 style="margin: 0;">✅ Business Case erstellt!</h2>
-      </div>
-      
-      <div style="padding: 30px;">
-        <div style="
-          background: #f8f9fa;
-          padding: 20px;
-          border-radius: 8px;
-          margin-bottom: 20px;
-        ">
-          <h3>📊 Analyse-Ergebnis</h3>
-          <pre style="white-space: pre-wrap; font-family: 'Segoe UI', sans-serif;">
-${result.analysis || 'Demo-Output: Hier würde die vollständige Analyse stehen...'}
-          </pre>
-        </div>
-        
-        <div style="display: flex; gap: 10px;">
-          <button onclick="downloadBusinessCase()" style="
-            flex: 1;
-            background: #27ae60;
-            color: white;
-            border: none;
-            padding: 12px;
-            border-radius: 6px;
-            cursor: pointer;
-          ">📥 Als PDF downloaden</button>
-          
-          <button onclick="closeBusinessCaseModal()" style="
-            flex: 1;
-            background: #e0e0e0;
-            border: none;
-            padding: 12px;
-            border-radius: 6px;
-            cursor: pointer;
-          ">Schließen</button>
-        </div>
-      </div>
-    </div>
-  `;
-}
-
-// Download Funktion
-function downloadBusinessCase() {
-  alert('PDF-Export kommt bald! 🚀');
-}
-
-// CSS Animationen hinzufügen
-const style = document.createElement('style');
-style.textContent = `
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-  
-  @keyframes fadeOut {
-    from { opacity: 1; }
-    to { opacity: 0; }
-  }
-  
-  @keyframes slideUp {
-    from { transform: translateY(50px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-  }
-  
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
-`;
-document.head.appendChild(style);
-
-// Beim Laden
-window.addEventListener('DOMContentLoaded', loadBusinessCasePrompt);
+            const newMessage = document.createElement('div');
+            newMessage.className = 'chat-message';
+            newMessage.innerHTML = `
+                <div class="message-author">${message.author}</div>
+                <div class="message-content">${message.content}</div>
+                <div class="message-time">${time}</div>
+            `;
+            
+            chatContainer.appendChild(newMessage);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            messageIndex++;
+        }
+    }, 15000);
 </script>
-</body>
-</html>
