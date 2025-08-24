@@ -65,7 +65,7 @@
     /* Header */
     .header {
         background: rgba(255, 255, 255, 0.98);
-        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
         box-shadow: 0 2px 20px rgba(0,0,0,0.1);
         position: fixed;
         top: 0;
@@ -470,6 +470,47 @@
         justify-content: space-between;
         color: var(--gray);
         font-size: 14px;
+    }
+
+    /* M&A Specific Styles */
+    .ma-phase-card {
+        min-width: 250px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 12px;
+        padding: 15px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .ma-phase-card:hover {
+        background: rgba(255,255,255,0.2);
+        transform: translateY(-2px);
+    }
+
+    .ma-phase-card h4 {
+        margin: 0 0 10px 0;
+        color: white;
+    }
+
+    .ma-phase-card p {
+        font-size: 12px;
+        opacity: 0.9;
+        color: white;
+        margin: 0 0 10px 0;
+    }
+
+    .ma-phase-card button {
+        width: 100%;
+        background: rgba(255,255,255,0.2);
+        border: 1px solid rgba(255,255,255,0.3);
+        color: white;
+        padding: 8px;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+
+    .ma-phase-card button:hover {
+        background: rgba(255,255,255,0.3);
     }
 
     /* Legacy View (Original Dashboard) */
@@ -1470,44 +1511,140 @@
         </div>
     </div>
 
-    <!-- Workflow View -->
+    <!-- Workflow View WITH M&A -->
     <div class="mode-content" id="workflow-view">
+        
+        <!-- M&A INPUT SECTION -->
+        <div id="ma-input-section" style="
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        ">
+            <h2 style="margin: 0 0 20px 0; color: #333;">📥 M&A Deal Input</h2>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <!-- Email Integration Box -->
+                <div style="
+                    border: 2px dashed #667eea;
+                    border-radius: 12px;
+                    padding: 30px;
+                    text-align: center;
+                    cursor: pointer;
+                    transition: all 0.3s;
+                " onmouseover="this.style.borderColor='#4338ca'; this.style.background='#f8f7ff'" 
+                   onmouseout="this.style.borderColor='#667eea'; this.style.background='white'"
+                   onclick="checkOutlookEmails()">
+                    
+                    <div style="font-size: 48px; margin-bottom: 15px;">📧</div>
+                    <h3 style="margin: 0 0 10px 0; color: #333;">Email Integration</h3>
+                    <p style="color: #666; font-size: 14px; margin: 0 0 15px 0;">
+                        Emails aus Outlook mit M&A Dokumenten automatisch verarbeiten
+                    </p>
+                    <div id="emailStatus" style="
+                        background: #f0f0f0;
+                        padding: 8px 15px;
+                        border-radius: 8px;
+                        font-size: 12px;
+                        color: #666;
+                    ">
+                        <span id="emailCountMA">0</span> neue M&A Emails
+                    </div>
+                </div>
+                
+                <!-- Manual Upload Box -->
+                <div style="
+                    border: 2px dashed #10b981;
+                    border-radius: 12px;
+                    padding: 30px;
+                    text-align: center;
+                    cursor: pointer;
+                    transition: all 0.3s;
+                " onmouseover="this.style.borderColor='#059669'; this.style.background='#f0fdf4'" 
+                   onmouseout="this.style.borderColor='#10b981'; this.style.background='white'"
+                   onclick="openManualUpload()">
+                    
+                    <div style="font-size: 48px; margin-bottom: 15px;">📁</div>
+                    <h3 style="margin: 0 0 10px 0; color: #333;">Manueller Upload</h3>
+                    <p style="color: #666; font-size: 14px; margin: 0 0 15px 0;">
+                        PDFs, Excel-Files und Case-Beschreibung hochladen
+                    </p>
+                    <button style="
+                        background: linear-gradient(135deg, #10b981, #059669);
+                        color: white;
+                        border: none;
+                        padding: 8px 20px;
+                        border-radius: 8px;
+                        font-weight: 600;
+                        cursor: pointer;
+                    ">
+                        + Dokumente hochladen
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- M&A WORKFLOW PIPELINE -->
+        <div class="workflow-container" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white;">
+            <div class="workflow-header">
+                <div class="workflow-title" style="color: white;">🤝 M&A Deal Pipeline</div>
+                <button class="btn" style="background: white; color: #667eea;" onclick="startMADeal()">+ Neuer Deal</button>
+            </div>
+            
+            <!-- M&A Process Steps -->
+            <div style="display: flex; gap: 10px; margin-top: 20px; overflow-x: auto; padding: 10px 0;">
+                <div class="ma-phase-card" onclick="executeMAPhase('strategic-fit')">
+                    <h4>📋 Phase 1: Strategic Fit</h4>
+                    <p>Target Screening & Analyse</p>
+                    <button>Starten</button>
+                </div>
+                
+                <div class="ma-phase-card" onclick="executeMAPhase('due-diligence')">
+                    <h4>🔍 Phase 2: Due Diligence</h4>
+                    <p>Financial, Legal, Commercial</p>
+                    <button>Starten</button>
+                </div>
+                
+                <div class="ma-phase-card" onclick="executeMAPhase('valuation')">
+                    <h4>💰 Phase 3: Valuation</h4>
+                    <p>DCF, Multiples, Synergien</p>
+                    <button>Starten</button>
+                </div>
+                
+                <div class="ma-phase-card" onclick="executeMAPhase('deal-structure')">
+                    <h4>📑 Phase 4: Deal Structure</h4>
+                    <p>Terms, Financing, Integration</p>
+                    <button>Starten</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Active M&A Deals -->
         <div class="workflow-container">
             <div class="workflow-header">
-                <div class="workflow-title">⚡ Aktive Workflows</div>
-                <button class="btn btn-delegate" onclick="createWorkflow()">+ Neuer Workflow</button>
+                <div class="workflow-title">⚡ Aktive M&A Deals</div>
             </div>
             
             <div class="workflow-item">
-                <div class="workflow-name">📊 Monatsabschluss Oktober 2024</div>
+                <div class="workflow-name">🏢 TechStartup GmbH Acquisition</div>
                 <div class="workflow-progress">
-                    <div class="workflow-progress-bar" style="width: 78%"></div>
+                    <div class="workflow-progress-bar" style="width: 35%"></div>
                 </div>
                 <div class="workflow-stats">
-                    <span>Step 7/9 - Konsolidierung läuft...</span>
-                    <span>ETA: 45 Minuten</span>
-                </div>
-            </div>
-            
-            <div class="workflow-item">
-                <div class="workflow-name">💳 Rechnungsverarbeitung Batch #4521</div>
-                <div class="workflow-progress">
-                    <div class="workflow-progress-bar" style="width: 100%"></div>
-                </div>
-                <div class="workflow-stats">
-                    <span>✅ Abgeschlossen - 234 Rechnungen verarbeitet</span>
-                    <span>Zeit: 23 Minuten</span>
+                    <span>Phase 2: Due Diligence läuft...</span>
+                    <span>Deal Size: €15-20M</span>
                 </div>
             </div>
             
             <div class="workflow-item">
-                <div class="workflow-name">🤝 M&A Due Diligence - TechStartup GmbH</div>
+                <div class="workflow-name">🏭 Industrial Corp Merger</div>
                 <div class="workflow-progress">
-                    <div class="workflow-progress-bar" style="width: 45%"></div>
+                    <div class="workflow-progress-bar" style="width: 75%"></div>
                 </div>
                 <div class="workflow-stats">
-                    <span>Step 4/9 - Financial Analysis</span>
-                    <span>3 Agenten aktiv</span>
+                    <span>Phase 3: Valuation abgeschlossen</span>
+                    <span>Deal Size: €45M</span>
                 </div>
             </div>
         </div>
@@ -1671,174 +1808,173 @@
                         },
                         {
                             id: "kred_002",
-                            title: "Skonto-Optimierung",
-                            prompt: "Berechne optimale Zahlungsstrategie unter Berücksichtigung von Skonto.",
-                            tags: ["discount", "payment"],
-                            complexity: "high"
-                        },
-                        {
-                            id: "kred_003",
-                            title: "Duplicate Check",
-                            prompt: "Prüfe auf doppelte Rechnungen.",
-                            tags: ["validation"],
-                            complexity: "low"
-                        }
-                    ]
-                },
-                lieferantenmanagement: {
-                    name: "Lieferantenmanagement",
-                    icon: "🤝",
-                    prompts: [
-                        {
-                            id: "kred_010",
-                            title: "Vendor Validation",
-                            prompt: "Validiere Lieferantenstammdaten.",
-                            tags: ["vendor", "compliance"],
-                            complexity: "medium"
-                        }
-                    ]
+                                title: "Skonto-Optimierung",
+                                prompt: "Berechne optimale Zahlungsstrategie unter Berücksichtigung von Skonto.",
+                                tags: ["discount", "payment"],
+                                complexity: "high"
+                            },
+                            {
+                                id: "kred_003",
+                                title: "Duplicate Check",
+                                prompt: "Prüfe auf doppelte Rechnungen.",
+                                tags: ["validation"],
+                                complexity: "low"
+                            }
+                        ]
+                    },
+                    lieferantenmanagement: {
+                        name: "Lieferantenmanagement",
+                        icon: "🤝",
+                        prompts: [
+                            {
+                                id: "kred_010",
+                                title: "Vendor Validation",
+                                prompt: "Validiere Lieferantenstammdaten.",
+                                tags: ["vendor", "compliance"],
+                                complexity: "medium"
+                            }
+                        ]
+                    }
+                }
+            },
+            debitor: {
+                name: "Debitorenbuchhalter",
+                description: "Fokus auf Mahnwesen, Zahlungseingänge und Forderungsmanagement",
+                icon: "💰",
+                categories: {
+                    mahnwesen: {
+                        name: "Mahnwesen",
+                        icon: "⚠️",
+                        prompts: [
+                            {
+                                id: "deb_001",
+                                title: "Mahnstufe ermitteln",
+                                prompt: "Analysiere Zahlungshistorie und ermittle Mahnstufe.",
+                                tags: ["dunning", "analysis"],
+                                complexity: "medium"
+                            },
+                            {
+                                id: "deb_002",
+                                title: "Zahlungserinnerung",
+                                prompt: "Erstelle höfliche Zahlungserinnerung.",
+                                tags: ["communication"],
+                                complexity: "low"
+                            }
+                        ]
+                    }
+                }
+            },
+            controller: {
+                name: "Controller",
+                description: "Reporting, Planung, Analyse und Kostenmanagement",
+                icon: "📊",
+                categories: {
+                    reporting: {
+                        name: "Reporting & Analyse",
+                        icon: "📈",
+                        prompts: [
+                            {
+                                id: "ctrl_001",
+                                title: "Monatsabschluss-Analyse",
+                                prompt: "Analysiere Monatsabschluss und erstelle Management Summary.",
+                                tags: ["closing", "analysis"],
+                                complexity: "high"
+                            },
+                            {
+                                id: "ctrl_002",
+                                title: "KPI-Dashboard",
+                                prompt: "Aktualisiere KPIs: EBITDA, Working Capital, ROI.",
+                                tags: ["kpi", "metrics"],
+                                complexity: "medium"
+                            }
+                        ]
+                    },
+                    planung: {
+                        name: "Planung & Forecast",
+                        icon: "🎯",
+                        prompts: [
+                            {
+                                id: "ctrl_010",
+                                title: "Rolling Forecast",
+                                prompt: "Erstelle 12-Monats Rolling Forecast.",
+                                tags: ["forecast", "planning"],
+                                complexity: "high"
+                            }
+                        ]
+                    }
+                }
+            },
+            cfo: {
+                name: "CFO",
+                description: "Strategische Finanzplanung, Risk Management und Investor Relations",
+                icon: "👔",
+                categories: {
+                    strategie: {
+                        name: "Strategische Planung",
+                        icon: "🎯",
+                        prompts: [
+                            {
+                                id: "cfo_001",
+                                title: "Investment Case",
+                                prompt: "Bewerte Investment: NPV, IRR, Payback.",
+                                tags: ["investment", "valuation"],
+                                complexity: "high"
+                            }
+                        ]
+                    }
+                }
+            },
+            treasury: {
+                name: "Treasury Manager",
+                description: "Cash Management, FX-Hedging und Liquiditätsplanung",
+                icon: "🏦",
+                categories: {
+                    cashmanagement: {
+                        name: "Cash Management",
+                        icon: "💵",
+                        prompts: [
+                            {
+                                id: "trs_001",
+                                title: "Cash Flow Forecast",
+                                prompt: "Erstelle 13-Wochen Cash Flow Forecast.",
+                                tags: ["cashflow", "forecast"],
+                                complexity: "high"
+                            }
+                        ]
+                    }
+                }
+            },
+            ma: {
+                name: "M&A Berater",
+                description: "Due Diligence, Valuation und Post-Merger Integration",
+                icon: "🤝",
+                categories: {
+                    duediligence: {
+                        name: "Due Diligence",
+                        icon: "🔍",
+                        prompts: [
+                            {
+                                id: "ma_001",
+                                title: "Financial DD",
+                                prompt: "Führe Financial Due Diligence durch.",
+                                tags: ["dd", "analysis"],
+                                complexity: "high"
+                            }
+                        ]
+                    }
                 }
             }
-        },
-        debitor: {
-            name: "Debitorenbuchhalter",
-            description: "Fokus auf Mahnwesen, Zahlungseingänge und Forderungsmanagement",
-            icon: "💰",
-            categories: {
-                mahnwesen: {
-                    name: "Mahnwesen",
-                    icon: "⚠️",
-                    prompts: [
-                        {
-                            id: "deb_001",
-                            title: "Mahnstufe ermitteln",
-                            prompt: "Analysiere Zahlungshistorie und ermittle Mahnstufe.",
-                            tags: ["dunning", "analysis"],
-                            complexity: "medium"
-                        },
-                        {
-                            id: "deb_002",
-                            title: "Zahlungserinnerung",
-                            prompt: "Erstelle höfliche Zahlungserinnerung.",
-                            tags: ["communication"],
-                            complexity: "low"
-                        }
-                    ]
-                }
-            }
-        },
-        controller: {
-            name: "Controller",
-            description: "Reporting, Planung, Analyse und Kostenmanagement",
-            icon: "📊",
-            categories: {
-                reporting: {
-                    name: "Reporting & Analyse",
-                    icon: "📈",
-                    prompts: [
-                        {
-                            id: "ctrl_001",
-                            title: "Monatsabschluss-Analyse",
-                            prompt: "Analysiere Monatsabschluss und erstelle Management Summary.",
-                            tags: ["closing", "analysis"],
-                            complexity: "high"
-                        },
-                        {
-                            id: "ctrl_002",
-                            title: "KPI-Dashboard",
-                            prompt: "Aktualisiere KPIs: EBITDA, Working Capital, ROI.",
-                            tags: ["kpi", "metrics"],
-                            complexity: "medium"
-                        }
-                    ]
-                },
-                planung: {
-                    name: "Planung & Forecast",
-                    icon: "🎯",
-                    prompts: [
-                        {
-                            id: "ctrl_010",
-                            title: "Rolling Forecast",
-                            prompt: "Erstelle 12-Monats Rolling Forecast.",
-                            tags: ["forecast", "planning"],
-                            complexity: "high"
-                        }
-                    ]
-                }
-            }
-        },
-        cfo: {
-            name: "CFO",
-            description: "Strategische Finanzplanung, Risk Management und Investor Relations",
-            icon: "👔",
-            categories: {
-                strategie: {
-                    name: "Strategische Planung",
-                    icon: "🎯",
-                    prompts: [
-                        {
-                            id: "cfo_001",
-                            title: "Investment Case",
-                            prompt: "Bewerte Investment: NPV, IRR, Payback.",
-                            tags: ["investment", "valuation"],
-                            complexity: "high"
-                        }
-                    ]
-                }
-            }
-        },
-        treasury: {
-            name: "Treasury Manager",
-            description: "Cash Management, FX-Hedging und Liquiditätsplanung",
-            icon: "🏦",
-            categories: {
-                cashmanagement: {
-                    name: "Cash Management",
-                    icon: "💵",
-                    prompts: [
-                        {
-                            id: "trs_001",
-                            title: "Cash Flow Forecast",
-                            prompt: "Erstelle 13-Wochen Cash Flow Forecast.",
-                            tags: ["cashflow", "forecast"],
-                            complexity: "high"
-                        }
-                    ]
-                }
-            }
-        },
-        ma: {
-            name: "M&A Berater",
-            description: "Due Diligence, Valuation und Post-Merger Integration",
-            icon: "🤝",
-            categories: {
-                duediligence: {
-                    name: "Due Diligence",
-                    icon: "🔍",
-                    prompts: [
-                        {
-                            id: "ma_001",
-                            title: "Financial DD",
-                            prompt: "Führe Financial Due Diligence durch.",
-                            tags: ["dd", "analysis"],
-                            complexity: "high"
-                        }
-                    ]
-                }
-            }
-        }
-    };
+        };
 
-    // ==========================
-    // INITIALIZATION
-    // ==========================
-    window.addEventListener('DOMContentLoaded', () => {
-        console.log('🎯 ALBO AI Dashboard geladen');
-        
-        // Hide loading screen
-        setTimeout(() => {
-            document.getElementById('loadingScreen').style
-            .opacity = '0';
+        // ==========================
+        // INITIALIZATION
+        // ==========================
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log('🎯 ALBO AI Dashboard geladen');
+            
+            // Hide loading screen
+            setTimeout(() => {
+                document.getElementById('loadingScreen').style.opacity = '0';
                 setTimeout(() => {
                     document.getElementById('loadingScreen').style.display = 'none';
                 }, 500);
@@ -1878,7 +2014,7 @@
         }
 
         // ==========================
-        // EMAIL ANALYSIS (DEINE FUNKTION!)
+        // EMAIL ANALYSIS
         // ==========================
         function checkForEmailData() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -2175,7 +2311,7 @@
         }
 
         // ==========================
-        // EXECUTE WITH AI (DEINE FUNKTION!)
+        // EXECUTE WITH AI
         // ==========================
         async function executeWithAI() {
             const context = document.getElementById('contextInput').value;
@@ -2287,7 +2423,503 @@
         }
 
         // ==========================
-        // PROMPTS MANAGEMENT (DEINE DATENBANK!)
+        // M&A WORKFLOW FUNCTIONS
+        // ==========================
+        
+        function startMADeal() {
+            const modal = document.createElement('div');
+            modal.id = 'maModal';
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0,0,0,0.7);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10000;
+            `;
+            
+            modal.innerHTML = `
+                <div style="
+                    background: white;
+                    border-radius: 20px;
+                    width: 90%;
+                    max-width: 800px;
+                    max-height: 90vh;
+                    overflow-y: auto;
+                    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+                ">
+                    <div style="
+                        background: linear-gradient(135deg, #667eea, #764ba2);
+                        color: white;
+                        padding: 30px;
+                        border-radius: 20px 20px 0 0;
+                    ">
+                        <h2 style="margin: 0;">🤝 Neuer M&A Deal - Initial Setup</h2>
+                    </div>
+                    
+                    <div style="padding: 30px;">
+                        <div style="display: grid; gap: 20px;">
+                            <div>
+                                <label style="display: block; margin-bottom: 8px; font-weight: 600;">
+                                    Target Company Name
+                                </label>
+                                <input type="text" id="targetName" placeholder="z.B. TechStartup GmbH" style="
+                                    width: 100%;
+                                    padding: 12px;
+                                    border: 2px solid #e0e0e0;
+                                    border-radius: 8px;
+                                    font-size: 16px;
+                                ">
+                            </div>
+                            
+                            <div>
+                                <label style="display: block; margin-bottom: 8px; font-weight: 600;">
+                                    Deal Type
+                                </label>
+                                <select id="dealType" style="
+                                    width: 100%;
+                                    padding: 12px;
+                                    border: 2px solid #e0e0e0;
+                                    border-radius: 8px;
+                                    font-size: 16px;
+                                ">
+                                    <option value="acquisition">Acquisition (100% Übernahme)</option>
+                                    <option value="majority">Majority Stake (>50%)</option>
+                                    <option value="minority">Minority Investment (<50%)</option>
+                                    <option value="merger">Merger of Equals</option>
+                                    <option value="asset">Asset Deal</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label style="display: block; margin-bottom: 8px; font-weight: 600;">
+                                    Expected Deal Size
+                                </label>
+                                <input type="text" id="dealSize" placeholder="z.B. €10-15M" style="
+                                    width: 100%;
+                                    padding: 12px;
+                                    border: 2px solid #e0e0e0;
+                                    border-radius: 8px;
+                                    font-size: 16px;
+                                ">
+                            </div>
+                            
+                            <div>
+                                <label style="display: block; margin-bottom: 8px; font-weight: 600;">
+                                    Strategic Rationale
+                                </label>
+                                <textarea id="strategicRationale" rows="4" placeholder="Warum macht dieser Deal strategisch Sinn?" style="
+                                    width: 100%;
+                                    padding: 12px;
+                                    border: 2px solid #e0e0e0;
+                                    border-radius: 8px;
+                                    font-size: 16px;
+                                    resize: vertical;
+                                "></textarea>
+                            </div>
+                        </div>
+                        
+                        <div style="display: flex; gap: 15px; margin-top: 30px;">
+                            <button onclick="document.getElementById('maModal').remove()" style="
+                                flex: 1;
+                                background: #e0e0e0;
+                                color: #333;
+                                border: none;
+                                padding: 15px;
+                                border-radius: 8px;
+                                font-size: 16px;
+                                cursor: pointer;
+                            ">Abbrechen</button>
+                            
+                            <button onclick="createMADeal()" style="
+                                flex: 2;
+                                background: linear-gradient(135deg, #667eea, #764ba2);
+                                color: white;
+                                border: none;
+                                padding: 15px;
+                                border-radius: 8px;
+                                font-size: 16px;
+                                font-weight: 600;
+                                cursor: pointer;
+                            ">🚀 M&A Prozess starten</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        }
+        
+        function createMADeal() {
+            const targetName = document.getElementById('targetName').value;
+            const dealType = document.getElementById('dealType').value;
+            const dealSize = document.getElementById('dealSize').value;
+            const strategicRationale = document.getElementById('strategicRationale').value;
+            
+            if (!targetName) {
+                alert('Bitte Target Company eingeben');
+                return;
+            }
+            
+            const dealData = {
+                targetName,
+                dealType,
+                dealSize,
+                strategicRationale,
+                phase: 'strategic-fit',
+                createdAt: new Date().toISOString()
+            };
+            
+            localStorage.setItem('currentMADeal', JSON.stringify(dealData));
+            document.getElementById('maModal').remove();
+            showNotification(`✅ M&A Deal "${targetName}" wurde erstellt!`, 'success');
+            
+            setTimeout(() => {
+                executeMAPhase('strategic-fit');
+            }, 1000);
+        }
+        
+        function checkOutlookEmails() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const sessionParam = urlParams.get('session');
+            
+            if (sessionParam || window.currentEmailData) {
+                processMAEmail();
+            } else {
+                showEmailIntegrationGuide();
+            }
+        }
+        
+        function processMAEmail() {
+            if (!window.currentEmailData) {
+                showEmailIntegrationGuide();
+                return;
+            }
+            
+            const modal = document.createElement('div');
+            modal.id = 'maEmailModal';
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0,0,0,0.7);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10000;
+            `;
+            
+            modal.innerHTML = `
+                <div style="
+                    background: white;
+                    border-radius: 20px;
+                    width: 90%;
+                    max-width: 900px;
+                    max-height: 90vh;
+                    overflow-y: auto;
+                ">
+                    <div style="
+                        background: linear-gradient(135deg, #667eea, #764ba2);
+                        color: white;
+                        padding: 30px;
+                        border-radius: 20px 20px 0 0;
+                    ">
+                        <h2 style="margin: 0;">📧 M&A Email Verarbeitung</h2>
+                        <p style="margin: 10px 0 0 0; opacity: 0.9;">KI analysiert Email und Attachments</p>
+                    </div>
+                    
+                    <div style="padding: 30px;">
+                        <div style="
+                            background: #f8f9fa;
+                            padding: 20px;
+                            border-radius: 12px;
+                            margin-bottom: 20px;
+                        ">
+                            <h4 style="margin: 0 0 15px 0;">Email Details</h4>
+                            <div style="display: grid; gap: 10px; font-size: 14px;">
+                                <div><strong>Von:</strong> ${window.currentEmailData.from || 'Unbekannt'}</div>
+                                <div><strong>Betreff:</strong> ${window.currentEmailData.subject || 'Kein Betreff'}</div>
+                                <div><strong>Datum:</strong> ${new Date().toLocaleString('de-DE')}</div>
+                            </div>
+                        </div>
+                        
+                        <div style="
+                            background: #f0f9ff;
+                            padding: 20px;
+                            border-radius: 12px;
+                            margin-bottom: 20px;
+                        ">
+                            <h4 style="margin: 0 0 15px 0;">📎 Erkannte Dokumente</h4>
+                            <div>
+                                <div style="padding: 10px; background: white; border-radius: 8px; margin-bottom: 10px;">
+                                    📄 Teaser_TechStartup.pdf (2.3 MB)
+                                </div>
+                                <div style="padding: 10px; background: white; border-radius: 8px; margin-bottom: 10px;">
+                                    📊 Financial_Model.xlsx (1.5 MB)
+                                </div>
+                                <div style="padding: 10px; background: white; border-radius: 8px;">
+                                    📋 NDA_Agreement.pdf (340 KB)
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="display: flex; gap: 15px;">
+                            <button onclick="document.getElementById('maEmailModal').remove()" style="
+                                flex: 1;
+                                background: #e0e0e0;
+                                border: none;
+                                padding: 15px;
+                                border-radius: 8px;
+                                cursor: pointer;
+                            ">Abbrechen</button>
+                            
+                            <button onclick="startMAFromEmail()" style="
+                                flex: 2;
+                                background: linear-gradient(135deg, #10b981, #059669);
+                                color: white;
+                                border: none;
+                                padding: 15px;
+                                border-radius: 8px;
+                                font-weight: 600;
+                                cursor: pointer;
+                            ">M&A Prozess starten</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        }
+        
+        function showEmailIntegrationGuide() {
+            alert('Outlook Integration:\n\n1. Öffnen Sie die Email in Outlook\n2. Nutzen Sie das ALBO Add-In\n3. Wählen Sie "An Dashboard senden"\n\nDie Email wird dann hier automatisch verarbeitet.');
+        }
+        
+        function startMAFromEmail() {
+            showNotification('✅ M&A Prozess aus Email gestartet', 'success');
+            document.getElementById('maEmailModal').remove();
+            executeMAPhase('strategic-fit');
+        }
+        
+        function openManualUpload() {
+            const modal = document.createElement('div');
+            modal.id = 'uploadModal';
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0,0,0,0.7);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10000;
+            `;
+            
+            modal.innerHTML = `
+                <div style="
+                    background: white;
+                    border-radius: 20px;
+                    width: 90%;
+                    max-width: 800px;
+                    max-height: 90vh;
+                    overflow-y: auto;
+                ">
+                    <div style="
+                        background: linear-gradient(135deg, #10b981, #059669);
+                        color: white;
+                        padding: 30px;
+                        border-radius: 20px 20px 0 0;
+                    ">
+                        <h2 style="margin: 0;">📁 M&A Dokumente Upload</h2>
+                        <p style="margin: 10px 0 0 0; opacity: 0.9;">Laden Sie alle relevanten Dokumente hoch</p>
+                    </div>
+                    
+                    <div style="padding: 30px;">
+                        <div style="margin-bottom: 25px;">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600;">
+                                Case Beschreibung
+                            </label>
+                            <textarea id="caseDescription" rows="4" placeholder="Beschreiben Sie den M&A Case..." style="
+                                width: 100%;
+                                padding: 12px;
+                                border: 2px solid #e0e0e0;
+                                border-radius: 8px;
+                                font-size: 16px;
+                            "></textarea>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px;">
+                            <div>
+                                <label style="display: block; margin-bottom: 8px; font-weight: 600;">
+                                    Target Company
+                                </label>
+                                <input type="text" id="targetCompany" placeholder="Company Name" style="
+                                    width: 100%;
+                                    padding: 12px;
+                                    border: 2px solid #e0e0e0;
+                                    border-radius: 8px;
+                                ">
+                            </div>
+                            
+                            <div>
+                                <label style="display: block; margin-bottom: 8px; font-weight: 600;">
+                                    Deal Size
+                                </label>
+                                <input type="text" id="uploadDealSize" placeholder="z.B. 10-15M EUR" style="
+                                    width: 100%;
+                                    padding: 12px;
+                                    border: 2px solid #e0e0e0;
+                                    border-radius: 8px;
+                                ">
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 25px;">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600;">
+                                Dokumente hochladen
+                            </label>
+                            <div id="dropZone" style="
+                                border: 2px dashed #cbd5e1;
+                                border-radius: 12px;
+                                padding: 40px;
+                                text-align: center;
+                                background: #f8fafc;
+                                cursor: pointer;
+                            " ondrop="handleDrop(event)" ondragover="handleDragOver(event)" onclick="document.getElementById('fileInput').click()">
+                                <div style="font-size: 48px; margin-bottom: 15px;">📤</div>
+                                <p style="margin: 0 0 10px 0; font-weight: 600;">
+                                    Drag & Drop oder klicken zum Upload
+                                </p>
+                                <p style="margin: 0; color: #64748b; font-size: 14px;">
+                                    PDF, Excel, Word, PowerPoint
+                                </p>
+                                <input type="file" id="fileInput" multiple accept=".pdf,.xlsx,.xls,.docx,.doc,.pptx,.ppt" style="display: none;" onchange="handleFileSelect(event)">
+                            </div>
+                        </div>
+                        
+                        <div id="uploadedFiles" style="margin-bottom: 25px;"></div>
+                        
+                        <div style="display: flex; gap: 15px;">
+                            <button onclick="document.getElementById('uploadModal').remove()" style="
+                                flex: 1;
+                                background: #e0e0e0;
+                                border: none;
+                                padding: 15px;
+                                border-radius: 8px;
+                                cursor: pointer;
+                            ">Abbrechen</button>
+                            
+                            <button onclick="processUploadedDocuments()" style="
+                                flex: 2;
+                                background: linear-gradient(135deg, #10b981, #059669);
+                                color: white;
+                                border: none;
+                                padding: 15px;
+                                border-radius: 8px;
+                                font-weight: 600;
+                                cursor: pointer;
+                            ">Dokumente analysieren & M&A starten</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        }
+        
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.currentTarget.style.borderColor = '#667eea';
+            e.currentTarget.style.background = '#f8f7ff';
+        }
+        
+        function handleDrop(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.currentTarget.style.borderColor = '#cbd5e1';
+            e.currentTarget.style.background = '#f8fafc';
+            
+            const files = e.dataTransfer.files;
+            displayUploadedFiles(files);
+        }
+        
+        function handleFileSelect(e) {
+            const files = e.target.files;
+            displayUploadedFiles(files);
+        }
+        
+        function displayUploadedFiles(files) {
+            const container = document.getElementById('uploadedFiles');
+            if (!container) return;
+            
+            let html = '<h4 style="margin: 0 0 10px 0;">Hochgeladene Dateien:</h4>';
+            
+            for (let file of files) {
+                const fileSize = (file.size / 1024 / 1024).toFixed(2);
+                const icon = file.name.endsWith('.pdf') ? '📄' : 
+                             file.name.endsWith('.xlsx') || file.name.endsWith('.xls') ? '📊' : 
+                             file.name.endsWith('.docx') || file.name.endsWith('.doc') ? '📝' : '📎';
+                
+                html += `
+                    <div style="
+                        padding: 10px;
+                        background: #f0f9ff;
+                        border-radius: 8px;
+                        margin-bottom: 8px;
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                    ">
+                        <span>${icon} ${file.name}</span>
+                        <span style="color: #64748b; font-size: 14px;">${fileSize} MB</span>
+                    </div>
+                `;
+            }
+            
+            container.innerHTML = html;
+        }
+        
+        function processUploadedDocuments() {
+            const caseDescription = document.getElementById('caseDescription').value;
+            const targetCompany = document.getElementById('targetCompany').value;
+            const dealSize = document.getElementById('uploadDealSize').value;
+            
+            if (!targetCompany) {
+                alert('Bitte Target Company eingeben');
+                return;
+            }
+            
+            const uploadData = {
+                caseDescription,
+                targetCompany,
+                dealSize,
+                timestamp: new Date().toISOString()
+            };
+            
+            showNotification('✅ Dokumente hochgeladen und werden analysiert', 'success');
+            document.getElementById('uploadModal').remove();
+            
+            setTimeout(() => {
+                executeMAPhase('strategic-fit');
+            }, 1000);
+        }
+        
+        function executeMAPhase(phase) {
+            showNotification(`🚀 Starte M&A Phase: ${phase}`, 'success');
+            // Hier würde die Integration mit deiner executeWithAI Funktion kommen
+        }
+
+        // ==========================
+        // PROMPTS MANAGEMENT
         // ==========================
         function renderRoleTabs() {
             const container = document.getElementById('roleTabs');
@@ -2604,7 +3236,6 @@
 
         function selectAgent(agentName) {
             showNotification(`Agent ${agentName} ausgewählt`, 'success');
-            // Hier könnte eine Detail-Ansicht öffnen
         }
 
         function createWorkflow() {
@@ -2692,6 +3323,21 @@
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 closeModal();
+            }
+        });
+
+        // Check for emails on load
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('session')) {
+                const emailCountElement = document.getElementById('emailCountMA');
+                const emailStatusElement = document.getElementById('emailStatus');
+                
+                if (emailCountElement) emailCountElement.textContent = '1';
+                if (emailStatusElement) {
+                    emailStatusElement.style.background = '#dcfce7';
+                    emailStatusElement.style.color = '#166534';
+                }
             }
         });
     </script>
