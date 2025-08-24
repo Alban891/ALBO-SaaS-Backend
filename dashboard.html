@@ -1228,6 +1228,10 @@
                 <span>📚</span>
                 <span>Prompts</span>
             </button>
+            <button class="mode-btn" onclick="switchMode('sap')">
+                <span>🔗</span>
+                <span>SAP</span>
+            </button>
         </div>
         
         <div class="header-actions">
@@ -1691,6 +1695,54 @@
             <div class="role-description" id="roleDescription">
                 Wählen Sie eine Rolle, um spezialisierte Finance-Prompts zu sehen.
             </div>
+            <!-- SAP Integration View -->
+    <div class="mode-content" id="sap-view">
+        <!-- SAP Content kommt hier rein -->
+        <div style="padding: 20px;">
+            <h2 style="color: white; margin-bottom: 30px;">🔗 SAP Integration</h2>
+            
+            <!-- Der SAP Demo Container -->
+            <div style="background: white; border-radius: 16px; padding: 30px;">
+                <!-- SAP Header -->
+                <div style="background: linear-gradient(135deg, #0A6EBD 0%, #053B50 100%); color: white; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                    <h3 style="margin: 0;">SAP S/4HANA Integration</h3>
+                    <p style="margin: 5px 0 0 0; opacity: 0.9;">Live-Verbindung zu Ihrem ERP-System</p>
+                </div>
+                
+                <!-- SAP Buttons -->
+                <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                    <button onclick="connectToSAP()" style="padding: 12px 24px; background: #0A6EBD; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">
+                        🔌 Mit SAP verbinden
+                    </button>
+                    <button onclick="loadSAPData()" style="padding: 12px 24px; background: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">
+                        📥 Daten laden
+                    </button>
+                </div>
+                
+                <!-- SAP Status -->
+                <div id="sapStatus" style="padding: 15px; background: #f8f9fa; border-radius: 8px; margin-bottom: 20px;">
+                    Status: Nicht verbunden
+                </div>
+                
+                <!-- SAP Data Table -->
+                <div id="sapDataContainer" style="display: none;">
+                    <h4>SAP Daten:</h4>
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: #f0f0f0;">
+                                <th style="padding: 10px; text-align: left;">Belegnummer</th>
+                                <th style="padding: 10px; text-align: left;">Lieferant</th>
+                                <th style="padding: 10px; text-align: left;">Betrag</th>
+                                <th style="padding: 10px; text-align: left;">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sapTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
         </div>
 
         <!-- Search & Filter -->
@@ -3340,6 +3392,62 @@
                 }
             }
         });
+        // ==========================
+        // SAP INTEGRATION FUNCTIONS
+        // ==========================
+        
+        function connectToSAP() {
+            const statusDiv = document.getElementById('sapStatus');
+            statusDiv.innerHTML = '⏳ Verbinde mit SAP...';
+            statusDiv.style.background = '#fff3cd';
+            
+            setTimeout(() => {
+                statusDiv.innerHTML = '✅ Erfolgreich mit SAP verbunden!';
+                statusDiv.style.background = '#d4edda';
+                showNotification('✅ SAP Verbindung hergestellt!', 'success');
+            }, 2000);
+        }
+        
+        function loadSAPData() {
+            const statusDiv = document.getElementById('sapStatus');
+            const dataContainer = document.getElementById('sapDataContainer');
+            const tableBody = document.getElementById('sapTableBody');
+            
+            statusDiv.innerHTML = '⏳ Lade Daten von SAP...';
+            
+            setTimeout(() => {
+                // Test-Daten
+                const testData = [
+                    { doc: '5100000847', vendor: 'Microsoft GmbH', amount: '45.000 €', status: 'Offen' },
+                    { doc: '5100000848', vendor: 'Amazon AWS', amount: '12.500 €', status: 'Bezahlt' },
+                    { doc: '5100000849', vendor: 'SAP SE', amount: '78.000 €', status: 'Prüfung' }
+                ];
+                
+                let html = '';
+                testData.forEach(row => {
+                    html += `
+                        <tr>
+                            <td style="padding: 10px; border-bottom: 1px solid #ddd;">${row.doc}</td>
+                            <td style="padding: 10px; border-bottom: 1px solid #ddd;">${row.vendor}</td>
+                            <td style="padding: 10px; border-bottom: 1px solid #ddd;">${row.amount}</td>
+                            <td style="padding: 10px; border-bottom: 1px solid #ddd;">
+                                <span style="background: ${row.status === 'Offen' ? '#ffc107' : row.status === 'Bezahlt' ? '#28a745' : '#17a2b8'}; 
+                                             color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px;">
+                                    ${row.status}
+                                </span>
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                tableBody.innerHTML = html;
+                dataContainer.style.display = 'block';
+                statusDiv.innerHTML = '✅ SAP Daten erfolgreich geladen!';
+                statusDiv.style.background = '#d4edda';
+                
+                showNotification('✅ 3 Rechnungen aus SAP geladen!', 'success');
+            }, 2000);
+        }
     </script>
 </body>
 </html>
