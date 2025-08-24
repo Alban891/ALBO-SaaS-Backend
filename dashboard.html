@@ -1695,50 +1695,143 @@
             <div class="role-description" id="roleDescription">
                 Wählen Sie eine Rolle, um spezialisierte Finance-Prompts zu sehen.
             </div>
-            <!-- SAP Integration View -->
-    <div class="mode-content" id="sap-view">
-        <!-- SAP Content kommt hier rein -->
+           <!-- SAP Integration View -->
+    <div class="mode-content" id="sap-view" style="display: none;">
         <div style="padding: 20px;">
-            <h2 style="color: white; margin-bottom: 30px;">🔗 SAP Integration</h2>
+            <h2 style="color: white; margin-bottom: 30px; font-size: 28px; font-weight: bold;">🔗 SAP S/4HANA Integration</h2>
             
-            <!-- Der SAP Demo Container -->
-            <div style="background: white; border-radius: 16px; padding: 30px;">
+            <!-- SAP Demo Container -->
+            <div style="background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
                 <!-- SAP Header -->
-                <div style="background: linear-gradient(135deg, #0A6EBD 0%, #053B50 100%); color: white; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
-                    <h3 style="margin: 0;">SAP S/4HANA Integration</h3>
-                    <p style="margin: 5px 0 0 0; opacity: 0.9;">Live-Verbindung zu Ihrem ERP-System</p>
+                <div style="background: linear-gradient(135deg, #0A6EBD 0%, #053B50 100%); color: white; padding: 25px;">
+                    <h3 style="margin: 0; font-size: 24px;">SAP S/4HANA Cloud</h3>
+                    <p style="margin: 8px 0 0 0; opacity: 0.9;">Enterprise Resource Planning - Live Connection</p>
                 </div>
                 
-                <!-- SAP Buttons -->
-                <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-                    <button onclick="connectToSAP()" style="padding: 12px 24px; background: #0A6EBD; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">
-                        🔌 Mit SAP verbinden
-                    </button>
-                    <button onclick="loadSAPData()" style="padding: 12px 24px; background: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">
-                        📥 Daten laden
-                    </button>
-                </div>
-                
-                <!-- SAP Status -->
-                <div id="sapStatus" style="padding: 15px; background: #f8f9fa; border-radius: 8px; margin-bottom: 20px;">
-                    Status: Nicht verbunden
-                </div>
-                
-                <!-- SAP Data Table -->
-                <div id="sapDataContainer" style="display: none;">
-                    <h4>SAP Daten:</h4>
-                    <table style="width: 100%; border-collapse: collapse;">
-                        <thead>
-                            <tr style="background: #f0f0f0;">
-                                <th style="padding: 10px; text-align: left;">Belegnummer</th>
-                                <th style="padding: 10px; text-align: left;">Lieferant</th>
-                                <th style="padding: 10px; text-align: left;">Betrag</th>
-                                <th style="padding: 10px; text-align: left;">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="sapTableBody">
-                        </tbody>
-                    </table>
+                <!-- SAP Content -->
+                <div style="padding: 30px;">
+                    <!-- Connection Status -->
+                    <div id="sapConnectionStatus" style="
+                        padding: 15px 20px;
+                        background: #f8f9fa;
+                        border-radius: 10px;
+                        margin-bottom: 25px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                    ">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span id="sapStatusIcon" style="font-size: 20px;">🔴</span>
+                            <span id="sapStatusText" style="font-weight: 600; color: #333;">Nicht verbunden</span>
+                        </div>
+                        <span id="sapSystem" style="color: #666; font-size: 14px;">System: S/4HANA 2024</span>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div style="display: flex; gap: 15px; margin-bottom: 30px; flex-wrap: wrap;">
+                        <button id="sapConnectBtn" onclick="connectToSAP()" style="
+                            padding: 12px 24px;
+                            background: linear-gradient(135deg, #0A6EBD, #053B50);
+                            color: white;
+                            border: none;
+                            border-radius: 8px;
+                            cursor: pointer;
+                            font-weight: 600;
+                            font-size: 15px;
+                            transition: all 0.3s;
+                        " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                            🔌 Mit SAP verbinden
+                        </button>
+                        
+                        <button id="sapLoadBtn" onclick="loadSAPData()" disabled style="
+                            padding: 12px 24px;
+                            background: #28a745;
+                            color: white;
+                            border: none;
+                            border-radius: 8px;
+                            cursor: pointer;
+                            font-weight: 600;
+                            font-size: 15px;
+                            transition: all 0.3s;
+                            opacity: 0.5;
+                        ">
+                            📥 Daten laden
+                        </button>
+                        
+                        <button id="sapAnalyzeBtn" onclick="analyzeSAPData()" disabled style="
+                            padding: 12px 24px;
+                            background: linear-gradient(135deg, #667eea, #764ba2);
+                            color: white;
+                            border: none;
+                            border-radius: 8px;
+                            cursor: pointer;
+                            font-weight: 600;
+                            font-size: 15px;
+                            transition: all 0.3s;
+                            opacity: 0.5;
+                        ">
+                            🤖 KI-Analyse
+                        </button>
+                    </div>
+                    
+                    <!-- Loading Spinner -->
+                    <div id="sapLoadingSpinner" style="display: none; text-align: center; padding: 40px;">
+                        <div style="
+                            width: 50px;
+                            height: 50px;
+                            border: 3px solid #f3f3f3;
+                            border-top: 3px solid #0A6EBD;
+                            border-radius: 50%;
+                            animation: spin 1s linear infinite;
+                            margin: 0 auto 20px;
+                        "></div>
+                        <p style="color: #666;">Verbinde mit SAP System...</p>
+                    </div>
+                    
+                    <!-- Data Display -->
+                    <div id="sapDataContainer" style="display: none;">
+                        <!-- Metrics -->
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
+                            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; text-align: center;">
+                                <div style="font-size: 32px; font-weight: bold; color: #0A6EBD;" id="sapInvoiceCount">0</div>
+                                <div style="color: #666; margin-top: 5px;">Offene Rechnungen</div>
+                            </div>
+                            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; text-align: center;">
+                                <div style="font-size: 32px; font-weight: bold; color: #28a745;" id="sapTotalAmount">0€</div>
+                                <div style="color: #666; margin-top: 5px;">Gesamtbetrag</div>
+                            </div>
+                            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; text-align: center;">
+                                <div style="font-size: 32px; font-weight: bold; color: #ffc107;" id="sapSavings">0€</div>
+                                <div style="color: #666; margin-top: 5px;">Skonto möglich</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Data Table -->
+                        <h4 style="margin-bottom: 15px; color: #333;">📊 SAP Finanzdaten</h4>
+                        <div style="overflow-x: auto;">
+                            <table style="width: 100%; border-collapse: collapse; background: white;">
+                                <thead>
+                                    <tr style="background: #f8f9fa;">
+                                        <th style="padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6;">Belegnummer</th>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6;">Lieferant</th>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6;">Betrag</th>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6;">Fälligkeit</th>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6;">Status</th>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6;">Aktion</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="sapTableBody">
+                                    <!-- Data will be inserted here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- AI Analysis Results -->
+                    <div id="sapAIResults" style="display: none; margin-top: 30px; padding: 20px; background: linear-gradient(135deg, rgba(102,126,234,0.1), rgba(118,75,162,0.1)); border-radius: 10px;">
+                        <h4 style="color: #667eea; margin-bottom: 15px;">🤖 KI-Analyse Ergebnis</h4>
+                        <div id="aiAnalysisContent"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -3393,61 +3486,70 @@
             }
         });
         // ==========================
-        // SAP INTEGRATION FUNCTIONS
-        // ==========================
+// SAP INTEGRATION FUNCTIONS
+// ==========================
+
+function connectToSAP() {
+    const statusIcon = document.getElementById('sapStatusIcon');
+    const statusText = document.getElementById('sapStatusText');
+    const spinner = document.getElementById('sapLoadingSpinner');
+    const loadBtn = document.getElementById('sapLoadBtn');
+    const connectBtn = document.getElementById('sapConnectBtn');
+    
+    // Show loading
+    spinner.style.display = 'block';
+    connectBtn.disabled = true;
+    
+    setTimeout(() => {
+        // Update status
+        statusIcon.textContent = '🟢';
+        statusText.textContent = 'Verbunden';
+        statusText.style.color = '#28a745';
         
-        function connectToSAP() {
-            const statusDiv = document.getElementById('sapStatus');
-            statusDiv.innerHTML = '⏳ Verbinde mit SAP...';
-            statusDiv.style.background = '#fff3cd';
-            
-            setTimeout(() => {
-                statusDiv.innerHTML = '✅ Erfolgreich mit SAP verbunden!';
-                statusDiv.style.background = '#d4edda';
-                showNotification('✅ SAP Verbindung hergestellt!', 'success');
-            }, 2000);
-        }
+        // Hide spinner
+        spinner.style.display = 'none';
         
-        function loadSAPData() {
-            const statusDiv = document.getElementById('sapStatus');
-            const dataContainer = document.getElementById('sapDataContainer');
-            const tableBody = document.getElementById('sapTableBody');
-            
-            statusDiv.innerHTML = '⏳ Lade Daten von SAP...';
-            
-            setTimeout(() => {
-                // Test-Daten
-                const testData = [
-                    { doc: '5100000847', vendor: 'Microsoft GmbH', amount: '45.000 €', status: 'Offen' },
-                    { doc: '5100000848', vendor: 'Amazon AWS', amount: '12.500 €', status: 'Bezahlt' },
-                    { doc: '5100000849', vendor: 'SAP SE', amount: '78.000 €', status: 'Prüfung' }
-                ];
-                
-                let html = '';
-                testData.forEach(row => {
-                    html += `
-                        <tr>
-                            <td style="padding: 10px; border-bottom: 1px solid #ddd;">${row.doc}</td>
-                            <td style="padding: 10px; border-bottom: 1px solid #ddd;">${row.vendor}</td>
-                            <td style="padding: 10px; border-bottom: 1px solid #ddd;">${row.amount}</td>
-                            <td style="padding: 10px; border-bottom: 1px solid #ddd;">
-                                <span style="background: ${row.status === 'Offen' ? '#ffc107' : row.status === 'Bezahlt' ? '#28a745' : '#17a2b8'}; 
-                                             color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px;">
-                                    ${row.status}
-                                </span>
-                            </td>
-                        </tr>
-                    `;
-                });
-                
-                tableBody.innerHTML = html;
-                dataContainer.style.display = 'block';
-                statusDiv.innerHTML = '✅ SAP Daten erfolgreich geladen!';
-                statusDiv.style.background = '#d4edda';
-                
-                showNotification('✅ 3 Rechnungen aus SAP geladen!', 'success');
-            }, 2000);
-        }
+        // Enable load button
+        loadBtn.disabled = false;
+        loadBtn.style.opacity = '1';
+        
+        // Change connect button
+        connectBtn.textContent = '✅ Verbunden';
+        connectBtn.style.background = '#28a745';
+        
+        showNotification('✅ Erfolgreich mit SAP verbunden!', 'success');
+    }, 2000);
+}
+
+function loadSAPData() {
+    const dataContainer = document.getElementById('sapDataContainer');
+    const tableBody = document.getElementById('sapTableBody');
+    const analyzeBtn = document.getElementById('sapAnalyzeBtn');
+    const spinner = document.getElementById('sapLoadingSpinner');
+    
+    // Show loading
+    spinner.style.display = 'block';
+    spinner.querySelector('p').textContent = 'Lade Daten aus SAP...';
+    
+    setTimeout(() => {
+        // Test data
+        const invoices = [
+            { doc: '5100000847', vendor: 'Microsoft Deutschland GmbH', amount: 45000, due: '2024-02-15', status: 'OPEN' },
+            { doc: '5100000848', vendor: 'Amazon Web Services', amount: 12500, due: '2024-02-10', status: 'OVERDUE' },
+            { doc: '5100000849', vendor: 'SAP Deutschland SE', amount: 78000, due: '2024-02-20', status: 'OPEN' },
+            { doc: '5100000850', vendor: 'PwC GmbH', amount: 25000, due: '2024-03-01', status: 'OPEN' },
+            { doc: '5100000851', vendor: 'DHL Express', amount: 3400, due: '2024-02-05', status: 'PAID' }
+        ];
+        
+        // Update metrics
+        document.getElementById('sapInvoiceCount').textContent = invoices.filter(i => i.status !== 'PAID').length;
+        document.getElementById('sapTotalAmount').textContent = invoices.reduce((sum, i) => sum + i.amount, 0).toLocaleString('de-DE') + '€';
+        document.getElementById('sapSavings').textContent = '3.740€';
+        
+        // Build table
+        let html = '';
+        invoices.forEach(inv => {
+            const statusColor = inv.status === 'OPEN' ? '#ffc107' : inv.status === 'PAID' ? '#28a745' :
     </script>
 </body>
 </html>
