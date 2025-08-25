@@ -911,6 +911,104 @@
         }, 3000);
     }
 
+    // Notion Integration
+    async function loadNotionPrompts() {
+        try {
+            showNotification('🔄 Lade Notion Prompts...', 'info');
+            
+            const response = await fetch('https://albo-saa-s-backend.vercel.app/api/notion-bundled');
+            const data = await response.json();
+            
+            if (data.success && data.prompts && data.prompts.length > 0) {
+                console.log('✅ Notion Prompts geladen:', data.prompts.length);
+                displayNotionPrompts(data.prompts);
+                showNotification(`✅ ${data.prompts.length} Prompts aus Notion geladen`, 'success');
+            } else {
+                console.log('Keine Notion Prompts gefunden');
+            }
+        } catch (error) {
+            console.error('Fehler beim Laden der Notion Prompts:', error);
+            showNotification('❌ Fehler beim Laden der Notion Prompts', 'error');
+        }
+    }
+
+    function displayNotionPrompts(prompts) {
+        // Create a new section in Executive View for Notion Prompts
+        const executiveView = document.getElementById('executive-view');
+        const notionSection = document.createElement('div');
+        notionSection.className = 'workflow-container';
+        notionSection.style.marginTop = '20px';
+        notionSection.innerHTML = `
+            <div class="workflow-header">
+                <div class="workflow-title">📚 Notion Prompts (${prompts.length})</div>
+                <button class="btn btn-primary" onclick="loadNotionPrompts()">🔄 Aktualisieren</button>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; margin-top: 20px;">
+                ${prompts.slice(0, 6).map(prompt => `
+                    <div style="
+                        background: linear-gradient(135deg, rgba(79,70,229,0.1), rgba(139,92,246,0.1));
+                        padding: 15px;
+                        border-radius: 10px;
+                        cursor: pointer;
+                        transition: all 0.3s;
+                        border: 1px solid rgba(79,70,229,0.2);
+                    " onmouseover="this.style.transform='translateY(-3px)'" 
+                       onmouseout="this.style.transform='translateY(0)'"
+                       onclick="executeNotionPrompt('${prompt.id}')">
+                        <h4 style="margin: 0 0 8px 0; color: #4f46e5;">
+                            ${prompt.title || 'Unbenannt'}
+                        </h4>
+                        <p style="margin: 0; font-size: 13px; color: #64748b;">
+                            ${prompt.promptText ? prompt.promptText.substring(0, 80) + '...' : 'Kein Text'}
+                        </p>
+                    </div>
+                `).join('')}
+            </div>
+            ${prompts.length > 6 ? `
+                <div style="text-align: center; margin-top: 15px;">
+                    <button class="btn btn-primary" onclick="showAllNotionPrompts()">
+                        Alle ${prompts.length} Prompts anzeigen
+                    </button>
+                </div>
+            ` : ''}
+        `;
+        
+        // Insert after agent performance section
+        const agentSection = executiveView.querySelector('.workflow-container');
+        if (agentSection && agentSection.nextSibling) {
+            executiveView.insertBefore(notionSection, agentSection.nextSibling);
+        } else {
+            executiveView.appendChild(notionSection);
+        }
+        
+        // Store prompts globally for later use
+        window.notionPrompts = prompts;
+    }
+
+    function executeNotionPrompt(promptId) {
+        const prompt = window.notionPrompts?.find(p => p.id === promptId);
+        if (!prompt) {
+            showNotification('❌ Prompt nicht gefunden', 'error');
+            return;
+        }
+        
+        // Here you would implement the actual execution
+        showNotification(`🚀 Führe aus: ${prompt.title}`, 'success');
+        
+        // Could open a modal or send to API
+        console.log('Executing prompt:', prompt);
+    }
+
+    function showAllNotionPrompts() {
+        showNotification('📚 Alle Prompts werden angezeigt...', 'info');
+        // Here you could open a modal with all prompts
+    }
+
+    // Load Notion prompts on startup
+    setTimeout(() => {
+        loadNotionPrompts();
+    }, 2000);
+
     // Simulate real-time updates
     setInterval(() => {
         if (currentMode === 'executive') {
