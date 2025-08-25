@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ALBO AI - Finance Automation Dashboard</title>
+    <title>ALBO AI - Intelligent Finance Automation</title>
     <style>
         * {
             margin: 0;
@@ -49,11 +49,6 @@
             transition: opacity 0.5s;
         }
 
-        .loading-content {
-            text-align: center;
-            color: white;
-        }
-
         .loading-spinner {
             width: 60px;
             height: 60px;
@@ -61,7 +56,6 @@
             border-top-color: white;
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
         }
 
         @keyframes spin {
@@ -78,7 +72,6 @@
             left: 0;
             right: 0;
             z-index: 1000;
-            transition: all 0.3s ease;
         }
 
         .header-content {
@@ -127,36 +120,6 @@
             box-shadow: 0 2px 10px rgba(79, 70, 229, 0.2);
         }
 
-        .header-actions {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .notification-badge {
-            position: relative;
-            cursor: pointer;
-            padding: 8px;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-        }
-
-        .notification-badge:hover {
-            background: var(--light);
-        }
-
-        .badge-count {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            background: var(--danger);
-            color: white;
-            font-size: 10px;
-            padding: 2px 5px;
-            border-radius: 10px;
-            font-weight: bold;
-        }
-
         /* Main Container */
         .main-container {
             margin-top: 80px;
@@ -166,7 +129,6 @@
             margin-right: auto;
         }
 
-        /* Mode Content */
         .mode-content {
             display: none;
             animation: fadeIn 0.5s ease;
@@ -187,10 +149,501 @@
             }
         }
 
-        /* Executive View Styles */
-        .executive-grid {
+        /* Agent Hierarchy Layout */
+        .agent-hierarchy {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .hierarchy-level {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .level-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--light);
+        }
+
+        .level-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .level-badge {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* Agent Cards with Unified View */
+        .agents-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .agent-card-unified {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .agent-card-unified:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .agent-header {
+            padding: 20px;
+            background: linear-gradient(135deg, rgba(79,70,229,0.1), rgba(139,92,246,0.1));
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .agent-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .agent-avatar {
+            font-size: 36px;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .agent-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .agent-name {
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 16px;
+        }
+
+        .agent-role {
+            font-size: 12px;
+            color: var(--gray);
+        }
+
+        .agent-status {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            background: white;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .status-indicator.online {
+            background: var(--success);
+        }
+
+        .status-indicator.busy {
+            background: var(--warning);
+        }
+
+        .status-indicator.idle {
+            background: var(--gray);
+        }
+
+        /* Agent Body with Tabs */
+        .agent-body {
+            padding: 0;
+        }
+
+        .agent-tabs {
+            display: flex;
+            background: var(--light);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .agent-tab {
+            flex: 1;
+            padding: 12px;
+            background: transparent;
+            border: none;
+            color: var(--gray);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .agent-tab.active {
+            color: var(--primary);
+            background: white;
+        }
+
+        .agent-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--primary);
+        }
+
+        .tab-badge {
+            background: var(--danger);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 10px;
+            margin-left: 5px;
+        }
+
+        /* Tab Content */
+        .tab-content {
+            padding: 15px;
+            min-height: 200px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .tab-content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .tab-content::-webkit-scrollbar-track {
+            background: var(--light);
+            border-radius: 3px;
+        }
+
+        .tab-content::-webkit-scrollbar-thumb {
+            background: var(--gray);
+            border-radius: 3px;
+        }
+
+        /* Task Items */
+        .task-item {
+            padding: 12px;
+            background: var(--light);
+            border-radius: 10px;
+            margin-bottom: 10px;
+            transition: all 0.3s;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .task-item:hover {
+            background: linear-gradient(135deg, rgba(79,70,229,0.1), rgba(139,92,246,0.1));
+            transform: translateX(5px);
+        }
+
+        .task-info {
+            flex: 1;
+        }
+
+        .task-title {
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .task-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 12px;
+            color: var(--gray);
+        }
+
+        .task-source {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .task-priority {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .priority-high {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+
+        .priority-medium {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+
+        .priority-low {
+            background: rgba(107, 114, 128, 0.1);
+            color: var(--gray);
+        }
+
+        /* Workflow Items */
+        .workflow-item {
+            padding: 15px;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            margin-bottom: 12px;
+        }
+
+        .workflow-header-inline {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .workflow-title {
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 14px;
+        }
+
+        .workflow-phase {
+            font-size: 11px;
+            color: var(--gray);
+            background: var(--light);
+            padding: 3px 8px;
+            border-radius: 6px;
+        }
+
+        .workflow-progress {
+            height: 6px;
+            background: var(--light);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .workflow-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+
+        .workflow-details {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--gray);
+        }
+
+        /* Playbook Section */
+        .playbook-section {
+            padding: 0;
+        }
+
+        .playbook-item {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .playbook-item:hover {
+            background: var(--light);
+        }
+
+        .playbook-title {
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 14px;
+        }
+
+        .playbook-count {
+            background: var(--primary);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+        }
+
+        /* Complex Workflow View */
+        .complex-workflow-container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .workflow-pipeline {
+            display: flex;
+            gap: 20px;
+            overflow-x: auto;
+            padding: 20px 0;
+        }
+
+        .pipeline-phase {
+            min-width: 250px;
+            background: var(--light);
+            border-radius: 12px;
+            padding: 20px;
+            position: relative;
+        }
+
+        .pipeline-phase.active {
+            background: linear-gradient(135deg, rgba(79,70,229,0.1), rgba(139,92,246,0.1));
+            border: 2px solid var(--primary);
+        }
+
+        .pipeline-phase.completed {
+            background: rgba(16, 185, 129, 0.1);
+            border: 2px solid var(--success);
+        }
+
+        .phase-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .phase-title {
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .phase-status {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            background: white;
+        }
+
+        .phase-tasks {
+            list-style: none;
+        }
+
+        .phase-task {
+            padding: 8px 0;
+            font-size: 13px;
+            color: var(--gray);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .phase-task.completed {
+            color: var(--success);
+            text-decoration: line-through;
+        }
+
+        /* Quick Actions */
+        .quick-actions-panel {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: white;
+            border-radius: 16px;
+            padding: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            display: none;
+            z-index: 100;
+        }
+
+        .quick-actions-panel.active {
+            display: block;
+        }
+
+        .fab {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(79, 70, 229, 0.3);
+            transition: all 0.3s ease;
+            z-index: 99;
+        }
+
+        .fab:hover {
+            transform: scale(1.1) rotate(90deg);
+        }
+
+        /* Notification Toast */
+        .notification-toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 20px;
+            background: var(--success);
+            color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            z-index: 10000;
+            font-weight: 500;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateX(-50%) translateY(100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* KPI Overview */
+        .kpi-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 20px;
             margin-bottom: 30px;
         }
@@ -198,41 +651,21 @@
         .kpi-card {
             background: white;
             border-radius: 16px;
-            padding: 24px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .kpi-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
-        }
-
-        .kpi-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 4px;
-            height: 100%;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-        }
-
-        .kpi-label {
-            color: var(--gray);
-            font-size: 14px;
-            margin-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
         }
 
         .kpi-value {
             font-size: 32px;
             font-weight: bold;
-            color: var(--dark);
-            margin-bottom: 8px;
+            color: var(--primary);
+            margin: 10px 0;
+        }
+
+        .kpi-label {
+            color: var(--gray);
+            font-size: 14px;
         }
 
         .kpi-change {
@@ -243,6 +676,7 @@
             border-radius: 6px;
             font-size: 12px;
             font-weight: 600;
+            margin-top: 10px;
         }
 
         .kpi-change.positive {
@@ -250,208 +684,19 @@
             color: var(--success);
         }
 
-        .kpi-change.negative {
-            background: rgba(239, 68, 68, 0.1);
-            color: var(--danger);
-        }
-
-        /* Team View Styles */
-        .team-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .agent-card {
-            background: white;
-            border-radius: 16px;
-            padding: 20px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-        }
-
-        .agent-card:hover {
-            transform: scale(1.05);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-        }
-
-        .agent-avatar {
-            font-size: 48px;
-            margin-bottom: 10px;
-        }
-
-        .agent-name {
-            font-weight: bold;
-            color: var(--dark);
-            margin-bottom: 5px;
-        }
-
-        .agent-status {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            margin-right: 5px;
-        }
-
-        .status-online {
-            background: var(--success);
-            animation: pulse 2s infinite;
-        }
-
-        .status-busy {
-            background: var(--warning);
-        }
-
-        .status-offline {
-            background: var(--gray);
-        }
-
-        @keyframes pulse {
-            0% {
-                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
-            }
-            70% {
-                box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
-            }
-            100% {
-                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
-            }
-        }
-
-        /* Workflow View */
-        .workflow-container {
-            background: white;
-            border-radius: 16px;
-            padding: 30px;
-            margin-bottom: 30px;
-        }
-
-        .workflow-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-        }
-
-        .workflow-title {
-            font-size: 24px;
-            font-weight: bold;
-            color: var(--dark);
-        }
-
-        /* Modal Styles */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.5);
-            z-index: 10000;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal.active {
-            display: flex;
-        }
-
-        .modal-content {
-            background: white;
-            border-radius: 16px;
-            width: 90%;
-            max-width: 700px;
-            max-height: 80vh;
-            overflow-y: auto;
-            animation: slideUp 0.3s ease;
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Button Styles */
-        .btn {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 14px;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
-        }
-
-        .btn-success {
-            background: var(--success);
-            color: white;
-        }
-
-        /* Notification Toast */
-        .notification-toast {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            padding: 15px 20px;
-            background: var(--success);
-            color: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-            z-index: 10000;
-            font-weight: 500;
-            animation: slideInRight 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        @keyframes slideInRight {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
         /* Responsive */
         @media (max-width: 768px) {
-            .header-content {
-                flex-direction: column;
-                gap: 15px;
-            }
-
-            .mode-switcher {
-                width: 100%;
-                justify-content: center;
-                flex-wrap: wrap;
-            }
-
-            .executive-grid,
-            .team-grid {
+            .agents-grid {
                 grid-template-columns: 1fr;
             }
-
-            .main-container {
-                padding: 1rem;
+            
+            .workflow-pipeline {
+                flex-direction: column;
+            }
+            
+            .mode-switcher {
+                flex-wrap: wrap;
+                justify-content: center;
             }
         }
     </style>
@@ -460,9 +705,9 @@
 
 <!-- Loading Screen -->
 <div class="loading-screen" id="loadingScreen">
-    <div class="loading-content">
+    <div style="text-align: center; color: white;">
         <div class="loading-spinner"></div>
-        <h2>ALBO AI lädt...</h2>
+        <h2 style="margin-top: 20px;">ALBO AI lädt...</h2>
     </div>
 </div>
 
@@ -470,42 +715,28 @@
 <header class="header">
     <div class="header-content">
         <div class="logo">
-            <span>🚀</span>
-            <span>ALBO AI</span>
+            🚀 ALBO AI
         </div>
         
         <div class="mode-switcher">
-            <button class="mode-btn active" onclick="switchMode('executive')">
-                <span>📊</span>
-                <span>Executive</span>
+            <button class="mode-btn active" onclick="switchMode('command')">
+                ⚡ Command Center
             </button>
-            <button class="mode-btn" onclick="switchMode('team')">
-                <span>👥</span>
-                <span>Team</span>
+            <button class="mode-btn" onclick="switchMode('agents')">
+                🤖 Agenten
             </button>
-            <button class="mode-btn" onclick="switchMode('workflow')">
-                <span>⚡</span>
-                <span>Workflows</span>
+            <button class="mode-btn" onclick="switchMode('workflows')">
+                📊 Workflows
             </button>
-            <button class="mode-btn" onclick="switchMode('sap')">
-                <span>🔗</span>
-                <span>SAP</span>
+            <button class="mode-btn" onclick="switchMode('playbooks')">
+                📚 Playbooks
             </button>
         </div>
         
-        <div class="header-actions">
-            <div class="notification-badge" onclick="checkForEmails()">
-                <span>📧</span>
-                <span class="badge-count" id="emailCount">0</span>
-            </div>
-            <div class="notification-badge">
-                <span>🔔</span>
-                <span class="badge-count">3</span>
-            </div>
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <span>👤</span>
-                <span style="font-weight: 600;">CFO</span>
-            </div>
+        <div style="display: flex; align-items: center; gap: 20px;">
+            <span style="padding: 8px 16px; background: #f0f9ff; color: #0369a1; border-radius: 8px; font-size: 14px; font-weight: 600;">
+                CFO View
+            </span>
         </div>
     </div>
 </header>
@@ -513,235 +744,520 @@
 <!-- Main Container -->
 <div class="main-container">
     
-    <!-- Executive View -->
-    <div class="mode-content active" id="executive-view">
-        <div class="executive-grid">
+    <!-- Command Center View -->
+    <div class="mode-content active" id="command-view">
+        <!-- KPI Overview -->
+        <div class="kpi-overview">
             <div class="kpi-card">
-                <div class="kpi-label">Umsatz YTD</div>
-                <div class="kpi-value">€12.4M</div>
-                <div class="kpi-change positive">
-                    <span>↑</span>
-                    <span>23% vs VJ</span>
-                </div>
+                <div class="kpi-label">Neue Tasks (24h)</div>
+                <div class="kpi-value">23</div>
+                <div class="kpi-change positive">↑ 15%</div>
             </div>
-            
             <div class="kpi-card">
-                <div class="kpi-label">EBITDA</div>
-                <div class="kpi-value">€2.3M</div>
-                <div class="kpi-change positive">
-                    <span>↑</span>
-                    <span>18% vs Plan</span>
-                </div>
+                <div class="kpi-label">Aktive Workflows</div>
+                <div class="kpi-value">7</div>
+                <div class="kpi-change positive">3 heute gestartet</div>
             </div>
-            
             <div class="kpi-card">
-                <div class="kpi-label">Cash Position</div>
-                <div class="kpi-value">€4.7M</div>
-                <div class="kpi-change negative">
-                    <span>↓</span>
-                    <span>5% vs Vormonat</span>
-                </div>
+                <div class="kpi-label">Completion Rate</div>
+                <div class="kpi-value">94%</div>
+                <div class="kpi-change positive">↑ 5%</div>
             </div>
-            
             <div class="kpi-card">
-                <div class="kpi-label">Working Capital</div>
-                <div class="kpi-value">€1.2M</div>
-                <div class="kpi-change positive">
-                    <span>↑</span>
-                    <span>Optimiert</span>
-                </div>
+                <div class="kpi-label">Zeit gespart</div>
+                <div class="kpi-value">147h</div>
+                <div class="kpi-change positive">Diese Woche</div>
             </div>
         </div>
 
-        <!-- Agent Performance -->
-        <div class="workflow-container">
-            <div class="workflow-header">
-                <div class="workflow-title">🤖 Agent Performance Today</div>
-                <button class="btn btn-primary" onclick="showAgentDetails()">Details</button>
-            </div>
+        <!-- Agent Hierarchy with Unified View -->
+        <div class="agent-hierarchy">
             
-            <div class="executive-grid">
-                <div class="kpi-card">
-                    <div class="kpi-label">Aktive Agenten</div>
-                    <div class="kpi-value">11/11</div>
-                    <div class="kpi-change positive">
-                        <span>●</span>
-                        <span>Alle Online</span>
-                    </div>
+            <!-- Strategic Layer -->
+            <div class="hierarchy-level">
+                <div class="level-header">
+                    <div class="level-title">👔 Strategische Ebene</div>
+                    <div class="level-badge">Executive</div>
                 </div>
                 
-                <div class="kpi-card">
-                    <div class="kpi-label">Tasks Completed</div>
-                    <div class="kpi-value">1,247</div>
-                    <div class="kpi-change positive">
-                        <span>↑</span>
-                        <span>99.7% Success</span>
+                <div class="agents-grid">
+                    <!-- CFO Agent -->
+                    <div class="agent-card-unified" onclick="expandAgent(this)">
+                        <div class="agent-header">
+                            <div class="agent-info">
+                                <div class="agent-avatar">👔</div>
+                                <div class="agent-details">
+                                    <div class="agent-name">CFO Agent</div>
+                                    <div class="agent-role">Orchestrator & Decision Maker</div>
+                                </div>
+                            </div>
+                            <div class="agent-status">
+                                <div class="status-indicator online"></div>
+                                <span>Online</span>
+                            </div>
+                        </div>
+                        
+                        <div class="agent-body">
+                            <div class="agent-tabs">
+                                <button class="agent-tab active" onclick="switchAgentTab(event, 'inbox')">
+                                    Inbox <span class="tab-badge">5</span>
+                                </button>
+                                <button class="agent-tab" onclick="switchAgentTab(event, 'workflows')">
+                                    Workflows <span class="tab-badge">2</span>
+                                </button>
+                                <button class="agent-tab" onclick="switchAgentTab(event, 'playbook')">
+                                    Playbook
+                                </button>
+                            </div>
+                            
+                            <div class="tab-content" data-tab="inbox">
+                                <div class="task-item" onclick="processTask(this)">
+                                    <div class="task-info">
+                                        <div class="task-title">Investment Freigabe €2M</div>
+                                        <div class="task-meta">
+                                            <span class="task-source">📧 Email</span>
+                                            <span>vor 2 Stunden</span>
+                                        </div>
+                                    </div>
+                                    <span class="task-priority priority-high">Urgent</span>
+                                </div>
+                                
+                                <div class="task-item" onclick="processTask(this)">
+                                    <div class="task-info">
+                                        <div class="task-title">Q4 Forecast Review</div>
+                                        <div class="task-meta">
+                                            <span class="task-source">📊 Controller</span>
+                                            <span>vor 5 Stunden</span>
+                                        </div>
+                                    </div>
+                                    <span class="task-priority priority-medium">Medium</span>
+                                </div>
+                            </div>
+                            
+                            <div class="tab-content" data-tab="workflows" style="display: none;">
+                                <div class="workflow-item">
+                                    <div class="workflow-header-inline">
+                                        <div class="workflow-title">Budget Planning 2025</div>
+                                        <div class="workflow-phase">Phase 3/5</div>
+                                    </div>
+                                    <div class="workflow-progress">
+                                        <div class="workflow-progress-bar" style="width: 60%;"></div>
+                                    </div>
+                                    <div class="workflow-details">
+                                        <span>60% Complete</span>
+                                        <span>Due: 15.02.</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="tab-content playbook-section" data-tab="playbook" style="display: none;">
+                                <div class="playbook-item">
+                                    <span class="playbook-title">Investment Decisions</span>
+                                    <span class="playbook-count">12 SOPs</span>
+                                </div>
+                                <div class="playbook-item">
+                                    <span class="playbook-title">Crisis Management</span>
+                                    <span class="playbook-count">8 SOPs</span>
+                                </div>
+                                <div class="playbook-item">
+                                    <span class="playbook-title">Board Reporting</span>
+                                    <span class="playbook-count">15 SOPs</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- M&A Agent -->
+                    <div class="agent-card-unified" onclick="expandAgent(this)">
+                        <div class="agent-header">
+                            <div class="agent-info">
+                                <div class="agent-avatar">🤝</div>
+                                <div class="agent-details">
+                                    <div class="agent-name">M&A Berater</div>
+                                    <div class="agent-role">Deal Analysis & Valuation</div>
+                                </div>
+                            </div>
+                            <div class="agent-status">
+                                <div class="status-indicator busy"></div>
+                                <span>Busy</span>
+                            </div>
+                        </div>
+                        
+                        <div class="agent-body">
+                            <div class="agent-tabs">
+                                <button class="agent-tab active" onclick="switchAgentTab(event, 'inbox')">
+                                    Inbox <span class="tab-badge">3</span>
+                                </button>
+                                <button class="agent-tab" onclick="switchAgentTab(event, 'workflows')">
+                                    Workflows <span class="tab-badge">1</span>
+                                </button>
+                                <button class="agent-tab" onclick="switchAgentTab(event, 'playbook')">
+                                    Playbook
+                                </button>
+                            </div>
+                            
+                            <div class="tab-content" data-tab="inbox">
+                                <div class="task-item" onclick="processTask(this)">
+                                    <div class="task-info">
+                                        <div class="task-title">Teaser: TechStartup GmbH</div>
+                                        <div class="task-meta">
+                                            <span class="task-source">📧 Goldman Sachs</span>
+                                            <span>heute 09:30</span>
+                                        </div>
+                                    </div>
+                                    <span class="task-priority priority-high">Urgent</span>
+                                </div>
+                                
+                                <div class="task-item" onclick="processTask(this)">
+                                    <div class="task-info">
+                                        <div class="task-title">NDA zur Prüfung</div>
+                                        <div class="task-meta">
+                                            <span class="task-source">📧 Email</span>
+                                            <span>gestern</span>
+                                        </div>
+                                    </div>
+                                    <span class="task-priority priority-medium">Medium</span>
+                                </div>
+                            </div>
+                            
+                            <div class="tab-content" data-tab="workflows" style="display: none;">
+                                <div class="workflow-item">
+                                    <div class="workflow-header-inline">
+                                        <div class="workflow-title">DD: TechStartup GmbH</div>
+                                        <div class="workflow-phase">Phase 2/4</div>
+                                    </div>
+                                    <div class="workflow-progress">
+                                        <div class="workflow-progress-bar" style="width: 40%;"></div>
+                                    </div>
+                                    <div class="workflow-details">
+                                        <span>Financial DD läuft</span>
+                                        <span>Deal: €15-20M</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="tab-content playbook-section" data-tab="playbook" style="display: none;">
+                                <div class="playbook-item">
+                                    <span class="playbook-title">Due Diligence Process</span>
+                                    <span class="playbook-count">25 SOPs</span>
+                                </div>
+                                <div class="playbook-item">
+                                    <span class="playbook-title">Valuation Models</span>
+                                    <span class="playbook-count">10 Templates</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
+            </div>
+
+            <!-- Operational Layer -->
+            <div class="hierarchy-level">
+                <div class="level-header">
+                    <div class="level-title">⚙️ Operative Ebene</div>
+                    <div class="level-badge">Operations</div>
+                </div>
                 
-                <div class="kpi-card">
-                    <div class="kpi-label">Zeit gespart</div>
-                    <div class="kpi-value">147h</div>
-                    <div class="kpi-change positive">
-                        <span>⚡</span>
-                        <span>Diese Woche</span>
+                <div class="agents-grid">
+                    <!-- Controller Agent -->
+                    <div class="agent-card-unified" onclick="expandAgent(this)">
+                        <div class="agent-header">
+                            <div class="agent-info">
+                                <div class="agent-avatar">📊</div>
+                                <div class="agent-details">
+                                    <div class="agent-name">Controller</div>
+                                    <div class="agent-role">Reporting & Analysis</div>
+                                </div>
+                            </div>
+                            <div class="agent-status">
+                                <div class="status-indicator online"></div>
+                                <span>Online</span>
+                            </div>
+                        </div>
+                        
+                        <div class="agent-body">
+                            <div class="agent-tabs">
+                                <button class="agent-tab active" onclick="switchAgentTab(event, 'inbox')">
+                                    Inbox <span class="tab-badge">8</span>
+                                </button>
+                                <button class="agent-tab" onclick="switchAgentTab(event, 'workflows')">
+                                    Workflows <span class="tab-badge">3</span>
+                                </button>
+                                <button class="agent-tab" onclick="switchAgentTab(event, 'playbook')">
+                                    Playbook
+                                </button>
+                            </div>
+                            
+                            <div class="tab-content" data-tab="inbox">
+                                <div class="task-item" onclick="processTask(this)">
+                                    <div class="task-info">
+                                        <div class="task-title">Monatsabschluss Oktober</div>
+                                        <div class="task-meta">
+                                            <span class="task-source">⚙️ Automatisch</span>
+                                            <span>Heute fällig</span>
+                                        </div>
+                                    </div>
+                                    <span class="task-priority priority-high">Urgent</span>
+                                </div>
+                            </div>
+                            
+                            <div class="tab-content" data-tab="workflows" style="display: none;">
+                                <div class="workflow-item">
+                                    <div class="workflow-header-inline">
+                                        <div class="workflow-title">Monatsabschluss Oktober</div>
+                                        <div class="workflow-phase">Phase 4/9</div>
+                                    </div>
+                                    <div class="workflow-progress">
+                                        <div class="workflow-progress-bar" style="width: 45%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="tab-content playbook-section" data-tab="playbook" style="display: none;">
+                                <div class="playbook-item">
+                                    <span class="playbook-title">Monatsabschluss</span>
+                                    <span class="playbook-count">9 Steps</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Treasury Agent -->
+                    <div class="agent-card-unified" onclick="expandAgent(this)">
+                        <div class="agent-header">
+                            <div class="agent-info">
+                                <div class="agent-avatar">🏦</div>
+                                <div class="agent-details">
+                                    <div class="agent-name">Treasury</div>
+                                    <div class="agent-role">Cash & Liquidity Management</div>
+                                </div>
+                            </div>
+                            <div class="agent-status">
+                                <div class="status-indicator online"></div>
+                                <span>Online</span>
+                            </div>
+                        </div>
+                        
+                        <div class="agent-body">
+                            <div class="agent-tabs">
+                                <button class="agent-tab active" onclick="switchAgentTab(event, 'inbox')">
+                                    Inbox <span class="tab-badge">2</span>
+                                </button>
+                                <button class="agent-tab" onclick="switchAgentTab(event, 'workflows')">
+                                    Workflows
+                                </button>
+                                <button class="agent-tab" onclick="switchAgentTab(event, 'playbook')">
+                                    Playbook
+                                </button>
+                            </div>
+                            
+                            <div class="tab-content" data-tab="inbox">
+                                <div class="task-item" onclick="processTask(this)">
+                                    <div class="task-info">
+                                        <div class="task-title">Cash Flow Forecast Update</div>
+                                        <div class="task-meta">
+                                            <span class="task-source">⚙️ Weekly</span>
+                                            <span>Morgen fällig</span>
+                                        </div>
+                                    </div>
+                                    <span class="task-priority priority-medium">Medium</span>
+                                </div>
+                            </div>
+                            
+                            <div class="tab-content" data-tab="workflows" style="display: none;">
+                                <p style="color: #94a3b8; text-align: center; padding: 20px;">Keine aktiven Workflows</p>
+                            </div>
+                            
+                            <div class="tab-content playbook-section" data-tab="playbook" style="display: none;">
+                                <div class="playbook-item">
+                                    <span class="playbook-title">Cash Forecasting</span>
+                                    <span class="playbook-count">13 Weeks Rolling</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Kreditor Agent -->
+                    <div class="agent-card-unified" onclick="expandAgent(this)">
+                        <div class="agent-header">
+                            <div class="agent-info">
+                                <div class="agent-avatar">💳</div>
+                                <div class="agent-details">
+                                    <div class="agent-name">Kreditor</div>
+                                    <div class="agent-role">Rechnungsverarbeitung</div>
+                                </div>
+                            </div>
+                            <div class="agent-status">
+                                <div class="status-indicator busy"></div>
+                                <span>Busy</span>
+                            </div>
+                        </div>
+                        
+                        <div class="agent-body">
+                            <div class="agent-tabs">
+                                <button class="agent-tab active" onclick="switchAgentTab(event, 'inbox')">
+                                    Inbox <span class="tab-badge">15</span>
+                                </button>
+                                <button class="agent-tab" onclick="switchAgentTab(event, 'workflows')">
+                                    Workflows
+                                </button>
+                                <button class="agent-tab" onclick="switchAgentTab(event, 'playbook')">
+                                    Playbook
+                                </button>
+                            </div>
+                            
+                            <div class="tab-content" data-tab="inbox">
+                                <div class="task-item" onclick="processTask(this)">
+                                    <div class="task-info">
+                                        <div class="task-title">15 neue Rechnungen</div>
+                                        <div class="task-meta">
+                                            <span class="task-source">📧 Email</span>
+                                            <span>Heute</span>
+                                        </div>
+                                    </div>
+                                    <span class="task-priority priority-high">Process</span>
+                                </div>
+                                
+                                <div class="task-item" onclick="processTask(this)">
+                                    <div class="task-info">
+                                        <div class="task-title">Skonto-Optimierung</div>
+                                        <div class="task-meta">
+                                            <span class="task-source">⚠️ Alert</span>
+                                            <span>3 Rechnungen</span>
+                                        </div>
+                                    </div>
+                                    <span class="task-priority priority-medium">€4,500 Saving</span>
+                                </div>
+                            </div>
+                            
+                            <div class="tab-content" data-tab="workflows" style="display: none;">
+                                <p style="color: #94a3b8; text-align: center; padding: 20px;">Automatische Verarbeitung läuft</p>
+                            </div>
+                            
+                            <div class="tab-content playbook-section" data-tab="playbook" style="display: none;">
+                                <div class="playbook-item">
+                                    <span class="playbook-title">3-Way-Match</span>
+                                    <span class="playbook-count">Auto-Process</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Team View -->
-    <div class="mode-content" id="team-view">
-        <h2 style="color: white; margin-bottom: 30px;">Mein Finance Team - 11 KI-Agenten</h2>
-        
-        <div class="team-grid">
-            <div class="agent-card" onclick="selectAgent('CFO')">
-                <div class="agent-avatar">👔</div>
-                <div class="agent-name">CFO</div>
-                <div><span class="agent-status status-online"></span>Online</div>
-            </div>
-            
-            <div class="agent-card" onclick="selectAgent('Controller')">
-                <div class="agent-avatar">📊</div>
-                <div class="agent-name">Controller</div>
-                <div><span class="agent-status status-busy"></span>Working</div>
-            </div>
-            
-            <div class="agent-card" onclick="selectAgent('Treasury')">
-                <div class="agent-avatar">🏦</div>
-                <div class="agent-name">Treasury</div>
-                <div><span class="agent-status status-online"></span>Online</div>
-            </div>
-            
-            <div class="agent-card" onclick="selectAgent('Bilanzbuchhalter')">
-                <div class="agent-avatar">📚</div>
-                <div class="agent-name">Bilanz</div>
-                <div><span class="agent-status status-online"></span>Online</div>
-            </div>
-            
-            <div class="agent-card" onclick="selectAgent('Kreditor')">
-                <div class="agent-avatar">💳</div>
-                <div class="agent-name">Kreditor</div>
-                <div><span class="agent-status status-busy"></span>Busy</div>
-            </div>
-            
-            <div class="agent-card" onclick="selectAgent('Debitor')">
-                <div class="agent-avatar">💰</div>
-                <div class="agent-name">Debitor</div>
-                <div><span class="agent-status status-online"></span>Online</div>
-            </div>
-            
-            <div class="agent-card" onclick="selectAgent('Anlagen')">
-                <div class="agent-avatar">🏭</div>
-                <div class="agent-name">Anlagen</div>
-                <div><span class="agent-status status-offline"></span>Idle</div>
-            </div>
-            
-            <div class="agent-card" onclick="selectAgent('Business Dev')">
-                <div class="agent-avatar">🚀</div>
-                <div class="agent-name">Business Dev</div>
-                <div><span class="agent-status status-online"></span>Online</div>
-            </div>
-            
-            <div class="agent-card" onclick="selectAgent('M&A')">
-                <div class="agent-avatar">🤝</div>
-                <div class="agent-name">M&A Berater</div>
-                <div><span class="agent-status status-busy"></span>Analyzing</div>
-            </div>
-            
-            <div class="agent-card" onclick="selectAgent('Anwalt')">
-                <div class="agent-avatar">⚖️</div>
-                <div class="agent-name">Anwalt</div>
-                <div><span class="agent-status status-online"></span>Online</div>
-            </div>
-            
-            <div class="agent-card" onclick="selectAgent('Steuerberater')">
-                <div class="agent-avatar">📋</div>
-                <div class="agent-name">Steuerberater</div>
-                <div><span class="agent-status status-online"></span>Online</div>
-            </div>
+    <!-- Agents Detail View -->
+    <div class="mode-content" id="agents-view">
+        <h2 style="color: white; margin-bottom: 20px;">Agent Management & Training</h2>
+        <div style="background: white; border-radius: 20px; padding: 30px;">
+            <p>Hier können Sie jeden Agenten im Detail konfigurieren und trainieren.</p>
         </div>
     </div>
 
-    <!-- Workflow View -->
-    <div class="mode-content" id="workflow-view">
-        <div class="workflow-container">
-            <div class="workflow-header">
-                <div class="workflow-title">⚡ Aktive Workflows</div>
-                <button class="btn btn-primary" onclick="createWorkflow()">+ Neuer Workflow</button>
-            </div>
+    <!-- Workflows View -->
+    <div class="mode-content" id="workflows-view">
+        <!-- Complex M&A Workflow -->
+        <div class="complex-workflow-container">
+            <h2 style="margin-bottom: 20px;">🤝 M&A Deal: TechStartup GmbH</h2>
             
-            <div style="padding: 20px; background: #f8f9fa; border-radius: 12px; margin-top: 20px;">
-                <h3 style="margin-bottom: 15px;">M&A Deal Pipeline</h3>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
-                    <button class="btn btn-success" onclick="startMAProcess('strategic-fit')" style="padding: 15px;">
-                        📋 Phase 1: Strategic Fit
-                    </button>
-                    <button class="btn btn-success" onclick="startMAProcess('due-diligence')" style="padding: 15px;">
-                        🔍 Phase 2: Due Diligence
-                    </button>
-                    <button class="btn btn-success" onclick="startMAProcess('valuation')" style="padding: 15px;">
-                        💰 Phase 3: Valuation
-                    </button>
-                    <button class="btn btn-success" onclick="startMAProcess('deal-structure')" style="padding: 15px;">
-                        📑 Phase 4: Deal Structure
-                    </button>
+            <div class="workflow-pipeline">
+                <div class="pipeline-phase completed">
+                    <div class="phase-header">
+                        <div class="phase-title">Phase 1: Screening</div>
+                        <div class="phase-status">✅</div>
+                    </div>
+                    <ul class="phase-tasks">
+                        <li class="phase-task completed">✓ Teaser analysiert</li>
+                        <li class="phase-task completed">✓ Strategic Fit geprüft</li>
+                        <li class="phase-task completed">✓ Go Decision</li>
+                    </ul>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- SAP View -->
-    <div class="mode-content" id="sap-view">
-        <div class="workflow-container">
-            <div class="workflow-header">
-                <div class="workflow-title">🔗 SAP S/4HANA Integration</div>
-                <div id="sapStatus" style="padding: 8px 16px; background: #ffebee; color: #c62828; border-radius: 8px;">
-                    ⚫ Nicht verbunden
-                </div>
-            </div>
-            
-            <div style="margin-top: 30px;">
-                <button class="btn btn-primary" onclick="connectToSAP()" style="padding: 12px 24px; font-size: 16px;">
-                    🔌 Mit SAP verbinden
-                </button>
                 
-                <button class="btn btn-success" id="loadDataBtn" onclick="loadSAPData()" disabled style="padding: 12px 24px; font-size: 16px; margin-left: 10px; opacity: 0.5;">
-                    📥 Daten laden
-                </button>
-            </div>
-            
-            <div id="sapDataSection" style="display: none; margin-top: 30px;">
-                <h3>SAP Daten</h3>
-                <div class="executive-grid" style="margin-top: 20px;">
-                    <div class="kpi-card">
-                        <div class="kpi-label">Offene Rechnungen</div>
-                        <div class="kpi-value" id="sapInvoices">0</div>
+                <div class="pipeline-phase active">
+                    <div class="phase-header">
+                        <div class="phase-title">Phase 2: Due Diligence</div>
+                        <div class="phase-status">🔄</div>
                     </div>
-                    <div class="kpi-card">
-                        <div class="kpi-label">Gesamtbetrag</div>
-                        <div class="kpi-value" id="sapAmount">€0</div>
+                    <ul class="phase-tasks">
+                        <li class="phase-task completed">✓ NDA signiert</li>
+                        <li class="phase-task">○ Financial DD (40%)</li>
+                        <li class="phase-task">○ Legal DD</li>
+                        <li class="phase-task">○ Technical DD</li>
+                    </ul>
+                </div>
+                
+                <div class="pipeline-phase">
+                    <div class="phase-header">
+                        <div class="phase-title">Phase 3: Valuation</div>
+                        <div class="phase-status">🔒</div>
                     </div>
-                    <div class="kpi-card">
-                        <div class="kpi-label">Skonto möglich</div>
-                        <div class="kpi-value" id="sapDiscount">€0</div>
+                    <ul class="phase-tasks">
+                        <li class="phase-task">○ DCF Model</li>
+                        <li class="phase-task">○ Multiples</li>
+                        <li class="phase-task">○ Synergies</li>
+                    </ul>
+                </div>
+                
+                <div class="pipeline-phase">
+                    <div class="phase-header">
+                        <div class="phase-title">Phase 4: Execution</div>
+                        <div class="phase-status">🔒</div>
                     </div>
+                    <ul class="phase-tasks">
+                        <li class="phase-task">○ Term Sheet</li>
+                        <li class="phase-task">○ SPA</li>
+                        <li class="phase-task">○ Closing</li>
+                    </ul>
                 </div>
             </div>
+            
+            <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 12px;">
+                <h4 style="margin-bottom: 15px;">Beteiligte Agenten:</h4>
+                <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                    <span style="padding: 8px 16px; background: white; border-radius: 8px;">🤝 M&A Lead</span>
+                    <span style="padding: 8px 16px; background: white; border-radius: 8px;">📊 Controller (Support)</span>
+                    <span style="padding: 8px 16px; background: white; border-radius: 8px;">⚖️ Anwalt (Legal DD)</span>
+                    <span style="padding: 8px 16px; background: white; border-radius: 8px;">📋 Steuerberater (Tax)</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Playbooks View -->
+    <div class="mode-content" id="playbooks-view">
+        <h2 style="color: white; margin-bottom: 20px;">📚 Agent Playbooks</h2>
+        <div style="background: white; border-radius: 20px; padding: 30px;">
+            <p>Definieren Sie hier SOPs und Trainingsmaterial für Ihre Agenten.</p>
         </div>
     </div>
 
 </div>
 
+<!-- Quick Actions FAB -->
+<button class="fab" onclick="toggleQuickActions()">+</button>
+
+<div class="quick-actions-panel" id="quickActionsPanel">
+    <h4 style="margin-bottom: 15px;">Quick Actions</h4>
+    <button onclick="startNewWorkflow()" style="display: block; width: 100%; padding: 10px; margin-bottom: 10px; border: none; background: #4f46e5; color: white; border-radius: 8px; cursor: pointer;">
+        🚀 Neuer Workflow
+    </button>
+    <button onclick="createTask()" style="display: block; width: 100%; padding: 10px; margin-bottom: 10px; border: none; background: #10b981; color: white; border-radius: 8px; cursor: pointer;">
+        ➕ Task erstellen
+    </button>
+    <button onclick="openChat()" style="display: block; width: 100%; padding: 10px; border: none; background: #06b6d4; color: white; border-radius: 8px; cursor: pointer;">
+        💬 Chat mit Agent
+    </button>
+</div>
+
 <script>
     // Global Variables
-    let currentMode = 'executive';
-    let sapConnected = false;
+    let currentMode = 'command';
+    let expandedAgent = null;
 
     // Initialize
     window.addEventListener('DOMContentLoaded', () => {
-        console.log('🎯 ALBO AI Dashboard initialized');
+        console.log('ALBO AI Unified Dashboard initialized');
         
         // Hide loading screen
         setTimeout(() => {
@@ -754,8 +1270,8 @@
             }
         }, 1000);
 
-        // Check for email parameter
-        checkForEmailData();
+        // Simulate incoming tasks
+        simulateIncomingTasks();
     });
 
     // Mode Switching
@@ -779,118 +1295,131 @@
         }
     }
 
-    // Email Functions
-    function checkForEmailData() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const sessionParam = urlParams.get('session');
+    // Agent Tab Switching
+    function switchAgentTab(event, tabName) {
+        event.stopPropagation();
         
-        if (sessionParam) {
-            try {
-                const sessionData = JSON.parse(atob(sessionParam));
-                console.log('📧 Email data found:', sessionData);
-                
-                // Update email count
-                const emailCount = document.getElementById('emailCount');
-                if (emailCount) {
-                    emailCount.textContent = '1';
-                }
-                
-                showNotification('📧 E-Mail aus Outlook geladen!', 'success');
-            } catch (error) {
-                console.error('Error decoding email data:', error);
-            }
-        }
-    }
-
-    function checkForEmails() {
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('session')) {
-            showNotification('📧 1 neue E-Mail verfügbar', 'info');
-        } else {
-            showNotification('Keine neuen E-Mails', 'info');
-        }
-    }
-
-    // Agent Functions
-    function selectAgent(agentName) {
-        showNotification(`Agent ${agentName} ausgewählt`, 'success');
-    }
-
-    function showAgentDetails() {
-        showNotification('Agent Details werden geladen...', 'info');
-    }
-
-    // Workflow Functions
-    function createWorkflow() {
-        const name = prompt('Name des neuen Workflows:');
-        if (name) {
-            showNotification(`Workflow "${name}" erstellt`, 'success');
-        }
-    }
-
-    function startMAProcess(phase) {
-        showNotification(`M&A ${phase} Phase gestartet`, 'success');
-    }
-
-    // SAP Functions
-    function connectToSAP() {
-        const statusDiv = document.getElementById('sapStatus');
-        const loadBtn = document.getElementById('loadDataBtn');
+        const tabButton = event.target.closest('.agent-tab');
+        const agentCard = tabButton.closest('.agent-card-unified');
         
-        statusDiv.innerHTML = '⏳ Verbinde...';
-        statusDiv.style.background = '#fff3cd';
-        statusDiv.style.color = '#856404';
+        // Update tab buttons
+        agentCard.querySelectorAll('.agent-tab').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        tabButton.classList.add('active');
+        
+        // Update tab content
+        agentCard.querySelectorAll('.tab-content').forEach(content => {
+            content.style.display = 'none';
+        });
+        
+        const targetContent = agentCard.querySelector(`.tab-content[data-tab="${tabName}"]`);
+        if (targetContent) {
+            targetContent.style.display = 'block';
+        }
+    }
+
+    // Process Task
+    function processTask(taskElement) {
+        event.stopPropagation();
+        
+        const taskTitle = taskElement.querySelector('.task-title').textContent;
+        
+        // Show processing notification
+        showNotification(`Processing: ${taskTitle}`, 'info');
+        
+        // Animate task removal
+        taskElement.style.transition = 'all 0.3s';
+        taskElement.style.transform = 'translateX(100%)';
+        taskElement.style.opacity = '0';
         
         setTimeout(() => {
-            sapConnected = true;
-            statusDiv.innerHTML = '✅ Verbunden';
-            statusDiv.style.background = '#d4edda';
-            statusDiv.style.color = '#155724';
+            taskElement.remove();
             
-            loadBtn.disabled = false;
-            loadBtn.style.opacity = '1';
+            // Update badge count
+            const agentCard = taskElement.closest('.agent-card-unified');
+            const inboxBadge = agentCard.querySelector('.agent-tab .tab-badge');
+            if (inboxBadge) {
+                const currentCount = parseInt(inboxBadge.textContent) || 0;
+                if (currentCount > 0) {
+                    inboxBadge.textContent = currentCount - 1;
+                }
+            }
             
-            showNotification('✅ Mit SAP verbunden!', 'success');
-        }, 2000);
+            showNotification(`Task "${taskTitle}" moved to workflow`, 'success');
+        }, 300);
     }
 
-    function loadSAPData() {
-        if (!sapConnected) {
-            showNotification('❌ Bitte erst mit SAP verbinden', 'error');
+    // Expand Agent
+    function expandAgent(agentCard) {
+        // Only expand on header click, not on internal elements
+        if (event.target.closest('.agent-body')) {
             return;
         }
         
-        showNotification('📥 Lade SAP Daten...', 'info');
-        
-        setTimeout(() => {
-            // Show data section
-            const dataSection = document.getElementById('sapDataSection');
-            if (dataSection) {
-                dataSection.style.display = 'block';
+        // Toggle expansion
+        if (expandedAgent === agentCard) {
+            agentCard.style.gridColumn = '';
+            expandedAgent = null;
+        } else {
+            if (expandedAgent) {
+                expandedAgent.style.gridColumn = '';
             }
+            agentCard.style.gridColumn = 'span 2';
+            expandedAgent = agentCard;
+        }
+    }
+
+    // Quick Actions
+    function toggleQuickActions() {
+        const panel = document.getElementById('quickActionsPanel');
+        panel.classList.toggle('active');
+    }
+
+    function startNewWorkflow() {
+        showNotification('Workflow-Wizard wird geöffnet...', 'info');
+        toggleQuickActions();
+    }
+
+    function createTask() {
+        showNotification('Task-Erstellung wird geöffnet...', 'info');
+        toggleQuickActions();
+    }
+
+    function openChat() {
+        showNotification('Agent-Chat wird geöffnet...', 'info');
+        toggleQuickActions();
+    }
+
+    // Simulate incoming tasks
+    function simulateIncomingTasks() {
+        setInterval(() => {
+            // Random notifications
+            const messages = [
+                '📧 Neue Email: Rechnung von Lieferant',
+                '🔔 Treasury Alert: Cash Position Update',
+                '✅ Workflow completed: Invoice Processing',
+                '⚠️ Skonto-Frist läuft morgen ab'
+            ];
             
-            // Update values
-            document.getElementById('sapInvoices').textContent = '47';
-            document.getElementById('sapAmount').textContent = '€163.5k';
-            document.getElementById('sapDiscount').textContent = '€3.7k';
-            
-            showNotification('✅ SAP Daten geladen', 'success');
-        }, 1500);
+            if (Math.random() > 0.7) {
+                const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+                showNotification(randomMessage, 'info');
+            }
+        }, 30000); // Every 30 seconds
     }
 
     // Notification System
     function showNotification(message, type = 'success') {
-        // Remove existing notification
         const existing = document.querySelector('.notification-toast');
         if (existing) {
             existing.remove();
         }
         
-        // Create new notification
         const notification = document.createElement('div');
         notification.className = 'notification-toast';
         
-        // Set background color based on type
+        // Set background based on type
         if (type === 'error') {
             notification.style.background = '#ef4444';
         } else if (type === 'info') {
@@ -899,127 +1428,27 @@
             notification.style.background = '#10b981';
         }
         
-        notification.innerHTML = message;
+        notification.textContent = message;
         document.body.appendChild(notification);
         
-        // Auto remove after 3 seconds
         setTimeout(() => {
-            notification.style.animation = 'slideInRight 0.3s ease reverse';
+            notification.style.animation = 'slideUp 0.3s ease reverse';
             setTimeout(() => {
                 notification.remove();
             }, 300);
         }, 3000);
     }
 
-    // Notion Integration
-    async function loadNotionPrompts() {
-        try {
-            showNotification('🔄 Lade Notion Prompts...', 'info');
-            
-            const response = await fetch('https://albo-saa-s-backend.vercel.app/api/notion-bundled');
-            const data = await response.json();
-            
-            if (data.success && data.prompts && data.prompts.length > 0) {
-                console.log('✅ Notion Prompts geladen:', data.prompts.length);
-                displayNotionPrompts(data.prompts);
-                showNotification(`✅ ${data.prompts.length} Prompts aus Notion geladen`, 'success');
-            } else {
-                console.log('Keine Notion Prompts gefunden');
-            }
-        } catch (error) {
-            console.error('Fehler beim Laden der Notion Prompts:', error);
-            showNotification('❌ Fehler beim Laden der Notion Prompts', 'error');
-        }
-    }
-
-    function displayNotionPrompts(prompts) {
-        // Create a new section in Executive View for Notion Prompts
-        const executiveView = document.getElementById('executive-view');
-        const notionSection = document.createElement('div');
-        notionSection.className = 'workflow-container';
-        notionSection.style.marginTop = '20px';
-        notionSection.innerHTML = `
-            <div class="workflow-header">
-                <div class="workflow-title">📚 Notion Prompts (${prompts.length})</div>
-                <button class="btn btn-primary" onclick="loadNotionPrompts()">🔄 Aktualisieren</button>
-            </div>
-            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; margin-top: 20px;">
-                ${prompts.slice(0, 6).map(prompt => `
-                    <div style="
-                        background: linear-gradient(135deg, rgba(79,70,229,0.1), rgba(139,92,246,0.1));
-                        padding: 15px;
-                        border-radius: 10px;
-                        cursor: pointer;
-                        transition: all 0.3s;
-                        border: 1px solid rgba(79,70,229,0.2);
-                    " onmouseover="this.style.transform='translateY(-3px)'" 
-                       onmouseout="this.style.transform='translateY(0)'"
-                       onclick="executeNotionPrompt('${prompt.id}')">
-                        <h4 style="margin: 0 0 8px 0; color: #4f46e5;">
-                            ${prompt.title || 'Unbenannt'}
-                        </h4>
-                        <p style="margin: 0; font-size: 13px; color: #64748b;">
-                            ${prompt.promptText ? prompt.promptText.substring(0, 80) + '...' : 'Kein Text'}
-                        </p>
-                    </div>
-                `).join('')}
-            </div>
-            ${prompts.length > 6 ? `
-                <div style="text-align: center; margin-top: 15px;">
-                    <button class="btn btn-primary" onclick="showAllNotionPrompts()">
-                        Alle ${prompts.length} Prompts anzeigen
-                    </button>
-                </div>
-            ` : ''}
-        `;
-        
-        // Insert after agent performance section
-        const agentSection = executiveView.querySelector('.workflow-container');
-        if (agentSection && agentSection.nextSibling) {
-            executiveView.insertBefore(notionSection, agentSection.nextSibling);
-        } else {
-            executiveView.appendChild(notionSection);
-        }
-        
-        // Store prompts globally for later use
-        window.notionPrompts = prompts;
-    }
-
-    function executeNotionPrompt(promptId) {
-        const prompt = window.notionPrompts?.find(p => p.id === promptId);
-        if (!prompt) {
-            showNotification('❌ Prompt nicht gefunden', 'error');
-            return;
-        }
-        
-        // Here you would implement the actual execution
-        showNotification(`🚀 Führe aus: ${prompt.title}`, 'success');
-        
-        // Could open a modal or send to API
-        console.log('Executing prompt:', prompt);
-    }
-
-    function showAllNotionPrompts() {
-        showNotification('📚 Alle Prompts werden angezeigt...', 'info');
-        // Here you could open a modal with all prompts
-    }
-
-    // Load Notion prompts on startup
-    setTimeout(() => {
-        loadNotionPrompts();
-    }, 2000);
-
-    // Simulate real-time updates
+    // Update KPIs periodically
     setInterval(() => {
-        if (currentMode === 'executive') {
-            const values = document.querySelectorAll('.kpi-value');
-            if (values.length > 0) {
-                const randomValue = values[Math.floor(Math.random() * values.length)];
-                randomValue.style.transform = 'scale(1.05)';
-                setTimeout(() => {
-                    randomValue.style.transform = 'scale(1)';
-                }, 300);
-            }
+        const kpiValues = document.querySelectorAll('.kpi-value');
+        if (kpiValues.length > 0 && currentMode === 'command') {
+            const randomKpi = kpiValues[Math.floor(Math.random() * kpiValues.length)];
+            randomKpi.style.transition = 'transform 0.3s';
+            randomKpi.style.transform = 'scale(1.1)';
+            setTimeout(() => {
+                randomKpi.style.transform = 'scale(1)';
+            }, 300);
         }
     }, 5000);
 </script>
