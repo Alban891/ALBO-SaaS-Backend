@@ -1553,93 +1553,51 @@ function showEmailInDashboard(email) {
     setTimeout(() => detectAgent(email), 2000);
 }
 
-// CSS Animation für Loading Bar
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes loading {
-        0% { width: 0%; }
-        100% { width: 100%; }
+// Funktion zur Agent-Erkennung
+function detectAgent(email) {
+    console.log('Erkenne passenden Agent für:', email.subject);
+    
+    // Einfache Keyword-basierte Agent-Erkennung
+    const text = (email.subject + ' ' + email.body).toLowerCase();
+    
+    let selectedAgent = 'Controller'; // Default
+    let confidence = 50;
+    
+    // Keywords für verschiedene Agenten
+    if (text.includes('rechnung') || text.includes('invoice') || text.includes('zahlung')) {
+        selectedAgent = 'Kreditor';
+        confidence = 85;
+    } else if (text.includes('liquidität') || text.includes('cash') || text.includes('hedging')) {
+        selectedAgent = 'Treasury';
+        confidence = 90;
+    } else if (text.includes('mahnung') || text.includes('forderung')) {
+        selectedAgent = 'Debitor';
+        confidence = 80;
     }
-`;
-document.head.appendChild(style);
-
-function showEmailInDashboard(email) {
-    console.log('Zeige Email:', email);
     
-    // Entferne alte Email-Box falls vorhanden
-    const oldBox = document.getElementById('email-processing-box');
-    if (oldBox) oldBox.remove();
-    
-    // Erstelle neue Box
-    const emailBox = document.createElement('div');
-    emailBox.id = 'email-processing-box';
-    emailBox.style.cssText = `
-        position: fixed;
-        top: 100px;
-        right: 20px;
-        width: 450px;
-        background: white;
-        border: 2px solid #4f46e5;
-        border-radius: 12px;
-        padding: 0;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.15);
-        z-index: 1000;
-    `;
-    
-    emailBox.innerHTML = `
-        <div style="background: linear-gradient(135deg, #4f46e5, #6366f1); color: white; padding: 15px; border-radius: 10px 10px 0 0;">
-            <h3 style="margin: 0;">📧 Email zur Verarbeitung</h3>
-        </div>
-        
-        <div style="padding: 20px;">
-            <div style="background: #f8f9fa; padding: 12px; border-radius: 8px; margin-bottom: 15px;">
-                <p style="margin: 5px 0;"><strong>Von:</strong> ${email.from || 'Unbekannt'}</p>
-                <p style="margin: 5px 0;"><strong>Betreff:</strong> ${email.subject || 'Kein Betreff'}</p>
-                <p style="margin: 5px 0;"><strong>Datum:</strong> ${new Date().toLocaleString('de-DE')}</p>
-            </div>
-            
-            <div style="background: #fff; border: 1px solid #e0e0e0; padding: 12px; border-radius: 8px; margin-bottom: 15px; max-height: 150px; overflow-y: auto;">
-                <strong>Inhalt:</strong><br>
-                <p style="margin: 5px 0;">${email.body || 'Kein Text'}</p>
-            </div>
-            
-            <div id="agent-selection" style="background: #f0f0ff; padding: 12px; border-radius: 8px; margin-bottom: 15px;">
-                <strong>🤖 Agent wird ermittelt...</strong>
-                <div style="margin-top: 10px;">
-                    <div style="background: white; height: 4px; border-radius: 2px; overflow: hidden;">
-                        <div style="background: #4f46e5; height: 100%; width: 0%; animation: loading 2s ease-out;" id="loading-bar"></div>
-                    </div>
+    // Update die Anzeige
+    const agentDiv = document.getElementById('agent-selection');
+    if (agentDiv) {
+        agentDiv.innerHTML = `
+            <strong>✅ Agent erkannt:</strong> ${selectedAgent}
+            <div style="margin-top: 8px;">
+                <small>Confidence: ${confidence}%</small>
+                <div style="background: #e0e0e0; height: 6px; border-radius: 3px; margin-top: 4px;">
+                    <div style="background: ${confidence > 70 ? '#10b981' : '#f59e0b'}; height: 100%; width: ${confidence}%; border-radius: 3px;"></div>
                 </div>
             </div>
-            
-            <div style="display: flex; gap: 10px;">
-                <button onclick="processEmailStep2()" style="
-                    flex: 1;
-                    background: #4f46e5;
-                    color: white;
-                    border: none;
-                    padding: 12px;
-                    border-radius: 6px;
-                    cursor: pointer;
-                    font-weight: 600;
-                ">Verarbeitung starten</button>
-                
-                <button onclick="document.getElementById('email-processing-box').remove()" style="
-                    background: #e0e0e0;
-                    color: #333;
-                    border: none;
-                    padding: 12px 20px;
-                    border-radius: 6px;
-                    cursor: pointer;
-                ">Abbrechen</button>
-            </div>
-        </div>
-    `;
+        `;
+    }
     
-    document.body.appendChild(emailBox);
-    
-    // Starte automatische Agent-Erkennung nach 2 Sekunden
-    setTimeout(() => detectAgent(email), 2000);
+    // Speichere den erkannten Agent
+    currentEmailData.detectedAgent = selectedAgent;
+    currentEmailData.confidence = confidence;
+}
+
+// Nächster Schritt in der Verarbeitung
+function processEmailStep2() {
+    console.log('Starte Verarbeitung mit Agent:', currentEmailData.detectedAgent);
+    alert('Email wird mit ' + currentEmailData.detectedAgent + ' Agent verarbeitet!');
 }
 
 // CSS Animation für Loading Bar
