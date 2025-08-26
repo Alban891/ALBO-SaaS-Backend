@@ -20,9 +20,10 @@ module.exports = async (req, res) => {
     }
 
     try {
-        const { emailContent, agent } = req.body;
+        const { emailContent, agent, needsAgentDetection } = req.body;
         console.log('Email Subject:', emailContent?.subject);
         console.log('Agent:', agent);
+        console.log('Needs Agent Detection:', needsAgentDetection);
 
         if (!emailContent) {
             return res.status(400).json({ error: 'Email content is required' });
@@ -45,7 +46,10 @@ module.exports = async (req, res) => {
                     categories: ["Setup Required"],
                     priority: "Hoch",
                     estimatedTime: "5 Minuten",
-                    fullAnalysis: "Der OpenAI API Key wurde noch nicht in Vercel konfiguriert. Ohne diesen Key können keine echten KI-Analysen durchgeführt werden."
+                    fullAnalysis: "Der OpenAI API Key wurde noch nicht in Vercel konfiguriert. Ohne diesen Key können keine echten KI-Analysen durchgeführt werden.",
+                    suggestedAgent: "Controller",
+                    confidence: 0.5,
+                    reasoning: "Standardauswahl ohne KI-Analyse"
                 },
                 metadata: {
                     agent: agent || 'Controller',
@@ -64,37 +68,92 @@ module.exports = async (req, res) => {
 
         console.log('Creating OpenAI completion...');
 
-        // Detaillierter System Prompt für Rechnungsanalyse
-        const systemPrompt = `Du bist ein spezialisierter ${agent || 'Debitorenbuchhalter'} AI-Agent für das deutsche Finanzwesen.
+        // ZUERST: Agent-Erkennung wenn benötigt
+        let detectedAgent = agent || 'Controller';
+        let agentConfidence = 1.0;
+        let agentReasoning = 'Manuell ausgewählt';
+        
+        if (needsAgentDetection || !agent) {
+            console.log('Performing AI agent detection...');
+            
+            const agentDetectionPrompt = `Du bist ein Finance-Experte. Analysiere diese Email und bestimme den passenden Agent.
 
-AUFGABE: Analysiere die folgende E-Mail sehr genau und extrahiere ALLE relevanten Informationen.
+Verfügbare Agenten und ihre Zuständigkeiten:
+- Kreditor: Eingangsrechnungen, Lieferanten, Verbindlichkeiten, Zahlungsausgänge, Bestellungen, Eingangsrechnungsprüfung
+- Debitor: Ausgangsrechnungen, Kundenforderungen, Mahnwesen, Zahlungseingänge, Kreditlimits, Forderungsmanagement
+- Controller: Reporting, Analysen, Budgets, Forecasts, KPIs, Abweichungsanalysen, Kostenstellenberichte
+- Treasury: Liquidität, Cash Management, Währungen, Hedging, Bankkonten, Finanzierungen, Zinsen
+- M&A: Mergers, Acquisitions, Due Diligence, Unternehmensbewertung, Deals, Beteiligungen
+- Anlagen: Anlagegüter, Abschreibungen, Investitionen, Anlagevermögen, AfA, Sachanlagen
+
+Analysiere die Email und antworte NUR im JSON Format:
+{
+  "suggestedAgent": "Name des Agents",
+  "confidence": 0.85,
+  "reasoning": "Kurze präzise Begründung auf Deutsch"
+}`;
+
+            const agentDetectionMessage = `Email zur Analyse:
+Betreff: ${emailContent.subject}
+Von: ${emailContent.from}
+Inhalt: ${emailContent.body}`;
+
+            try {
+                const agentCompletion = await openai.chat.completions.create({
+                    model: "gpt-4o-mini",
+                    messages: [
+                        { role: "system", content: agentDetectionPrompt },
+                        { role: "user", content: agentDetectionMessage }
+                    ],
+                    temperature: 0.1,
+                    max_tokens: 200,
+                    response_format: { type: "json_object" }
+                });
+
+                const agentResult = JSON.parse(agentCompletion.choices[0].message.content);
+                detectedAgent = agentResult.suggestedAgent || 'Controller';
+                agentConfidence = agentResult.confidence || 0.7;
+                agentReasoning = agentResult.reasoning || 'KI-Analyse durchgeführt';
+                
+                console.log('Agent detected:', detectedAgent, 'with confidence:', agentConfidence);
+            } catch (agentError) {
+                console.error('Agent detection failed:', agentError);
+                // Fallback bleibt bei default Werten
+            }
+        }
+
+        // DANN: Hauptanalyse mit dem erkannten/gewählten Agent
+        const systemPrompt = `Du bist ein spezialisierter ${detectedAgent} AI-Agent für das deutsche Finanzwesen.
+
+DEINE ROLLE: Als ${detectedAgent} bist du zuständig für:
+${getAgentResponsibilities(detectedAgent)}
+
+AUFGABE: Analysiere die folgende E-Mail aus der Perspektive eines ${detectedAgent} und extrahiere ALLE relevanten Informationen für deine Abteilung.
 
 Gib eine strukturierte Antwort in diesem Format:
 
-ZUSAMMENFASSUNG: (2-3 präzise Sätze über den Kern der E-Mail)
+ZUSAMMENFASSUNG: (2-3 präzise Sätze über den Kern der E-Mail aus ${detectedAgent}-Sicht)
 
 ERKANNTE DETAILS:
-- Rechnungsnummer: [Nummer falls vorhanden]
-- Betrag: [Betrag falls erwähnt]
-- Fälligkeitsstatus: [überfällig/offen/bezahlt]
-- Kunde/Lieferant: [Name falls erkennbar]
-- Datum: [relevante Daten]
+${getAgentSpecificDetailsPrompt(detectedAgent)}
 
 ACTION ITEMS:
-1. [Konkrete Aufgabe 1]
-2. [Konkrete Aufgabe 2]
+1. [Konkrete ${detectedAgent}-spezifische Aufgabe 1]
+2. [Konkrete ${detectedAgent}-spezifische Aufgabe 2]
 3. [Weitere falls nötig]
 
 NÄCHSTE SCHRITTE:
-[Klare Handlungsempfehlung in 1-2 Sätzen]
+[Klare Handlungsempfehlung aus ${detectedAgent}-Perspektive in 1-2 Sätzen]
 
-KATEGORIEN: [Zutreffende aus: Mahnwesen, Zahlungseingang, Rechnungsprüfung, Buchhaltung, Reporting, Compliance]
+KATEGORIEN: [Zutreffende aus deinem Bereich: ${getAgentCategories(detectedAgent)}]
 
-PRIORITÄT: [Hoch/Mittel/Niedrig basierend auf Dringlichkeit]
+PRIORITÄT: [Hoch/Mittel/Niedrig basierend auf Dringlichkeit für ${detectedAgent}]
 
 GESCHÄTZTER ZEITAUFWAND: [Realistische Schätzung]
 
 SAP-RELEVANZ: [Ja/Nein - Muss dies in SAP gebucht werden?]
+
+${getAgentSpecificInstructions(detectedAgent)}
 
 Sei sehr präzise und professionell. Antworte auf Deutsch.`;
 
@@ -106,14 +165,14 @@ An: ${emailContent.to || 'Nicht angegeben'}
 Inhalt:
 ${emailContent.body}`;
 
-        // OpenAI API Aufruf mit mehr Details
+        // Hauptanalyse
         const completion = await openai.chat.completions.create({
             model: "gpt-4o-mini",
             messages: [
                 { role: "system", content: systemPrompt },
                 { role: "user", content: userMessage }
             ],
-            temperature: 0.2, // Sehr niedrig für konsistente, faktische Antworten
+            temperature: 0.2,
             max_tokens: 1000,
             presence_penalty: 0.1,
             frequency_penalty: 0.1
@@ -123,19 +182,31 @@ ${emailContent.body}`;
         console.log('OpenAI Response received, length:', aiAnalysis.length);
 
         // Parse die strukturierte Antwort
+        const parsedAnalysis = parseStructuredAnalysis(aiAnalysis);
+        
+        // Füge Agent-Erkennungsergebnisse hinzu
+        parsedAnalysis.suggestedAgent = detectedAgent;
+        parsedAnalysis.confidence = agentConfidence;
+        parsedAnalysis.reasoning = agentReasoning;
+
         const response = {
             success: true,
             source: 'openai',
-            analysis: parseStructuredAnalysis(aiAnalysis),
+            analysis: parsedAnalysis,
             metadata: {
-                agent: agent || 'Debitorenbuchhalter',
+                agent: detectedAgent,
                 analyzedAt: new Date().toISOString(),
                 model: 'gpt-4o-mini',
                 emailLength: emailContent.body ? emailContent.body.length : 0,
-                tokensUsed: completion.usage?.total_tokens || 0
+                tokensUsed: completion.usage?.total_tokens || 0,
+                agentDetection: {
+                    performed: needsAgentDetection || !agent,
+                    confidence: agentConfidence,
+                    reasoning: agentReasoning
+                }
             },
             recommendations: {
-                suggestedPrompts: extractSuggestedPrompts(aiAnalysis, emailContent),
+                suggestedPrompts: extractAgentSpecificPrompts(aiAnalysis, emailContent, detectedAgent),
                 automationPossible: aiAnalysis.toLowerCase().includes('automatisch') || aiAnalysis.toLowerCase().includes('standard'),
                 sapRelevant: aiAnalysis.toLowerCase().includes('sap') || aiAnalysis.toLowerCase().includes('buchung')
             },
@@ -166,7 +237,10 @@ ${emailContent.body}`;
                 categories: ["Fehler"],
                 priority: "Hoch",
                 estimatedTime: "Unbekannt",
-                fullAnalysis: `Ein Fehler ist aufgetreten: ${error.message}`
+                fullAnalysis: `Ein Fehler ist aufgetreten: ${error.message}`,
+                suggestedAgent: "Controller",
+                confidence: 0,
+                reasoning: "Fehler bei der Analyse"
             }
         };
 
@@ -190,7 +264,82 @@ ${emailContent.body}`;
     }
 };
 
-// Hilfsfunktion zum Parsen der strukturierten Antwort
+// Neue Hilfsfunktionen für Agent-spezifische Prompts
+function getAgentResponsibilities(agent) {
+    const responsibilities = {
+        'Kreditor': 'Eingangsrechnungsprüfung, Lieferantenverwaltung, Zahlungsausgänge, Verbindlichkeiten, Skonto-Optimierung',
+        'Debitor': 'Forderungsmanagement, Mahnwesen, Zahlungseingänge, Kreditlimitprüfung, Kundenkontoführung',
+        'Controller': 'Reporting, Budgetierung, Forecast, KPI-Monitoring, Abweichungsanalysen, Kostenstellenrechnung',
+        'Treasury': 'Liquiditätsplanung, Cash Management, Währungsrisiken, Finanzierungen, Zinsmanagement',
+        'M&A': 'Due Diligence, Unternehmensbewertung, Deal-Strukturierung, Post-Merger-Integration',
+        'Anlagen': 'Anlagenbuchhaltung, AfA-Berechnung, Investitionscontrolling, Asset Management'
+    };
+    return responsibilities[agent] || 'Allgemeine Finanzaufgaben';
+}
+
+function getAgentSpecificDetailsPrompt(agent) {
+    const details = {
+        'Kreditor': `- Rechnungsnummer: [falls vorhanden]
+- Lieferant: [Name]
+- Rechnungsbetrag: [Betrag]
+- Zahlungsziel: [Datum]
+- Skonto: [falls erwähnt]
+- Bestellnummer: [falls vorhanden]`,
+        'Debitor': `- Rechnungsnummer: [falls vorhanden]
+- Kunde: [Name]
+- Forderungsbetrag: [Betrag]
+- Fälligkeitsstatus: [überfällig/offen/bezahlt]
+- Mahnstufe: [falls relevant]
+- Kreditlimit: [falls erwähnt]`,
+        'Controller': `- Berichtsperiode: [falls erwähnt]
+- KPIs/Kennzahlen: [falls vorhanden]
+- Budget/Ist-Abweichung: [falls relevant]
+- Kostenstelle: [falls erwähnt]
+- Forecast-Anpassung: [falls relevant]`,
+        'Treasury': `- Liquiditätsbedarf: [falls erwähnt]
+- Währung: [falls relevant]
+- Zinssatz: [falls vorhanden]
+- Bank/Finanzinstitut: [Name]
+- Hedging-Bedarf: [falls relevant]`,
+        'M&A': `- Target-Unternehmen: [Name falls erwähnt]
+- Deal-Volumen: [falls vorhanden]
+- Due Diligence Phase: [falls relevant]
+- Closing-Datum: [falls erwähnt]
+- Synergien: [falls identifiziert]`,
+        'Anlagen': `- Anlagennummer: [falls vorhanden]
+- Anschaffungswert: [Betrag]
+- Nutzungsdauer: [Jahre]
+- AfA-Methode: [falls erwähnt]
+- Restwert: [falls relevant]`
+    };
+    return details[agent] || '- Relevante Details extrahieren';
+}
+
+function getAgentCategories(agent) {
+    const categories = {
+        'Kreditor': 'Rechnungsprüfung, Zahlungsfreigabe, Lieferantenkommunikation, Verbindlichkeiten, Skonto',
+        'Debitor': 'Mahnwesen, Zahlungseingang, Forderungen, Kreditprüfung, Kundenkommunikation',
+        'Controller': 'Reporting, Budget, Forecast, KPI-Analyse, Abweichungen, Kostenkontrolle',
+        'Treasury': 'Liquidität, Finanzierung, Währung, Zinsen, Banking, Cash-Management',
+        'M&A': 'Due-Diligence, Valuation, Deal-Structuring, Integration, Synergien',
+        'Anlagen': 'Anschaffung, Abschreibung, Wartung, Verkauf, Inventur'
+    };
+    return categories[agent] || 'Finanzwesen, Buchhaltung, Compliance';
+}
+
+function getAgentSpecificInstructions(agent) {
+    const instructions = {
+        'Kreditor': 'ZUSÄTZLICH: Prüfe auf Skonto-Möglichkeiten und Zahlungsfristen. Achte auf Compliance mit Einkaufsrichtlinien.',
+        'Debitor': 'ZUSÄTZLICH: Bewerte das Zahlungsausfallrisiko und schlage ggf. Mahnmaßnahmen vor.',
+        'Controller': 'ZUSÄTZLICH: Identifiziere Optimierungspotentiale und relevante KPIs für das Management Reporting.',
+        'Treasury': 'ZUSÄTZLICH: Bewerte Liquiditätsauswirkungen und Währungsrisiken.',
+        'M&A': 'ZUSÄTZLICH: Identifiziere Deal-Breaker und Synergiepotentiale.',
+        'Anlagen': 'ZUSÄTZLICH: Prüfe auf steuerliche Optimierungsmöglichkeiten bei Abschreibungen.'
+    };
+    return instructions[agent] || '';
+}
+
+// Erweiterte Hilfsfunktion zum Parsen der strukturierten Antwort
 function parseStructuredAnalysis(text) {
     const analysis = {
         summary: "",
@@ -214,17 +363,21 @@ function parseStructuredAnalysis(text) {
     if (detailsMatch) {
         const details = detailsMatch[1];
         
-        // Rechnungsnummer
-        const invoiceMatch = details.match(/Rechnungsnummer:?\s*(\S+)/i);
-        if (invoiceMatch) analysis.extractedDetails.invoiceNumber = invoiceMatch[1];
+        // Verschiedene Detail-Typen extrahieren
+        const patterns = {
+            invoiceNumber: /Rechnungsnummer:?\s*(\S+)/i,
+            amount: /(?:Betrag|Rechnungsbetrag|Forderungsbetrag):?\s*([\d,\.]+\s*(?:EUR|€)?)/i,
+            status: /(?:status|Fälligkeitsstatus):?\s*(\S+)/i,
+            customer: /Kunde:?\s*(.+?)(?=\n|$)/i,
+            supplier: /Lieferant:?\s*(.+?)(?=\n|$)/i,
+            dueDate: /(?:Zahlungsziel|Fälligkeit):?\s*(.+?)(?=\n|$)/i,
+            discount: /Skonto:?\s*(.+?)(?=\n|$)/i
+        };
         
-        // Betrag
-        const amountMatch = details.match(/Betrag:?\s*([\d,\.]+\s*(?:EUR|€)?)/i);
-        if (amountMatch) analysis.extractedDetails.amount = amountMatch[1];
-        
-        // Status
-        const statusMatch = details.match(/status:?\s*(\S+)/i);
-        if (statusMatch) analysis.extractedDetails.status = statusMatch[1];
+        for (const [key, pattern] of Object.entries(patterns)) {
+            const match = details.match(pattern);
+            if (match) analysis.extractedDetails[key] = match[1].trim();
+        }
     }
 
     // Action Items extrahieren
@@ -260,33 +413,91 @@ function parseStructuredAnalysis(text) {
         analysis.estimatedTime = timeMatch[1].trim();
     }
 
+    // SAP-Relevanz
+    const sapMatch = text.match(/SAP-RELEVANZ:?\s*(Ja|Nein)/i);
+    if (sapMatch) {
+        analysis.sapRelevant = sapMatch[1].toLowerCase() === 'ja';
+    }
+
     return analysis;
 }
 
-// Verbesserte Prompt-Vorschläge basierend auf E-Mail-Inhalt
-function extractSuggestedPrompts(analysis, emailContent) {
+// Agent-spezifische Prompt-Vorschläge
+function extractAgentSpecificPrompts(analysis, emailContent, agent) {
     const prompts = [];
     const content = (analysis + ' ' + emailContent.body).toLowerCase();
     
-    if (content.includes('rechnung')) {
-        if (content.includes('mahnung') || content.includes('überfällig')) {
-            prompts.push('Mahnprozess für überfällige Rechnung einleiten');
-            prompts.push('Zahlungserinnerung mit Verzugszinsen erstellen');
-        } else {
-            prompts.push('Rechnungsprüfung nach §14 UStG durchführen');
-            prompts.push('Rechnung zur Zahlung freigeben');
+    const agentPrompts = {
+        'Kreditor': {
+            keywords: ['rechnung', 'lieferant', 'zahlung', 'bestellung'],
+            prompts: [
+                'Rechnung zur Zahlung freigeben',
+                'Skonto-Frist prüfen und nutzen',
+                'Drei-Wege-Abgleich durchführen',
+                'Lieferantenstammdaten aktualisieren'
+            ]
+        },
+        'Debitor': {
+            keywords: ['mahnung', 'forderung', 'kunde', 'zahlung'],
+            prompts: [
+                'Mahnlauf starten',
+                'Zahlungserinnerung versenden',
+                'Kreditlimit überprüfen',
+                'Offene Posten abstimmen'
+            ]
+        },
+        'Controller': {
+            keywords: ['report', 'budget', 'forecast', 'analyse'],
+            prompts: [
+                'Monatsbericht erstellen',
+                'Budget-Ist-Vergleich durchführen',
+                'Forecast aktualisieren',
+                'KPI-Dashboard updaten'
+            ]
+        },
+        'Treasury': {
+            keywords: ['liquidität', 'währung', 'kredit', 'bank'],
+            prompts: [
+                'Liquiditätsplanung aktualisieren',
+                'Währungshedging prüfen',
+                'Kreditlinien optimieren',
+                'Cash-Pooling durchführen'
+            ]
+        },
+        'M&A': {
+            keywords: ['deal', 'acquisition', 'merger', 'due diligence'],
+            prompts: [
+                'Due Diligence Checkliste abarbeiten',
+                'Valuation Model aktualisieren',
+                'Synergiepotentiale quantifizieren',
+                'Integration Plan erstellen'
+            ]
+        },
+        'Anlagen': {
+            keywords: ['anlage', 'abschreibung', 'investition', 'afa'],
+            prompts: [
+                'AfA-Lauf durchführen',
+                'Anlagenzugang buchen',
+                'Inventur vorbereiten',
+                'Investitionsantrag prüfen'
+            ]
+        }
+    };
+    
+    const agentConfig = agentPrompts[agent] || agentPrompts['Controller'];
+    
+    // Prüfe Keywords und füge relevante Prompts hinzu
+    for (const keyword of agentConfig.keywords) {
+        if (content.includes(keyword)) {
+            prompts.push(...agentConfig.prompts.slice(0, 2));
+            break;
         }
     }
     
-    if (content.includes('zahlung')) {
-        prompts.push('Zahlungseingang verbuchen');
-        prompts.push('Offene Posten abgleichen');
+    // Falls keine Keywords gefunden, nutze Standard-Prompts
+    if (prompts.length === 0) {
+        prompts.push(...agentConfig.prompts.slice(0, 3));
     }
     
-    if (content.includes('kredit') || content.includes('limit')) {
-        prompts.push('Kreditlimit prüfen und anpassen');
-        prompts.push('Bonitätsprüfung durchführen');
-    }
-    
-    return prompts.slice(0, 3);
+    return [...new Set(prompts)].slice(0, 3); // Deduplizieren und max 3 zurückgeben
 }
