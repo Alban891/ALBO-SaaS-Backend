@@ -1685,9 +1685,13 @@
             return;
         }
         
-        // Toggle expansion
+      // Toggle expansion
         if (expandedAgent === agentCard) {
             agentCard.style.gridColumn = '';
+            expandedAgent = null;
+        } else {
+            if (expandedAgent) {
+                expandedAgent.style.gridColumn = '';
             }
             agentCard.style.gridColumn = 'span 2';
             expandedAgent = agentCard;
