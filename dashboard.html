@@ -1474,61 +1474,94 @@ window.addEventListener('message', function(event) {
     }
 });
 
-// Funktion um Email anzuzeigen
 function showEmailInDashboard(email) {
     console.log('Zeige Email:', email);
     
-    // Erstelle eine Box für die Email
+    // Entferne alte Email-Box falls vorhanden
+    const oldBox = document.getElementById('email-processing-box');
+    if (oldBox) oldBox.remove();
+    
+    // Erstelle neue Box
     const emailBox = document.createElement('div');
+    emailBox.id = 'email-processing-box';
     emailBox.style.cssText = `
         position: fixed;
         top: 100px;
         right: 20px;
-        width: 400px;
+        width: 450px;
         background: white;
         border: 2px solid #4f46e5;
-        border-radius: 10px;
-        padding: 20px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        border-radius: 12px;
+        padding: 0;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.15);
         z-index: 1000;
     `;
     
     emailBox.innerHTML = `
-        <h3 style="margin-top: 0; color: #4f46e5;">📧 Email empfangen</h3>
-        <p><strong>Von:</strong> ${email.from || 'Unbekannt'}</p>
-        <p><strong>Betreff:</strong> ${email.subject || 'Kein Betreff'}</p>
-        <p><strong>Text:</strong> ${email.body ? email.body.substring(0, 100) + '...' : 'Kein Text'}</p>
-        <button onclick="processEmail()" style="
-            background: #4f46e5;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 10px;
-        ">Email verarbeiten</button>
-        <button onclick="this.parentElement.remove()" style="
-            background: #gray;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 10px;
-            margin-left: 10px;
-        ">Schließen</button>
+        <div style="background: linear-gradient(135deg, #4f46e5, #6366f1); color: white; padding: 15px; border-radius: 10px 10px 0 0;">
+            <h3 style="margin: 0;">📧 Email zur Verarbeitung</h3>
+        </div>
+        
+        <div style="padding: 20px;">
+            <div style="background: #f8f9fa; padding: 12px; border-radius: 8px; margin-bottom: 15px;">
+                <p style="margin: 5px 0;"><strong>Von:</strong> ${email.from || 'Unbekannt'}</p>
+                <p style="margin: 5px 0;"><strong>Betreff:</strong> ${email.subject || 'Kein Betreff'}</p>
+                <p style="margin: 5px 0;"><strong>Datum:</strong> ${new Date().toLocaleString('de-DE')}</p>
+            </div>
+            
+            <div style="background: #fff; border: 1px solid #e0e0e0; padding: 12px; border-radius: 8px; margin-bottom: 15px; max-height: 150px; overflow-y: auto;">
+                <strong>Inhalt:</strong><br>
+                <p style="margin: 5px 0;">${email.body || 'Kein Text'}</p>
+            </div>
+            
+            <div id="agent-selection" style="background: #f0f0ff; padding: 12px; border-radius: 8px; margin-bottom: 15px;">
+                <strong>🤖 Agent wird ermittelt...</strong>
+                <div style="margin-top: 10px;">
+                    <div style="background: white; height: 4px; border-radius: 2px; overflow: hidden;">
+                        <div style="background: #4f46e5; height: 100%; width: 0%; animation: loading 2s ease-out;" id="loading-bar"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 10px;">
+                <button onclick="processEmailStep2()" style="
+                    flex: 1;
+                    background: #4f46e5;
+                    color: white;
+                    border: none;
+                    padding: 12px;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    font-weight: 600;
+                ">Verarbeitung starten</button>
+                
+                <button onclick="document.getElementById('email-processing-box').remove()" style="
+                    background: #e0e0e0;
+                    color: #333;
+                    border: none;
+                    padding: 12px 20px;
+                    border-radius: 6px;
+                    cursor: pointer;
+                ">Abbrechen</button>
+            </div>
+        </div>
     `;
     
     document.body.appendChild(emailBox);
+    
+    // Starte automatische Agent-Erkennung nach 2 Sekunden
+    setTimeout(() => detectAgent(email), 2000);
 }
 
-// Test-Funktion
-function processEmail() {
-    console.log('Verarbeite Email:', currentEmailData);
-    alert('Email wird verarbeitet: ' + currentEmailData.subject);
-}
-
-console.log('Dashboard bereit für Emails!');
+// CSS Animation für Loading Bar
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes loading {
+        0% { width: 0%; }
+        100% { width: 100%; }
+    }
+`;
+document.head.appendChild(style);
 </script>
 
 </body>
