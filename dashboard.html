@@ -699,6 +699,175 @@
                 justify-content: center;
             }
         }
+        /* Email Center Styles */
+.email-center-container {
+    display: grid;
+    gap: 30px;
+}
+
+.email-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.email-stat-card {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    text-align: center;
+}
+
+.email-stat-value {
+    font-size: 36px;
+    font-weight: bold;
+    color: var(--primary);
+    margin: 10px 0;
+}
+
+.email-stat-label {
+    color: var(--gray);
+    font-size: 14px;
+}
+
+.email-main-grid {
+    display: grid;
+    grid-template-columns: 400px 1fr;
+    gap: 30px;
+}
+
+.email-import-box {
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    height: fit-content;
+}
+
+.email-drop-zone {
+    border: 3px dashed #e5e7eb;
+    border-radius: 12px;
+    padding: 40px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: #f9fafb;
+}
+
+.email-drop-zone:hover {
+    border-color: var(--primary);
+    background: rgba(79, 70, 229, 0.05);
+}
+
+.email-drop-zone.active {
+    border-color: var(--secondary);
+    background: rgba(6, 182, 212, 0.05);
+}
+
+.email-queue-box {
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.email-item {
+    background: #f9fafb;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 15px;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.email-item:hover {
+    border-color: var(--primary);
+    transform: translateX(5px);
+}
+
+.email-item.processing {
+    border-color: var(--warning);
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.05), rgba(245, 158, 11, 0.1));
+    animation: pulse-email 2s infinite;
+}
+
+@keyframes pulse-email {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.8; }
+}
+
+.email-routing-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-top: 15px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.agent-assignment-badge {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.confidence-indicator {
+    flex: 1;
+    height: 6px;
+    background: #e5e7eb;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.confidence-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--success), #34d399);
+    border-radius: 3px;
+    transition: width 1s ease;
+}
+
+.agent-inbox-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin-top: 30px;
+}
+
+.agent-inbox-card {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+}
+
+.agent-inbox-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.inbox-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.inbox-count {
+    background: var(--danger);
+    color: white;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: bold;
+}
     </style>
 </head>
 <body>
@@ -721,6 +890,9 @@
         <div class="mode-switcher">
             <button class="mode-btn active" onclick="switchMode('command')">
                 ⚡ Command Center
+            </button>
+            <button class="mode-btn" onclick="switchMode('emails')">
+                📧 Email Center
             </button>
             <button class="mode-btn" onclick="switchMode('agents')">
                 🤖 Agenten
@@ -1249,6 +1421,385 @@
         💬 Chat mit Agent
     </button>
 </div>
+<div class="mode-content" id="emails-view">
+    <div class="email-center-container">
+        
+        <!-- Email Statistiken -->
+        <div class="email-stats-grid">
+            <div class="email-stat-card">
+                <div class="email-stat-label">Emails heute</div>
+                <div class="email-stat-value" id="emailsToday">0</div>
+            </div>
+            <div class="email-stat-card">
+                <div class="email-stat-label">Auto-geroutet</div>
+                <div class="email-stat-value" id="emailsRouted">0</div>
+            </div>
+            <div class="email-stat-card">
+                <div class="email-stat-label">In Bearbeitung</div>
+                <div class="email-stat-value" id="emailsProcessing">0</div>
+            </div>
+            <div class="email-stat-card">
+                <div class="email-stat-label">KI Confidence Ø</div>
+                <div class="email-stat-value" id="avgConfidence">0%</div>
+            </div>
+        </div>
+
+        <!-- Hauptbereich -->
+        <div class="email-main-grid">
+            
+            <!-- Email Import Box -->
+            <div class="email-import-box">
+                <h3 style="margin-bottom: 20px;">📥 Email Import</h3>
+                
+                <div class="email-drop-zone" id="emailDropZone">
+                    <div style="font-size: 48px; margin-bottom: 15px;">📧</div>
+                    <p style="font-weight: 600; margin-bottom: 8px;">Email hier ablegen</p>
+                    <p style="color: var(--gray); font-size: 14px;">oder klicken zum Auswählen</p>
+                    <input type="file" id="emailFileInput" accept=".eml,.msg,.txt" style="display: none;">
+                </div>
+                
+                <button onclick="simulateTestEmail()" style="
+                    width: 100%;
+                    margin-top: 20px;
+                    background: linear-gradient(135deg, var(--primary), var(--secondary));
+                    color: white;
+                    border: none;
+                    padding: 12px;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-weight: 600;
+                ">🧪 Test-Email simulieren</button>
+                
+                <div style="margin-top: 20px; padding: 15px; background: #f0f9ff; border-radius: 8px;">
+                    <p style="font-size: 13px; color: #0369a1; margin: 0;">
+                        <strong>💡 Tipp:</strong> Die KI erkennt automatisch den richtigen Agent basierend auf dem Email-Inhalt.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Email Queue -->
+            <div class="email-queue-box">
+                <h3 style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+                    <span>📬 Email-Warteschlange</span>
+                    <span style="background: #f3f4f6; padding: 6px 12px; border-radius: 20px; font-size: 14px; font-weight: normal; color: var(--gray);">
+                        <span id="queueCount">0</span> Emails
+                    </span>
+                </h3>
+                
+                <div id="emailQueue">
+                    <!-- Emails werden hier dynamisch eingefügt -->
+                    <p style="text-align: center; color: var(--gray); padding: 40px;">
+                        Keine Emails in der Warteschlange.<br>
+                        Importieren Sie eine Email oder nutzen Sie die Test-Simulation.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Agent Inboxes -->
+        <div class="agent-inbox-grid">
+            <div class="agent-inbox-card">
+                <div class="inbox-header">
+                    <div>
+                        <h4 style="margin: 0;">💳 Kreditor</h4>
+                        <small style="color: var(--gray);">Eingangsrechnungen</small>
+                    </div>
+                    <div class="inbox-count">0</div>
+                </div>
+                <div id="kreditor-inbox" style="min-height: 100px;">
+                    <p style="color: var(--gray); font-size: 14px;">Keine neuen Emails</p>
+                </div>
+            </div>
+            
+            <div class="agent-inbox-card">
+                <div class="inbox-header">
+                    <div>
+                        <h4 style="margin: 0;">💰 Debitor</h4>
+                        <small style="color: var(--gray);">Forderungen</small>
+                    </div>
+                    <div class="inbox-count">0</div>
+                </div>
+                <div id="debitor-inbox" style="min-height: 100px;">
+                    <p style="color: var(--gray); font-size: 14px;">Keine neuen Emails</p>
+                </div>
+            </div>
+            
+            <div class="agent-inbox-card">
+                <div class="inbox-header">
+                    <div>
+                        <h4 style="margin: 0;">📊 Controller</h4>
+                        <small style="color: var(--gray);">Reporting</small>
+                    </div>
+                    <div class="inbox-count">0</div>
+                </div>
+                <div id="controller-inbox" style="min-height: 100px;">
+                    <p style="color: var(--gray); font-size: 14px;">Keine neuen Emails</p>
+                </div>
+            </div>
+            
+            <div class="agent-inbox-card">
+                <div class="inbox-header">
+                    <div>
+                        <h4 style="margin: 0;">🏦 Treasury</h4>
+                        <small style="color: var(--gray);">Liquidität</small>
+                    </div>
+                    <div class="inbox-count">0</div>
+                </div>
+                <div id="treasury-inbox" style="min-height: 100px;">
+                    <p style="color: var(--gray); font-size: 14px;">Keine neuen Emails</p>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+</div>
+
+<!-- SCHRITT 4: Füge dieses JavaScript am Ende deines bestehenden <script> Bereichs ein -->
+<script>
+// Email Center Funktionen
+let emailStats = {
+    today: 0,
+    routed: 0,
+    processing: 0,
+    totalConfidence: 0,
+    count: 0
+};
+
+// Drag & Drop Setup
+function setupEmailDragDrop() {
+    const dropZone = document.getElementById('emailDropZone');
+    const fileInput = document.getElementById('emailFileInput');
+    
+    if (!dropZone || !fileInput) return;
+    
+    dropZone.addEventListener('click', () => fileInput.click());
+    
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('active');
+    });
+    
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('active');
+    });
+    
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('active');
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            handleEmailFile(files[0]);
+        }
+    });
+    
+    fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            handleEmailFile(e.target.files[0]);
+        }
+    });
+}
+
+// Email-Datei verarbeiten
+async function handleEmailFile(file) {
+    console.log('Verarbeite Email-Datei:', file.name);
+    
+    // Simuliere Email-Verarbeitung
+    addEmailToQueue({
+        from: 'imported@email.com',
+        subject: file.name.replace(/\.[^/.]+$/, ''),
+        body: 'Email-Inhalt wird verarbeitet...',
+        time: 'Jetzt'
+    });
+}
+
+// Test-Email simulieren
+async function simulateTestEmail() {
+    const testEmails = [
+        {
+            from: 'lieferant@beispiel.de',
+            subject: 'Rechnung Nr. 2025-5678',
+            body: 'Rechnung über 3.500 EUR für IT-Dienstleistungen. Zahlungsziel 14 Tage, 2% Skonto bei Zahlung innerhalb 10 Tagen.'
+        },
+        {
+            from: 'kunde@firma.de',
+            subject: '2. Mahnung - Rechnung überfällig',
+            body: 'Ihre Rechnung vom 01.12.2024 über 8.900 EUR ist seit 30 Tagen überfällig. Bitte um umgehende Zahlung.'
+        },
+        {
+            from: 'controlling@intern.de',
+            subject: 'Monatsabschluss Januar 2025',
+            body: 'Bitte um Review des Monatsabschlusses. Besondere Abweichungen in Kostenstelle 4100.'
+        },
+        {
+            from: 'bank@deutsche-bank.de',
+            subject: 'Kreditlinie Anpassung',
+            body: 'Ihre Kreditlinie wurde auf 500.000 EUR erhöht. Neue Konditionen im Anhang.'
+        }
+    ];
+    
+    const email = testEmails[Math.floor(Math.random() * testEmails.length)];
+    addEmailToQueue(email);
+}
+
+// Email zur Queue hinzufügen
+function addEmailToQueue(email) {
+    const queueDiv = document.getElementById('emailQueue');
+    
+    // Entferne Placeholder wenn vorhanden
+    const placeholder = queueDiv.querySelector('p');
+    if (placeholder) placeholder.remove();
+    
+    // Erstelle Email-Element
+    const emailDiv = document.createElement('div');
+    emailDiv.className = 'email-item processing';
+    emailDiv.innerHTML = `
+        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+            <strong>${email.from}</strong>
+            <span style="color: var(--gray); font-size: 13px;">Jetzt</span>
+        </div>
+        <div style="color: var(--dark); margin-bottom: 8px;">${email.subject}</div>
+        <div style="color: var(--gray); font-size: 14px; margin-bottom: 12px;">${email.body.substring(0, 100)}...</div>
+        <div class="email-routing-info">
+            <span style="color: var(--warning); font-size: 14px;">🤖 KI analysiert...</span>
+            <div class="confidence-indicator">
+                <div class="confidence-bar-fill" style="width: 0%; animation: loadingBar 2s ease-out;"></div>
+            </div>
+        </div>
+    `;
+    
+    queueDiv.insertBefore(emailDiv, queueDiv.firstChild);
+    updateEmailStats('processing');
+    
+    // Starte KI-Analyse
+    setTimeout(() => processEmailWithAI(email, emailDiv), 1000);
+}
+
+// Email mit KI verarbeiten
+async function processEmailWithAI(email, emailElement) {
+    try {
+        const response = await fetch('https://albo-saa-s-backend.vercel.app/api/analyze-api', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                emailContent: email,
+                needsAgentDetection: true
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            const agent = result.analysis.suggestedAgent || 'Controller';
+            const confidence = Math.round((result.analysis.confidence || 0.8) * 100);
+            
+            // Update Email-Element
+            emailElement.classList.remove('processing');
+            const routingDiv = emailElement.querySelector('.email-routing-info');
+            routingDiv.innerHTML = `
+                <span class="agent-assignment-badge" style="background: #e0f2fe; color: #0369a1;">
+                    ${getAgentIcon(agent)} ${agent}
+                </span>
+                <div class="confidence-indicator">
+                    <div class="confidence-bar-fill" style="width: ${confidence}%;"></div>
+                </div>
+                <span style="color: ${confidence > 70 ? 'var(--success)' : 'var(--warning)'}; font-size: 13px; font-weight: 600;">
+                    ${confidence}%
+                </span>
+            `;
+            
+            // Nach 2 Sekunden zum Agent verschieben
+            setTimeout(() => {
+                moveEmailToAgent(emailElement, agent);
+            }, 2000);
+            
+            updateEmailStats('routed', confidence);
+        }
+    } catch (error) {
+        console.error('KI-Analyse fehlgeschlagen:', error);
+        emailElement.classList.remove('processing');
+    }
+}
+
+// Email zu Agent verschieben
+function moveEmailToAgent(emailElement, agent) {
+    emailElement.style.transition = 'all 0.3s';
+    emailElement.style.transform = 'translateX(100%)';
+    emailElement.style.opacity = '0';
+    
+    setTimeout(() => {
+        emailElement.remove();
+        updateQueueCount();
+        
+        // Update Agent Inbox (vereinfacht)
+        const agentInbox = document.getElementById(agent.toLowerCase() + '-inbox');
+        if (agentInbox) {
+            const placeholder = agentInbox.querySelector('p');
+            if (placeholder) placeholder.remove();
+            
+            const count = agentInbox.parentElement.querySelector('.inbox-count');
+            if (count) {
+                count.textContent = parseInt(count.textContent) + 1;
+            }
+        }
+        
+        showNotification(`Email an ${agent} Agent weitergeleitet`, 'success');
+    }, 300);
+}
+
+// Hilfsfunktionen
+function getAgentIcon(agent) {
+    const icons = {
+        'Kreditor': '💳',
+        'Debitor': '💰',
+        'Controller': '📊',
+        'Treasury': '🏦',
+        'M&A': '🤝',
+        'Anlagen': '🏭'
+    };
+    return icons[agent] || '📧';
+}
+
+function updateEmailStats(type, confidence = null) {
+    if (type === 'processing') {
+        emailStats.today++;
+        emailStats.processing++;
+        document.getElementById('emailsToday').textContent = emailStats.today;
+        document.getElementById('emailsProcessing').textContent = emailStats.processing;
+    } else if (type === 'routed') {
+        emailStats.routed++;
+        emailStats.processing--;
+        if (confidence) {
+            emailStats.totalConfidence += confidence;
+            emailStats.count++;
+            const avg = Math.round(emailStats.totalConfidence / emailStats.count);
+            document.getElementById('avgConfidence').textContent = avg + '%';
+        }
+        document.getElementById('emailsRouted').textContent = emailStats.routed;
+        document.getElementById('emailsProcessing').textContent = emailStats.processing;
+    }
+}
+
+function updateQueueCount() {
+    const emails = document.querySelectorAll('#emailQueue .email-item').length;
+    document.getElementById('queueCount').textContent = emails;
+}
+
+// CSS für Loading Animation
+const emailCenterStyle = document.createElement('style');
+emailCenterStyle.textContent = `
+    @keyframes loadingBar {
+        0% { width: 0%; }
+        100% { width: 100%; }
+    }
+`;
+document.head.appendChild(emailCenterStyle);
+
+// Initialisierung beim Laden
+document.addEventListener('DOMContentLoaded', () => {
+    setupEmailDragDrop();
+});
 
 <script>
     // Global Variables
