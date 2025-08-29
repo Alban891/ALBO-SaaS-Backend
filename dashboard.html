@@ -1732,6 +1732,55 @@ const ALBO_KNOWLEDGE_BASE = {
     // Weitere Agenten...
 };
 
+// Notion Prompts Integration
+let NOTION_PROMPTS = {};
+
+// Notion Prompts laden
+async function loadNotionPrompts() {
+    try {
+        const response = await fetch('https://albo-saa-s-backend.vercel.app/api/notion-bundled');
+        const data = await response.json();
+        
+        if (data.success) {
+            // Speichere im Browser
+            localStorage.setItem('notionPrompts', JSON.stringify(data.prompts));
+            localStorage.setItem('promptsLoadedAt', new Date().toISOString());
+            
+            // Gruppiere nach Role
+            data.prompts.forEach(prompt => {
+                if (!NOTION_PROMPTS[prompt.role]) {
+                    NOTION_PROMPTS[prompt.role] = [];
+                }
+                NOTION_PROMPTS[prompt.role].push(prompt);
+            });
+            
+            console.log('✅ Notion Prompts geladen:', data.count);
+            
+            // Update UI wenn Prompts geladen
+            updatePromptIndicators();
+            
+            return NOTION_PROMPTS;
+        }
+    } catch (error) {
+        console.error('Fehler beim Laden der Prompts:', error);
+    }
+}
+// UI Update nach Laden
+function updatePromptIndicators() {
+    // Zeige in der UI dass Prompts geladen wurden
+    if (document.getElementById('agents-view').classList.contains('active')) {
+        // Update Agent Cards mit echten Zahlen
+        Object.keys(NOTION_PROMPTS).forEach(role => {
+            console.log(`${role}: ${NOTION_PROMPTS[role].length} Prompts aus Notion`);
+        });
+    }
+}
+
+// Beim Start ausführen
+window.addEventListener('DOMContentLoaded', () => {
+    loadNotionPrompts();
+});
+
     // Global Variables
     let currentMode = 'command';
     let expandedAgent = null;
