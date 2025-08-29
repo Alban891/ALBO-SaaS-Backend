@@ -2096,102 +2096,101 @@
         setTimeout(() => detectAgent(email), 2000);
     }
 
-    // Intelligent Agent Detection with AI
-    async function detectAgent(email) {
-        console.log('KI analysiert Email...');
+    // Intelligente Agent-Erkennung mit KI
+async function detectAgent(email) {
+    console.log('KI analysiert Email...');
+    
+    const agentDiv = document.getElementById('agent-selection');
+    if (agentDiv) {
+        agentDiv.innerHTML = `
+            <strong>🤖 KI analysiert Email...</strong>
+            <div style="margin-top: 10px;">
+                <div style="background: white; height: 4px; border-radius: 2px; overflow: hidden;">
+                    <div style="background: #4f46e5; height: 100%; width: 100%; animation: loading 2s ease-out;"></div>
+                </div>
+            </div>
+        `;
+    }
+    
+    try {
+        // Rufe deine Backend API auf
+        const response = await fetch('https://albo-saa-s-backend.vercel.app/api/analyze-api', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                emailContent: {
+                    from: email.from,
+                    subject: email.subject,
+                    body: email.body
+                }
+            })
+        });
         
-        const agentDiv = document.getElementById('agent-selection');
+        const result = await response.json();
+        
+        // Verwende KI-Ergebnis
+        const selectedAgent = result.analysis?.suggestedAgent || 'Controller';
+        const confidence = Math.round((result.analysis?.confidence || 0.5) * 100);
+        const reasoning = result.analysis?.reasoning || 'KI-Analyse durchgeführt';
+        
+        // Update Anzeige mit KI-Ergebnis
         if (agentDiv) {
             agentDiv.innerHTML = `
-                <strong>🤖 KI analysiert Email...</strong>
-                <div style="margin-top: 10px;">
-                    <div style="background: white; height: 4px; border-radius: 2px; overflow: hidden;">
-                        <div style="background: #4f46e5; height: 100%; width: 100%; animation: loading 2s ease-out;"></div>
+                <strong>✅ KI-Empfehlung:</strong> ${selectedAgent}
+                <div style="margin-top: 8px;">
+                    <small>Confidence: ${confidence}%</small>
+                    <div style="background: #e0e0e0; height: 6px; border-radius: 3px; margin-top: 4px;">
+                        <div style="background: ${confidence > 70 ? '#10b981' : confidence > 50 ? '#f59e0b' : '#ef4444'}; 
+                             height: 100%; width: ${confidence}%; border-radius: 3px;"></div>
                     </div>
                 </div>
-            `;
-        }
-        
-        try {
-            // Call backend API
-            const response = await fetch('https://albo-saa-s-backend.vercel.app/api/analyze-api', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    emailContent: {
-                        from: email.from,
-                        subject: email.subject,
-                        body: email.body
-                    },
-                    needsAgentDetection: true
-                })
-            });
-            
-            const result = await response.json();
-            
-            // Use AI result
-            const selectedAgent = result.analysis?.suggestedAgent || 'Controller';
-            const confidence = Math.round((result.analysis?.confidence || 0.5) * 100);
-            const reasoning = result.analysis?.reasoning || 'KI-Analyse durchgeführt';
-            
-            // Update display with AI result
-            if (agentDiv) {
-                agentDiv.innerHTML = `
-                    <strong>✅ KI-Empfehlung:</strong> ${selectedAgent}
+                <div style="margin-top: 8px; padding: 8px; background: #f0f9ff; border-radius: 4px;">
+                    <small style="color: #0369a1;">
+                        <strong>KI-Begründung:</strong><br>
+                        ${reasoning}
+                    </small>
+                </div>
+                ${confidence < 70 ? `
                     <div style="margin-top: 8px;">
-                        <small>Confidence: ${confidence}%</small>
-                        <div style="background: #e0e0e0; height: 6px; border-radius: 3px; margin-top: 4px;">
-                            <div style="background: ${confidence > 70 ? '#10b981' : confidence > 50 ? '#f59e0b' : '#ef4444'}; 
-                                 height: 100%; width: ${confidence}%; border-radius: 3px;"></div>
-                        </div>
-                    </div>
-                    <div style="margin-top: 8px; padding: 8px; background: #f0f9ff; border-radius: 4px;">
-                        <small style="color: #0369a1;">
-                            <strong>KI-Begründung:</strong><br>
-                            ${reasoning}
-                        </small>
-                    </div>
-                    ${confidence < 70 ? `
-                        <div style="margin-top: 8px;">
-                            <select id="agent-override" style="width: 100%; padding: 6px; border-radius: 4px; border: 1px solid #e0e0e0;">
-                                <option value="">Agent manuell wählen...</option>
-                                <option value="Kreditor">Kreditor</option>
-                                <option value="Debitor">Debitor</option>
-                                <option value="Controller">Controller</option>
-                                <option value="Treasury">Treasury</option>
-                                <option value="M&A">M&A</option>
-                            </select>
-                        </div>
-                    ` : ''}
-                `;
-            }
-            
-            // Store result
-            currentEmailData.detectedAgent = selectedAgent;
-            currentEmailData.confidence = confidence;
-            currentEmailData.aiAnalysis = result.analysis;
-            
-        } catch (error) {
-            console.error('KI-Analyse fehlgeschlagen:', error);
-            
-            // Fallback to simple detection
-            if (agentDiv) {
-                agentDiv.innerHTML = `
-                    <strong>⚠️ KI nicht verfügbar</strong>
-                    <div style="margin-top: 8px;">
-                        <select id="agent-manual" style="width: 100%; padding: 8px; border-radius: 4px;">
+                        <select id="agent-override" style="width: 100%; padding: 6px; border-radius: 4px; border: 1px solid #e0e0e0;">
+                            <option value="">Agent manuell wählen...</option>
                             <option value="Kreditor">Kreditor</option>
                             <option value="Debitor">Debitor</option>
                             <option value="Controller">Controller</option>
                             <option value="Treasury">Treasury</option>
+                            <option value="M&A">M&A</option>
                         </select>
                     </div>
-                `;
-            }
+                ` : ''}
+            `;
+        }
+        
+        // Speichere Ergebnis
+        currentEmailData.detectedAgent = selectedAgent;
+        currentEmailData.confidence = confidence;
+        currentEmailData.aiAnalysis = result.analysis;
+        
+    } catch (error) {
+        console.error('KI-Analyse fehlgeschlagen:', error);
+        
+        // Fallback auf einfache Erkennung
+        if (agentDiv) {
+            agentDiv.innerHTML = `
+                <strong>⚠️ KI nicht verfügbar</strong>
+                <div style="margin-top: 8px;">
+                    <select id="agent-manual" style="width: 100%; padding: 8px; border-radius: 4px;">
+                        <option value="Kreditor">Kreditor</option>
+                        <option value="Debitor">Debitor</option>
+                        <option value="Controller">Controller</option>
+                        <option value="Treasury">Treasury</option>
+                    </select>
+                </div>
+            `;
         }
     }
+}
 
     // Next step in processing
     function processEmailStep2() {
