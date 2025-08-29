@@ -2494,14 +2494,34 @@ function openAgentDetail(agentType) {
     detailPanel.style.display = 'block';
     detailPanel.scrollIntoView({ behavior: 'smooth' });
 }
-    
-    // Scroll to detail panel
-    detailPanel.scrollIntoView({ behavior: 'smooth' });
-}
 
 // Agent Detail schließen
 function closeAgentDetail() {
     document.getElementById('agent-detail-panel').style.display = 'none';
+}
+
+// Prompt-Funktionen
+function showFullPrompt(encodedPrompt) {
+    const prompt = decodeURIComponent(atob(encodedPrompt));
+    alert(prompt);
+}
+
+function copyPrompt(encodedPrompt) {
+    const prompt = decodeURIComponent(atob(encodedPrompt));
+    navigator.clipboard.writeText(prompt);
+    showNotification('Prompt in Zwischenablage kopiert!', 'success');
+}
+
+function executePrompt(encodedPrompt) {
+    const prompt = decodeURIComponent(atob(encodedPrompt));
+    showNotification('Prompt wird ausgeführt...', 'info');
+}
+
+function saveAgentContext(agentType) {
+    const textarea = document.getElementById('agent-context-' + agentType);
+    const context = textarea.value;
+    localStorage.setItem('context-' + agentType, context);
+    showNotification('Kontext gespeichert!', 'success');
 }
 
 // Domain auf/zuklappen
