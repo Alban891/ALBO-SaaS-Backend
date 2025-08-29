@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALBO AI - Workflows mit M&A Integration</title>
+    <style>
+        /* Basis Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .workflows-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        /* Header */
+        .workflows-header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .workflows-header h1 {
+            font-size: 32px;
+            background: linear-gradient(45deg, #00ffff, #0099ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        
+        .workflows-header p {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 16px;
+        }
+        
+        /* Workflow Cards Grid */
+        .workflow-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        
+        .workflow-card {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .workflow-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #00ffff, #0099ff);
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .workflow-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.12);
+            box-shadow: 0 10px 30px rgba(0, 255, 255, 0.2);
+        }
+        
+        .workflow-card:hover::before {
+            transform: translateX(0);
+        }
+        
+        .workflow-card.active {
+            background: rgba(0, 255, 255, 0.15);
+            border-color: #00ffff;
+        }
+        
+        .workflow-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+        
+        .workflow-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .workflow-description {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+        
+        .workflow-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #00ffff;
+        }
+        
+        .stat-label {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+            margin-top: 3px;
+        }
+        
+        /* Workflow Detail View */
+        .workflow-detail {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 30px;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+        
+        .workflow-detail.active {
+            display: block;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .detail-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .detail-title h2 {
+            font-size: 28px;
+            background: linear-gradient(45deg, #00ffff, #0099ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .close-detail {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .close-detail:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        /* Target/Project Selection */
+        .target-selection {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .target-selection h3 {
+            margin-bottom: 15px;
+            color: #00ffff;
+        }
+        
+        .target-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .target-item {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .target-item:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(0, 255, 255, 0.5);
+        }
+        
+        .target-item.selected {
+            background: rgba(0, 255, 255, 0.2);
+            border-color: #00ffff;
+        }
+        
+        .target-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .target-info {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .add-target-btn {
+            background: linear-gradient(45deg, #00ffff, #0099ff);
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .add-target-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 255, 255, 0.3);
+        }
+        
+        /* Workflow Execution Area */
+        .workflow-execution {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 25px;
+        }
+        
+        .execution-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .execution-title {
+            font-size: 20px;
+            color: #00ffff;
+        }
+        
+        .execution-controls {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .control-btn {
+            background: linear-gradient(45deg, #00ffff, #0099ff);
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .control-btn:hover:not(:disabled) {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0, 255, 255, 0.3);
+        }
+        
+        .control-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        /* Workflow Steps */
+        .workflow-steps {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            position: relative;
+            padding: 20px 0;
+        }
+        
+        .workflow-steps::before {
+            content: '';
+            position: absolute;
+            top: 45px;
+            left: 10%;
+            right: 10%;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.1);
+            z-index: 0;
+        }
+        
+        .step {
+            flex: 1;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .step-icon {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .step.active .step-icon {
+            background: rgba(0, 255, 255, 0.3);
+            border-color: #00ffff;
+            animation: pulse 1.5s infinite;
+        }
+        
+        .step.completed .step-icon {
+            background: rgba(0, 255, 0, 0.3);
+            border-color: #00ff00;
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+        }
+        
+        .step-label {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        /* Input Area for M&A */
+        .ma-input-area {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .ma-input-area h4 {
+            margin-bottom: 15px;
+            color: #00ffff;
+        }
+        
+        .ma-textarea {
+            width: 100%;
+            min-height: 150px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 15px;
+            color: white;
+            font-family: inherit;
+            font-size: 14px;
+            resize: vertical;
+        }
+        
+        .ma-textarea::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+        
+        /* Results Display */
+        .results-display {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 25px;
+            display: none;
+        }
+        
+        .results-display.active {
+            display: block;
+        }
+        
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .result-card {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 4px solid #00ffff;
+        }
+        
+        .result-title {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 10px;
+        }
+        
+        .result-value {
+            font-size: 24px;
+            font-weight: bold;
+            background: linear-gradient(45deg, #00ffff, #00ff00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+<body>
+    <div class="workflows-container">
+        <!-- Workflows Header -->
+        <div class="workflows-header">
+            <h1>🔄 Workflows</h1>
+            <p>Automatisierte Prozesse für Ihre Finance-Abteilung</p>
+        </div>
+        
+        <!-- Workflow Cards Grid -->
+        <div class="workflow-cards-grid" id="workflowCards">
+            <!-- M&A Workflow Card -->
+            <div class="workflow-card" onclick="openWorkflow('ma')">
+                <div class="workflow-icon">🏢</div>
+                <div class="workflow-title">M&A Due Diligence</div>
+                <div class="workflow-description">
+                    Vollständige Unternehmensanalyse mit Tax, Legal & Financial DD plus automatisierter Bewertung
+                </div>
+                <div class="workflow-stats">
+                    <div class="stat-item">
+                        <div class="stat-value">6</div>
+                        <div class="stat-label">Schritte</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">~15</div>
+                        <div class="stat-label">Min.</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">4</div>
+                        <div class="stat-label">Agenten</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Monatsabschluss Workflow Card -->
+            <div class="workflow-card" onclick="openWorkflow('monthly')">
+                <div class="workflow-icon">📊</div>
+                <div class="workflow-title">Monatsabschluss</div>
+                <div class="workflow-description">
+                    Automatisierter Monatsabschluss mit Prüfung, Analyse und Management Reporting
+                </div>
+                <div class="workflow-stats">
+                    <div class="stat-item">
+                        <div class="stat-value">8</div>
+                        <div class="stat-label">Schritte</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">~20</div>
+                        <div class="stat-label">Min.</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">3</div>
+                        <div class="stat-label">Agenten</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Budget Planning Workflow Card -->
+            <div class="workflow-card" onclick="openWorkflow('budget')">
+                <div class="workflow-icon">💰</div>
+                <div class="workflow-title">Budget Planung</div>
+                <div class="workflow-description">
+                    Intelligente Budgetplanung mit Szenarioanalyse und Forecast-Modellierung
+                </div>
+                <div class="workflow-stats">
+                    <div class="stat-item">
+                        <div class="stat-value">5</div>
+                        <div class="stat-label">Schritte</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">~10</div>
+                        <div class="stat-label">Min.</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">2</div>
+                        <div class="stat-label">Agenten</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Cash Flow Workflow Card -->
+            <div class="workflow-card" onclick="openWorkflow('cashflow')">
+                <div class="workflow-icon">💵</div>
+                <div class="workflow-title">Cash Flow Optimierung</div>
+                <div class="workflow-description">
+                    Working Capital Management und Liquiditätsplanung mit KI-gestützter Prognose
+                </div>
+                <div class="workflow-stats">
+                    <div class="stat-item">
+                        <div class="stat-value">4</div>
+                        <div class="stat-label">Schritte</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">~8</div>
+                        <div class="stat-label">Min.</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">2</div>
+                        <div class="stat-label">Agenten</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Workflow Detail View (Hidden by default) -->
+        <div class="workflow-detail" id="workflowDetail">
+            <!-- M&A Workflow Detail -->
+            <div id="ma-detail" style="display: none;">
+                <div class="detail-header">
+                    <div class="detail-title">
+                        <span style="font-size: 36px;">🏢</span>
+                        <h2>M&A Due Diligence Workflow</h2>
+                    </div>
+                    <button class="close-detail" onclick="closeWorkflow()">✕ Schließen</button>
+                </div>
+                
+                <!-- Target Selection -->
+                <div class="target-selection">
+                    <h3>📁 Target Unternehmen auswählen</h3>
+                    <div class="target-grid">
+                        <div class="target-item" onclick="selectTarget(this, 'TechStart GmbH')">
+                            <div class="target-name">TechStart GmbH</div>
+                            <div class="target-info">Software • 5.2M€ Revenue • 45 MA</div>
+                        </div>
+                        <div class="target-item" onclick="selectTarget(this, 'DataCorp AG')">
+                            <div class="target-name">DataCorp AG</div>
+                            <div class="target-info">Data Analytics • 8.1M€ Revenue • 72 MA</div>
+                        </div>
+                        <div class="target-item" onclick="selectTarget(this, 'CloudSys Solutions')">
+                            <div class="target-name">CloudSys Solutions</div>
+                            <div class="target-info">Cloud Services • 3.8M€ Revenue • 28 MA</div>
+                        </div>
+                    </div>
+                    <button class="add-target-btn" onclick="addNewTarget()">+ Neues Target hinzufügen</button>
+                </div>
+                
+                <!-- Workflow Execution -->
+                <div class="workflow-execution">
+                    <div class="execution-header">
+                        <div class="execution-title">Workflow Ausführung</div>
+                        <div class="execution-controls">
+                            <button class="control-btn" onclick="startMAWorkflow()">▶️ Start</button>
+                            <button class="control-btn" onclick="pauseWorkflow()" disabled>⏸️ Pause</button>
+                            <button class="control-btn" onclick="resetWorkflow()">🔄 Reset</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Workflow Steps -->
+                    <div class="workflow-steps">
+                        <div class="step" id="step-1">
+                            <div class="step-icon">📧</div>
+                            <div class="step-label">Email Analyse</div>
+                        </div>
+                        <div class="step" id="step-2">
+                            <div class="step-icon">📊</div>
+                            <div class="step-label">Tax DD</div>
+                        </div>
+                        <div class="step" id="step-3">
+                            <div class="step-icon">⚖️</div>
+                            <div class="step-label">Legal DD</div>
+                        </div>
+                        <div class="step" id="step-4">
+                            <div class="step-icon">💰</div>
+                            <div class="step-label">Financial DD</div>
+                        </div>
+                        <div class="step" id="step-5">
+                            <div class="step-icon">🎯</div>
+                            <div class="step-label">Bewertung</div>
+                        </div>
+                        <div class="step" id="step-6">
+                            <div class="step-icon">📈</div>
+                            <div class="step-label">Report</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Input Area -->
+                    <div class="ma-input-area">
+                        <h4>📝 Deal Information eingeben</h4>
+                        <textarea class="ma-textarea" id="maInput" placeholder="Fügen Sie hier die M&A Anfrage oder Deal-Details ein...
+
+Beispiel:
+Zielunternehmen: TechStart GmbH
+Umsatz 2023: 5.2 Mio EUR
+EBITDA: 1.3 Mio EUR
+Mitarbeiter: 45
+Asking Price: 15 Mio EUR"></textarea>
+                    </div>
+                    
+                    <!-- Results Display -->
+                    <div class="results-display" id="resultsDisplay">
+                        <h3>📊 Analyse Ergebnisse</h3>
+                        <div class="results-grid">
+                            <div class="result-card">
+                                <div class="result-title">DCF Bewertung</div>
+                                <div class="result-value" id="dcfResult">-</div>
+                            </div>
+                            <div class="result-card">
+                                <div class="result-title">EBITDA Multiple</div>
+                                <div class="result-value" id="multipleResult">-</div>
+                            </div>
+                            <div class="result-card">
+                                <div class="result-title">IRR Prognose</div>
+                                <div class="result-value" id="irrResult">-</div>
+                            </div>
+                            <div class="result-card">
+                                <div class="result-title">Empfehlung</div>
+                                <div class="result-value" id="recommendationResult">-</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Andere Workflow Details können hier hinzugefügt werden -->
+            <div id="monthly-detail" style="display: none;">
+                <div class="detail-header">
+                    <div class="detail-title">
+                        <span style="font-size: 36px;">📊</span>
+                        <h2>Monatsabschluss Workflow</h2>
+                    </div>
+                    <button class="close-detail" onclick="closeWorkflow()">✕ Schließen</button>
+                </div>
+                <p style="padding: 20px; background: rgba(255,255,255,0.05); border-radius: 10px;">
+                    Dieser Workflow wird noch implementiert...
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // ========================================
+        // WORKFLOW MANAGEMENT
+        // ========================================
+        
+        let currentWorkflow = null;
+        let selectedTarget = null;
+        let workflowRunning = false;
+        
+        // Workflow öffnen
+        function openWorkflow(workflowType) {
+            // Workflow Cards ausblenden
+            document.getElementById('workflowCards').style.display = 'none';
+            
+            // Detail View anzeigen
+            document.getElementById('workflowDetail').classList.add('active');
+            
+            // Alle Details verstecken
+            document.querySelectorAll('[id$="-detail"]').forEach(detail => {
+                detail.style.display = 'none';
+            });
+            
+            // Gewähltes Detail anzeigen
+            const detailElement = document.getElementById(`${workflowType}-detail`);
+            if (detailElement) {
+                detailElement.style.display = 'block';
+                currentWorkflow = workflowType;
+            }
+        }
+        
+        // Workflow schließen
+        function closeWorkflow() {
+            document.getElementById('workflowDetail').classList.remove('active');
+            document.getElementById('workflowCards').style.display = 'grid';
+            currentWorkflow = null;
+            resetWorkflow();
+        }
+        
+        // Target auswählen
+        function selectTarget(element, targetName) {
+            // Alle Targets deselektieren
+            document.querySelectorAll('.target-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            
+            // Gewähltes Target markieren
+            element.classList.add('selected');
+            selectedTarget = targetName;
+            
+            // Input-Feld mit Target-Name aktualisieren
+            const input = document.getElementById('maInput');
+            if (input.value === '' || input.value.includes('Beispiel:')) {
+                input.value = `Zielunternehmen: ${targetName}\n`;
+            }
+        }
+        
+        // Neues Target hinzufügen
+        function addNewTarget() {
+            const name = prompt('Name des Target-Unternehmens:');
+            if (name) {
+                const targetGrid = document.querySelector('.target-grid');
+                const newTarget = document.createElement('div');
+                newTarget.className = 'target-item';
+                newTarget.onclick = function() { selectTarget(this, name); };
+                newTarget.innerHTML = `
+                    <div class="target-name">${name}</div>
+                    <div class="target-info">Neu hinzugefügt</div>
+                `;
+                targetGrid.appendChild(newTarget);
+            }
+        }
+        
+        // ========================================
+        // M&A WORKFLOW EXECUTION
+        // ========================================
+        
+        async function startMAWorkflow() {
+            if (workflowRunning) return;
+            
+            const input = document.getElementById('maInput').value;
+            if (!input || input.trim() === '') {
+                alert('Bitte geben Sie Deal-Informationen ein!');
+                return;
+            }
+            
+            if (!selectedTarget) {
+                alert('Bitte wählen Sie ein Target-Unternehmen aus!');
+                return;
+            }
+            
+            workflowRunning = true;
+            document.querySelector('.control-btn').disabled = true;
+            
+            // Steps durchlaufen
+            const steps = ['step-1', 'step-2', 'step-3', 'step-4', 'step-5', 'step-6'];
+            
+            for (let i = 0; i < steps.length; i++) {
+                const stepElement = document.getElementById(steps[i]);
+                
+                // Aktuellen Schritt aktivieren
+                stepElement.classList.add('active');
+                
+                // Simulation der Verarbeitung
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // Schritt als completed markieren
+                stepElement.classList.remove('active');
+                stepElement.classList.add('completed');
+                
+                // Bei Schritt 5 (Bewertung) - Ergebnisse anzeigen
+                if (i === 4) {
+                    showResults();
+                }
+            }
+            
+            workflowRunning = false;
+            document.querySelector('.control-btn').disabled = false;
+        }
+        
+        // Ergebnisse anzeigen (Simulation)
+        function showResults() {
+            document.getElementById('resultsDisplay').classList.add('active');
+            
+            // Simulierte Werte
+            document.getElementById('dcfResult').textContent = '18.5 Mio €';
+            document.getElementById('multipleResult').textContent = '11.5x';
+            document.getElementById('irrResult').textContent = '22.3%';
+            document.getElementById('recommendationResult').textContent = 'KAUFEN';
+        }
+        
+        // Workflow pausieren
+        function pauseWorkflow() {
+            // Implementierung folgt
+            console.log('Pause Workflow');
+        }
+        
+        // Workflow zurücksetzen
+        function resetWorkflow() {
+            // Alle Steps zurücksetzen
+            document.querySelectorAll('.step').forEach(step => {
+                step.classList.remove('active', 'completed');
+            });
+            
+            // Results verstecken
+            document.getElementById('resultsDisplay').classList.remove('active');
+            
+            // Input leeren
+            document.getElementById('maInput').value = '';
+            
+            // Target-Auswahl zurücksetzen
+            document.querySelectorAll('.target-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            selectedTarget = null;
+            
+            workflowRunning = false;
+            document.querySelector('.control-btn').disabled = false;
+        }
+        
+        // ========================================
+        // INITIALISIERUNG
+        // ========================================
+        
+        console.log('ALBO AI Workflows geladen');
+        console.log('Klicken Sie auf eine Workflow-Karte um zu starten!');
+    </script>
+</body>
+</html>
