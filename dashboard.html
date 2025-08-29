@@ -1652,6 +1652,86 @@
 </div>
 
 <script>
+// ALBO Knowledge Base - Alle Prompts direkt im Code
+const ALBO_KNOWLEDGE_BASE = {
+    'Controller': {
+        name: 'Controller',
+        icon: '📊',
+        description: 'Reporting, Analyse, Budgetierung',
+        domains: {
+            'Kostenrechnung': [
+                {
+                    title: 'Materialkostenanalyse',
+                    prompt: `Analysiere die Materialkosten für [Produkt/Abteilung] im Zeitraum [Periode].
+                    Berücksichtige dabei:
+                    - Preisentwicklung der Rohstoffe
+                    - Mengenabweichungen
+                    - Lieferantenperformance
+                    - Verschwendung und Ausschuss
+                    Erstelle eine Executive Summary mit Handlungsempfehlungen.`,
+                    category: 'Analyse',
+                    complexity: 'Medium'
+                },
+                {
+                    title: 'Deckungsbeitragsrechnung',
+                    prompt: `Führe eine mehrstufige Deckungsbeitragsrechnung durch...`,
+                    category: 'Kalkulation',
+                    complexity: 'High'
+                }
+            ],
+            'Reporting': [
+                {
+                    title: 'Monatsabschluss-Report',
+                    prompt: `Erstelle einen Management-Report für den Monatsabschluss...`,
+                    category: 'Reporting',
+                    complexity: 'High'
+                }
+            ],
+            'Budgetierung': [
+                {
+                    title: 'Budget-Ist-Vergleich',
+                    prompt: `Analysiere Abweichungen zwischen Budget und Ist...`,
+                    category: 'Controlling',
+                    complexity: 'Medium'
+                }
+            ]
+        }
+    },
+    'M&A': {
+        name: 'M&A Berater',
+        icon: '🤝',
+        description: 'Due Diligence, Valuation, Deal Structuring',
+        domains: {
+            'Commercial Due Diligence': [
+                {
+                    title: 'Business Plan Validierung',
+                    prompt: `[Hier fügst du den langen CDD-Prompt ein, den du mir gezeigt hast]`,
+                    category: 'Due Diligence',
+                    complexity: 'Expert'
+                }
+            ],
+            'Valuation': [
+                {
+                    title: 'DCF-Modell Review',
+                    prompt: `Überprüfe das DCF-Modell...`,
+                    category: 'Bewertung',
+                    complexity: 'Expert'
+                }
+            ]
+        }
+    },
+    'Kreditor': {
+        name: 'Kreditor',
+        icon: '💳',
+        description: 'Rechnungsverarbeitung, Zahlungsläufe',
+        domains: {
+            'Rechnungsprüfung': [],
+            'Zahlungsoptimierung': []
+        }
+    }
+    // Weitere Agenten...
+};
+
     // Global Variables
     let currentMode = 'command';
     let expandedAgent = null;
@@ -2318,79 +2398,102 @@ async function detectAgent(email) {
 function openAgentDetail(agentType) {
     const detailPanel = document.getElementById('agent-detail-panel');
     
-    // Panel-Inhalt basierend auf Agent-Typ
-    let content = '';
+    // Hole Agent-Daten aus Knowledge Base
+    const agentKey = agentType.toUpperCase();
+    const agentData = ALBO_KNOWLEDGE_BASE[agentKey === 'MNA' ? 'M&A' : agentKey === 'CONTROLLER' ? 'Controller' : agentKey];
     
-    if (agentType === 'mna') {
-        content = `
-            <div style="margin-bottom: 30px;">
-                <button onclick="closeAgentDetail()" style="background: #e5e7eb; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">← Zurück</button>
-                <h2 style="margin: 20px 0;">🤝 M&A Berater - Knowledge Base</h2>
-            </div>
-            
-            <!-- Wissensdomänen -->
-            <div style="margin-bottom: 30px;">
-                <h3 style="margin-bottom: 20px;">📚 Wissensdomänen</h3>
-                
-                <!-- Commercial Due Diligence -->
-                <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; margin-bottom: 15px;">
-                    <div onclick="toggleDomain(this)" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
-                        <h4 style="margin: 0;">Commercial Due Diligence</h4>
-                        <span>▼</span>
-                    </div>
-                    <div class="domain-content" style="display: none; margin-top: 15px;">
-                        <div style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 10px;">
-                            <strong>Business Plan Validierung</strong>
-                            <p style="color: #6b7280; font-size: 14px; margin: 5px 0;">Überprüft Umsatz- und Ergebnisplanung auf Plausibilität</p>
-                            <button style="background: #4f46e5; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">Prompt anzeigen</button>
-                        </div>
-                        <div style="background: white; padding: 15px; border-radius: 8px;">
-                            <strong>Marktanalyse</strong>
-                            <p style="color: #6b7280; font-size: 14px; margin: 5px 0;">Analysiert Marktgröße, Wachstum und Wettbewerb</p>
-                            <button style="background: #4f46e5; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">Prompt anzeigen</button>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Valuation -->
-                <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; margin-bottom: 15px;">
-                    <div onclick="toggleDomain(this)" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
-                        <h4 style="margin: 0;">Unternehmensbewertung</h4>
-                        <span>▼</span>
-                    </div>
-                    <div class="domain-content" style="display: none; margin-top: 15px;">
-                        <p style="color: #6b7280;">DCF-Modelle, Multiple-Analysen, Synergieberechnung</p>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Unternehmenskontext -->
-            <div style="background: #f0f9ff; border-radius: 12px; padding: 20px;">
-                <h3 style="margin-bottom: 15px;">🏢 Unternehmens-spezifische Anpassungen</h3>
-                <textarea style="width: 100%; min-height: 150px; padding: 12px; border: 1px solid #e5e7eb; border-radius: 8px;" 
-                          placeholder="Fügen Sie hier spezifische Informationen für M&A ein:
-- Bevorzugte Deal-Größe
-- Fokus-Branchen  
-- Investment-Thesis
-- Exit-Horizont"></textarea>
-                <button style="margin-top: 10px; background: #10b981; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;">
-                    💾 Speichern
-                </button>
-            </div>
-        `;
-    } else if (agentType === 'controller') {
-        content = `
-            <div style="margin-bottom: 30px;">
-                <button onclick="closeAgentDetail()" style="background: #e5e7eb; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">← Zurück</button>
-                <h2 style="margin: 20px 0;">📊 Controller - Knowledge Base</h2>
-            </div>
-            
-            <p>Controller-spezifische Konfiguration...</p>
-        `;
+    if (!agentData) {
+        showNotification('Agent-Daten nicht gefunden', 'error');
+        return;
     }
+    
+    let domainsHTML = '';
+    
+    // Erstelle HTML für jede Domäne
+    Object.keys(agentData.domains).forEach(domainName => {
+        const prompts = agentData.domains[domainName];
+        const promptCount = prompts.length;
+        
+        domainsHTML += `
+            <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; margin-bottom: 15px;">
+                <div onclick="toggleDomain(this)" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h4 style="margin: 0;">${domainName}</h4>
+                        <small style="color: #6b7280;">${promptCount} Prompts verfügbar</small>
+                    </div>
+                    <span>▼</span>
+                </div>
+                <div class="domain-content" style="display: none; margin-top: 15px;">
+                    ${prompts.length > 0 ? prompts.map(prompt => `
+                        <div style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 10px;">
+                            <div style="display: flex; justify-content: between; align-items: start;">
+                                <div style="flex: 1;">
+                                    <strong>${prompt.title}</strong>
+                                    <div style="display: flex; gap: 8px; margin: 8px 0;">
+                                        <span style="background: #e0f2fe; color: #0369a1; padding: 2px 8px; border-radius: 4px; font-size: 12px;">${prompt.category}</span>
+                                        <span style="background: ${prompt.complexity === 'High' || prompt.complexity === 'Expert' ? '#fee2e2' : '#fef3c7'}; color: ${prompt.complexity === 'High' || prompt.complexity === 'Expert' ? '#991b1b' : '#92400e'}; padding: 2px 8px; border-radius: 4px; font-size: 12px;">${prompt.complexity}</span>
+                                    </div>
+                                    <p style="color: #6b7280; font-size: 14px; margin: 10px 0;">${prompt.prompt.substring(0, 150)}...</p>
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                                <button onclick="showFullPrompt('${btoa(encodeURIComponent(prompt.prompt))}')" style="background: #4f46e5; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">
+                                    👁️ Vollständig anzeigen
+                                </button>
+                                <button onclick="copyPrompt('${btoa(encodeURIComponent(prompt.prompt))}')" style="background: #10b981; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">
+                                    📋 Kopieren
+                                </button>
+                                <button onclick="executePrompt('${btoa(encodeURIComponent(prompt.prompt))}')" style="background: #f59e0b; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">
+                                    ▶️ Ausführen
+                                </button>
+                            </div>
+                        </div>
+                    `).join('') : '<p style="color: #6b7280;">Noch keine Prompts in dieser Domäne. Füge welche im Code hinzu.</p>'}
+                </div>
+            </div>
+        `;
+    });
+    
+    const content = `
+        <div style="margin-bottom: 30px;">
+            <button onclick="closeAgentDetail()" style="background: #e5e7eb; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">← Zurück</button>
+            <h2 style="margin: 20px 0;">${agentData.icon} ${agentData.name} - Knowledge Base</h2>
+            <p style="color: #6b7280;">${agentData.description}</p>
+        </div>
+        
+        <!-- Statistik -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 30px;">
+            <div style="background: #f0f9ff; padding: 15px; border-radius: 8px; text-align: center;">
+                <div style="font-size: 24px; font-weight: bold; color: #0369a1;">${Object.keys(agentData.domains).length}</div>
+                <div style="color: #6b7280; font-size: 14px;">Domänen</div>
+            </div>
+            <div style="background: #f0fdf4; padding: 15px; border-radius: 8px; text-align: center;">
+                <div style="font-size: 24px; font-weight: bold; color: #16a34a;">${Object.values(agentData.domains).reduce((sum, d) => sum + d.length, 0)}</div>
+                <div style="color: #6b7280; font-size: 14px;">Prompts</div>
+            </div>
+        </div>
+        
+        <!-- Wissensdomänen -->
+        <div style="margin-bottom: 30px;">
+            <h3 style="margin-bottom: 20px;">📚 Wissensdomänen</h3>
+            ${domainsHTML}
+        </div>
+        
+        <!-- Unternehmenskontext -->
+        <div style="background: #f0f9ff; border-radius: 12px; padding: 20px;">
+            <h3 style="margin-bottom: 15px;">🏢 Unternehmens-spezifische Anpassungen</h3>
+            <textarea id="agent-context-${agentType}" style="width: 100%; min-height: 150px; padding: 12px; border: 1px solid #e5e7eb; border-radius: 8px;" 
+                      placeholder="Füge hier spezifische Informationen für ${agentData.name} ein...">${localStorage.getItem('context-' + agentType) || ''}</textarea>
+            <button onclick="saveAgentContext('${agentType}')" style="margin-top: 10px; background: #10b981; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;">
+                💾 Kontext speichern
+            </button>
+        </div>
+    `;
     
     detailPanel.innerHTML = content;
     detailPanel.style.display = 'block';
+    detailPanel.scrollIntoView({ behavior: 'smooth' });
+}
     
     // Scroll to detail panel
     detailPanel.scrollIntoView({ behavior: 'smooth' });
