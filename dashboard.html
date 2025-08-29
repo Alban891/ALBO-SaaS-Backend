@@ -1465,12 +1465,96 @@
     </div>
 
     <!-- Agents Detail View -->
-    <div class="mode-content" id="agents-view">
-        <h2 style="color: white; margin-bottom: 20px;">Agent Management & Training</h2>
-        <div style="background: white; border-radius: 20px; padding: 30px;">
-            <p>Hier können Sie jeden Agenten im Detail konfigurieren und trainieren.</p>
+<!-- Agents Detail View -->
+<div class="mode-content" id="agents-view">
+    <!-- Agent Gallery -->
+    <div style="background: rgba(255,255,255,0.95); border-radius: 20px; padding: 30px; margin-bottom: 30px;">
+        <h2 style="color: var(--dark); margin-bottom: 30px;">🤖 Agent Knowledge Management</h2>
+        
+        <!-- Agent Karten Grid -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+            
+            <!-- M&A Agent Karte -->
+            <div class="agent-training-card" onclick="openAgentDetail('mna')" style="
+                background: white;
+                border-radius: 16px;
+                padding: 20px;
+                cursor: pointer;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+                transition: all 0.3s;
+                border: 2px solid transparent;
+            " onmouseover="this.style.transform='translateY(-5px)'; this.style.borderColor='#4f46e5'" 
+               onmouseout="this.style.transform=''; this.style.borderColor='transparent'">
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="font-size: 36px;">🤝</div>
+                        <div>
+                            <h3 style="margin: 0; color: var(--dark);">M&A Berater</h3>
+                            <small style="color: var(--gray);">Due Diligence & Valuation</small>
+                        </div>
+                    </div>
+                    <div style="background: #10b981; color: white; padding: 4px 8px; border-radius: 12px; font-size: 11px;">
+                        85% trainiert
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <span style="background: #f3f4f6; padding: 4px 8px; border-radius: 6px; font-size: 12px;">156 Prompts</span>
+                    <span style="background: #f3f4f6; padding: 4px 8px; border-radius: 6px; font-size: 12px;">12 Domänen</span>
+                    <span style="background: #f3f4f6; padding: 4px 8px; border-radius: 6px; font-size: 12px;">94% Erfolg</span>
+                </div>
+                
+                <button style="width: 100%; background: linear-gradient(135deg, #4f46e5, #6366f1); color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                    Konfigurieren →
+                </button>
+            </div>
+            
+            <!-- Controller Agent Karte -->
+            <div class="agent-training-card" onclick="openAgentDetail('controller')" style="
+                background: white;
+                border-radius: 16px;
+                padding: 20px;
+                cursor: pointer;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+                transition: all 0.3s;
+                border: 2px solid transparent;
+            " onmouseover="this.style.transform='translateY(-5px)'; this.style.borderColor='#4f46e5'" 
+               onmouseout="this.style.transform=''; this.style.borderColor='transparent'">
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="font-size: 36px;">📊</div>
+                        <div>
+                            <h3 style="margin: 0; color: var(--dark);">Controller</h3>
+                            <small style="color: var(--gray);">Reporting & Analysis</small>
+                        </div>
+                    </div>
+                    <div style="background: #f59e0b; color: white; padding: 4px 8px; border-radius: 12px; font-size: 11px;">
+                        72% trainiert
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <span style="background: #f3f4f6; padding: 4px 8px; border-radius: 6px; font-size: 12px;">132 Prompts</span>
+                    <span style="background: #f3f4f6; padding: 4px 8px; border-radius: 6px; font-size: 12px;">8 Domänen</span>
+                    <span style="background: #f3f4f6; padding: 4px 8px; border-radius: 6px; font-size: 12px;">91% Erfolg</span>
+                </div>
+                
+                <button style="width: 100%; background: linear-gradient(135deg, #4f46e5, #6366f1); color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                    Konfigurieren →
+                </button>
+            </div>
+            
+            <!-- Weitere Agenten hier... -->
         </div>
     </div>
+    
+    <!-- Agent Detail Panel (versteckt, wird bei Klick angezeigt) -->
+    <div id="agent-detail-panel" style="display: none; background: white; border-radius: 20px; padding: 30px; margin-bottom: 30px;">
+        <!-- Hier kommt der Detail-Content -->
+    </div>
+</div>
 
     <!-- Workflows View -->
     <div class="mode-content" id="workflows-view">
@@ -2229,6 +2313,107 @@ async function detectAgent(email) {
         }
     `;
     document.head.appendChild(style);
+
+    // Agent Detail öffnen
+function openAgentDetail(agentType) {
+    const detailPanel = document.getElementById('agent-detail-panel');
+    
+    // Panel-Inhalt basierend auf Agent-Typ
+    let content = '';
+    
+    if (agentType === 'mna') {
+        content = `
+            <div style="margin-bottom: 30px;">
+                <button onclick="closeAgentDetail()" style="background: #e5e7eb; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">← Zurück</button>
+                <h2 style="margin: 20px 0;">🤝 M&A Berater - Knowledge Base</h2>
+            </div>
+            
+            <!-- Wissensdomänen -->
+            <div style="margin-bottom: 30px;">
+                <h3 style="margin-bottom: 20px;">📚 Wissensdomänen</h3>
+                
+                <!-- Commercial Due Diligence -->
+                <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; margin-bottom: 15px;">
+                    <div onclick="toggleDomain(this)" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+                        <h4 style="margin: 0;">Commercial Due Diligence</h4>
+                        <span>▼</span>
+                    </div>
+                    <div class="domain-content" style="display: none; margin-top: 15px;">
+                        <div style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 10px;">
+                            <strong>Business Plan Validierung</strong>
+                            <p style="color: #6b7280; font-size: 14px; margin: 5px 0;">Überprüft Umsatz- und Ergebnisplanung auf Plausibilität</p>
+                            <button style="background: #4f46e5; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">Prompt anzeigen</button>
+                        </div>
+                        <div style="background: white; padding: 15px; border-radius: 8px;">
+                            <strong>Marktanalyse</strong>
+                            <p style="color: #6b7280; font-size: 14px; margin: 5px 0;">Analysiert Marktgröße, Wachstum und Wettbewerb</p>
+                            <button style="background: #4f46e5; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">Prompt anzeigen</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Valuation -->
+                <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; margin-bottom: 15px;">
+                    <div onclick="toggleDomain(this)" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+                        <h4 style="margin: 0;">Unternehmensbewertung</h4>
+                        <span>▼</span>
+                    </div>
+                    <div class="domain-content" style="display: none; margin-top: 15px;">
+                        <p style="color: #6b7280;">DCF-Modelle, Multiple-Analysen, Synergieberechnung</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Unternehmenskontext -->
+            <div style="background: #f0f9ff; border-radius: 12px; padding: 20px;">
+                <h3 style="margin-bottom: 15px;">🏢 Unternehmens-spezifische Anpassungen</h3>
+                <textarea style="width: 100%; min-height: 150px; padding: 12px; border: 1px solid #e5e7eb; border-radius: 8px;" 
+                          placeholder="Fügen Sie hier spezifische Informationen für M&A ein:
+- Bevorzugte Deal-Größe
+- Fokus-Branchen  
+- Investment-Thesis
+- Exit-Horizont"></textarea>
+                <button style="margin-top: 10px; background: #10b981; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;">
+                    💾 Speichern
+                </button>
+            </div>
+        `;
+    } else if (agentType === 'controller') {
+        content = `
+            <div style="margin-bottom: 30px;">
+                <button onclick="closeAgentDetail()" style="background: #e5e7eb; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">← Zurück</button>
+                <h2 style="margin: 20px 0;">📊 Controller - Knowledge Base</h2>
+            </div>
+            
+            <p>Controller-spezifische Konfiguration...</p>
+        `;
+    }
+    
+    detailPanel.innerHTML = content;
+    detailPanel.style.display = 'block';
+    
+    // Scroll to detail panel
+    detailPanel.scrollIntoView({ behavior: 'smooth' });
+}
+
+// Agent Detail schließen
+function closeAgentDetail() {
+    document.getElementById('agent-detail-panel').style.display = 'none';
+}
+
+// Domain auf/zuklappen
+function toggleDomain(element) {
+    const content = element.nextElementSibling;
+    const arrow = element.querySelector('span:last-child');
+    
+    if (content.style.display === 'none') {
+        content.style.display = 'block';
+        arrow.textContent = '▲';
+    } else {
+        content.style.display = 'none';
+        arrow.textContent = '▼';
+    }
+}
 </script>
 
 </body>
