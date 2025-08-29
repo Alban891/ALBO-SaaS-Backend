@@ -34,15 +34,29 @@ module.exports = async (req, res) => {
     
     const data = await response.json();
     
-    // Transform the data
+    // Transform the data - KORRIGIERT für deine Feldnamen
     const prompts = data.results.map(page => {
       const props = page.properties;
       return {
         id: page.id,
-        title: props.Name?.title?.[0]?.plain_text || 'Untitled',
-        category: props.Category?.select?.name || 'General',
-        role: props.Role?.select?.name || 'Controller',
-        content: props.Content?.rich_text?.[0]?.plain_text || ''
+        title: props.Title?.title?.[0]?.plain_text || 
+               props.Name?.title?.[0]?.plain_text || 
+               'Untitled',
+        category: props.Category?.select?.name || 
+                 props.Category?.multi_select?.[0]?.name || 
+                 'General',
+        role: props.Role?.select?.name || 
+              props.Role?.multi_select?.[0]?.name || 
+              'Controller',
+        description: props.Description?.rich_text?.[0]?.plain_text || 
+                    props.Description?.title?.[0]?.plain_text || 
+                    '',
+        content: props.Content?.rich_text?.[0]?.plain_text || 
+                props.Content?.title?.[0]?.plain_text || 
+                '',
+        complexity: props.Complexity?.select?.name || 
+                   props.Complexity?.multi_select?.[0]?.name || 
+                   'Medium'
       };
     });
     
