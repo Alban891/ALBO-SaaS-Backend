@@ -1159,51 +1159,47 @@
                         </div>
                         
                         <div class="agent-body">
-                            <div class="agent-tabs">
-                                <button class="agent-tab active" onclick="switchAgentTab(event, 'inbox')">
-                                    Inbox <span class="tab-badge">8</span>
-                                </button>
-                                <button class="agent-tab" onclick="switchAgentTab(event, 'workflows')">
-                                    Workflows <span class="tab-badge">3</span>
-                                </button>
-                                <button class="agent-tab" onclick="switchAgentTab(event, 'playbook')">
-                                    Playbook
-                                </button>
-                            </div>
-                            
-                            <div class="tab-content" data-tab="inbox">
-                                <div class="task-item" onclick="processTask(this)">
-                                    <div class="task-info">
-                                        <div class="task-title">Monatsabschluss Oktober</div>
-                                        <div class="task-meta">
-                                            <span class="task-source">⚙️ Automatisch</span>
-                                            <span>Heute fällig</span>
-                                        </div>
-                                    </div>
-                                    <span class="task-priority priority-high">Urgent</span>
-                                </div>
-                            </div>
-                            
-                            <div class="tab-content" data-tab="workflows" style="display: none;">
-                                <div class="workflow-item">
-                                    <div class="workflow-header-inline">
-                                        <div class="workflow-title">Monatsabschluss Oktober</div>
-                                        <div class="workflow-phase">Phase 4/9</div>
-                                    </div>
-                                    <div class="workflow-progress">
-                                        <div class="workflow-progress-bar" style="width: 45%;"></div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="tab-content playbook-section" data-tab="playbook" style="display: none;">
-                                <div class="playbook-item">
-                                    <span class="playbook-title">Monatsabschluss</span>
-                                    <span class="playbook-count">9 Steps</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+    <div style="padding: 20px;">
+        <!-- Quick Actions -->
+        <div style="margin-bottom: 20px;">
+            <h4 style="margin: 0 0 10px 0; color: #64748b; font-size: 12px; text-transform: uppercase;">Quick Actions</h4>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button onclick="executeAgentAction('controller', 'monatsabschluss')" style="
+                    background: linear-gradient(135deg, #4f46e5, #6366f1);
+                    color: white;
+                    border: none;
+                    padding: 8px 16px;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    font-size: 13px;
+                    font-weight: 600;
+                ">📅 Monatsabschluss</button>
+                <button onclick="executeAgentAction('controller', 'budget')" style="
+                    background: linear-gradient(135deg, #10b981, #34d399);
+                    color: white;
+                    border: none;
+                    padding: 8px 16px;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    font-size: 13px;
+                    font-weight: 600;
+                ">📈 Budget-Analyse</button>
+            </div>
+        </div>
+        
+        <!-- Current Status -->
+        <div style="background: #f8f9fa; padding: 12px; border-radius: 8px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                <span style="font-size: 13px; color: #64748b;">Erfolgsrate</span>
+                <span style="font-size: 13px; font-weight: 600;">94%</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+                <span style="font-size: 13px; color: #64748b;">Tasks heute</span>
+                <span style="font-size: 13px; font-weight: 600;">12</span>
+            </div>
+        </div>
+    </div>
+</div>
 
                     <!-- Treasury Agent -->
                     <div class="agent-card-unified" onclick="expandAgent(this)">
@@ -2590,6 +2586,13 @@ function closeAgentDetail() {
     document.getElementById('agent-detail-panel').style.display = 'none';
 }
 
+// Agent Action ausführen
+function executeAgentAction(agent, action) {
+    showNotification(`${agent} führt ${action} aus...`, 'info');
+    
+    // Hier später: Hole passende Prompts aus NOTION_PROMPTS
+    // und führe sie aus
+}
 // Prompt-Funktionen
 function showFullPrompt(encodedPrompt) {
     const prompt = decodeURIComponent(atob(encodedPrompt));
