@@ -1746,15 +1746,17 @@ async function loadNotionPrompts() {
             localStorage.setItem('notionPrompts', JSON.stringify(data.prompts));
             localStorage.setItem('promptsLoadedAt', new Date().toISOString());
             
-            // Gruppiere nach Role
+            // Gruppiere nach Role - ANGEPASST für deine Daten
             data.prompts.forEach(prompt => {
-                if (!NOTION_PROMPTS[prompt.role]) {
-                    NOTION_PROMPTS[prompt.role] = [];
+                const role = prompt.role || 'Controller'; // Fallback auf Controller
+                if (!NOTION_PROMPTS[role]) {
+                    NOTION_PROMPTS[role] = [];
                 }
-                NOTION_PROMPTS[prompt.role].push(prompt);
+                NOTION_PROMPTS[role].push(prompt);
             });
             
             console.log('✅ Notion Prompts geladen:', data.count);
+            console.log('Gruppiert nach Rollen:', NOTION_PROMPTS);
             
             // Update UI wenn Prompts geladen
             updatePromptIndicators();
@@ -2503,6 +2505,34 @@ function openAgentDetail(agentType) {
         `;
     });
     
+// Füge Notion Prompts hinzu wenn vorhanden
+const notionPromptsForAgent = NOTION_PROMPTS['Controller'] || []; // Alle sind Controller
+if (notionPromptsForAgent.length > 0) {
+    domainsHTML += `
+        <div style="background: #e8f5e9; border-radius: 12px; padding: 20px; margin-bottom: 15px; border: 2px solid #4caf50;">
+            <div onclick="toggleDomain(this)" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h4 style="margin: 0;">📚 Notion Knowledge Base</h4>
+                    <small style="color: #2e7d32;">${notionPromptsForAgent.length} Prompts aus Notion</small>
+                </div>
+                <span>▼</span>
+            </div>
+            <div class="domain-content" style="display: block; margin-top: 15px;">
+                ${notionPromptsForAgent.map(prompt => `
+                    <div style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 10px;">
+                        <strong>${prompt.title}</strong>
+                        <div style="display: flex; gap: 8px; margin: 8px 0;">
+                            <span style="background: #e0f2fe; color: #0369a1; padding: 2px 8px; border-radius: 4px; font-size: 12px;">${prompt.category}</span>
+                            <span style="background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 4px; font-size: 12px;">${prompt.complexity}</span>
+                        </div>
+                        <p style="color: #6b7280; font-size: 14px;">${prompt.description || 'Keine Beschreibung'}</p>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
+}
+
     const content = `
         <div style="margin-bottom: 30px;">
             <button onclick="closeAgentDetail()" style="background: #e5e7eb; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">← Zurück</button>
