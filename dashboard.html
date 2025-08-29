@@ -2573,75 +2573,6 @@ function saveAgentContext(agentType) {
     showNotification('Kontext gespeichert!', 'success');
 }
 
-// Domain auf/zuklappen
-function toggleDomain(element) {
-    const content = element.nextElementSibling;
-    const arrow = element.querySelector('span:last-child');
-    
-    if (content.style.display === 'none') {
-        content.style.display = 'block';
-        arrow.textContent = '▲';
-    } else {
-        content.style.display = 'none';
-        arrow.textContent = '▼';
-    }
-}
-<!-- Prompt Transparenz Modal -->
-<div id="promptModal" style="
-    display: none;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: white;
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-    max-width: 800px;
-    max-height: 80vh;
-    overflow-y: auto;
-    z-index: 10000;
-">
-    <button onclick="closePromptModal()" style="float: right;">✕</button>
-    <div id="promptModalContent"></div>
-</div>
-function showPromptDetails(promptId) {
-    const prompts = JSON.parse(localStorage.getItem('notionPrompts') || '[]');
-    const prompt = prompts.find(p => p.id === promptId);
-    
-    if (prompt) {
-        const steps = extractSteps(prompt.content);
-        
-        document.getElementById('promptModalContent').innerHTML = `
-            <h2>${prompt.title}</h2>
-            <div style="margin: 20px 0;">
-                <span style="background: #e0f2fe; padding: 4px 8px; border-radius: 4px;">
-                    ${prompt.category}
-                </span>
-                <span style="background: #fef3c7; padding: 4px 8px; border-radius: 4px;">
-                    ${prompt.complexity}
-                </span>
-            </div>
-            
-            <h3>Vorgehensweise:</h3>
-            <ol>
-                ${steps.map(step => `<li>${step}</li>`).join('')}
-            </ol>
-            
-            <details style="margin-top: 20px;">
-                <summary style="cursor: pointer; color: #4f46e5;">
-                    Vollständigen Prompt anzeigen
-                </summary>
-                <pre style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 10px;">
-                    ${prompt.content}
-                </pre>
-            </details>
-        `;
-        
-        document.getElementById('promptModal').style.display = 'block';
-    }
-}
-
 function extractSteps(content) {
     // Extrahiere Schritte aus dem Prompt
     const lines = content.split('\n');
@@ -2661,6 +2592,26 @@ function closePromptModal() {
 }
 
 </script>
+
+<!-- Prompt Transparenz Modal -->
+<div id="promptModal" style="
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    max-width: 800px;
+    max-height: 80vh;
+    overflow-y: auto;
+    z-index: 10000;
+">
+    <button onclick="closePromptModal()" style="float: right;">✕</button>
+    <div id="promptModalContent"></div>
+</div>
 
 </body>
 </html>
