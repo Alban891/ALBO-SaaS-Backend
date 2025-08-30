@@ -1274,43 +1274,116 @@
 
 <!-- Workflows View -->
 <div class="mode-content" id="workflows-view">
-    <!-- Business Case Analysis Section -->
-    <div style="background: white; border-radius: 20px; padding: 30px; margin-bottom: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
-        <h2 style="color: #1e293b; margin-bottom: 20px;">📊 Business Case Analysis mit Multi-Agent System</h2>
+    <!-- Agent Workflow Overview -->
+    <div id="agent-overview" style="display: block;">
+        <h2 style="color: white; margin-bottom: 30px;">📊 Agent Workflows</h2>
         
-        <!-- Tabs für verschiedene Views -->
-        <div style="display: flex; gap: 10px; margin-bottom: 20px; background: #f1f5f9; padding: 5px; border-radius: 12px;">
-            <button onclick="showWorkflowTab('executive')" class="workflow-tab-btn active" style="padding: 10px 20px; border: none; background: white; border-radius: 8px; cursor: pointer; font-weight: 600;">
-                Executive View
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+            <!-- Controller Card -->
+            <div onclick="showAgentWorkflows('controller')" style="background: white; border-radius: 16px; padding: 25px; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.1);" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
+                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+                    <div style="font-size: 48px;">📊</div>
+                    <div>
+                        <h3 style="margin: 0;">Controller</h3>
+                        <p style="margin: 0; color: #64748b; font-size: 14px;">Financial Reporting</p>
+                    </div>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 15px; background: #f8f9fa; border-radius: 12px;">
+                    <div>
+                        <div style="font-size: 28px; font-weight: bold; color: #4f46e5;">12</div>
+                        <div style="font-size: 12px; color: #64748b;">Aktive Workflows</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 28px; font-weight: bold; color: #10b981;">8</div>
+                        <div style="font-size: 12px; color: #64748b;">Abgeschlossen</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Treasury Card -->
+            <div onclick="showAgentWorkflows('treasury')" style="background: white; border-radius: 16px; padding: 25px; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.1);" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
+                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+                    <div style="font-size: 48px;">🏦</div>
+                    <div>
+                        <h3 style="margin: 0;">Treasury</h3>
+                        <p style="margin: 0; color: #64748b; font-size: 14px;">Cash Management</p>
+                    </div>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 15px; background: #f8f9fa; border-radius: 12px;">
+                    <div>
+                        <div style="font-size: 28px; font-weight: bold; color: #4f46e5;">5</div>
+                        <div style="font-size: 12px; color: #64748b;">Aktive Workflows</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 28px; font-weight: bold; color: #10b981;">3</div>
+                        <div style="font-size: 12px; color: #64748b;">Abgeschlossen</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Risk Manager Card -->
+            <div onclick="showAgentWorkflows('risk')" style="background: white; border-radius: 16px; padding: 25px; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.1);" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
+                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+                    <div style="font-size: 48px;">⚠️</div>
+                    <div>
+                        <h3 style="margin: 0;">Risk Manager</h3>
+                        <p style="margin: 0; color: #64748b; font-size: 14px;">Risk Assessment</p>
+                    </div>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 15px; background: #f8f9fa; border-radius: 12px;">
+                    <div>
+                        <div style="font-size: 28px; font-weight: bold; color: #4f46e5;">3</div>
+                        <div style="font-size: 12px; color: #64748b;">Aktive Workflows</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 28px; font-weight: bold; color: #10b981;">7</div>
+                        <div style="font-size: 12px; color: #64748b;">Abgeschlossen</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Agent Workflow List (initially hidden) -->
+    <div id="workflow-list" style="display: none;">
+        <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 30px;">
+            <button onclick="backToAgentOverview()" style="background: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer;">
+                ← Zurück
             </button>
-            <button onclick="showWorkflowTab('transparent')" class="workflow-tab-btn" style="padding: 10px 20px; border: none; background: transparent; border-radius: 8px; cursor: pointer; font-weight: 600;">
-                Transparent View
-            </button>
-            <button onclick="showWorkflowTab('workflows')" class="workflow-tab-btn" style="padding: 10px 20px; border: none; background: transparent; border-radius: 8px; cursor: pointer; font-weight: 600;">
-                Workflows
-            </button>
+            <h2 style="color: white; margin: 0;" id="workflow-list-title">Controller Workflows</h2>
         </div>
         
-        <!-- Tab Content -->
-        <div id="executive-tab" class="workflow-tab-content" style="display: block;">
-            <iframe 
-                src="business-case-executive.html" 
-                style="width: 100%; height: 800px; border: none; border-radius: 12px;">
-            </iframe>
+        <div id="workflow-items" style="display: grid; gap: 15px;">
+            <!-- Workflow items will be inserted here -->
+        </div>
+    </div>
+    
+    <!-- Business Case Detail (initially hidden) -->
+    <div id="business-case-detail" style="display: none;">
+        <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 30px;">
+            <button onclick="backToWorkflowList()" style="background: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer;">
+                ← Zurück
+            </button>
+            <h2 style="color: white; margin: 0;">Business Case Analysis</h2>
         </div>
         
-        <div id="transparent-tab" class="workflow-tab-content" style="display: none;">
-            <iframe 
-                src="business-case-transparent.html" 
-                style="width: 100%; height: 800px; border: none; border-radius: 12px;">
-            </iframe>
-        </div>
-        
-        <div id="workflows-tab" class="workflow-tab-content" style="display: none;">
-            <iframe 
-                src="workflows-enhanced.html" 
-                style="width: 100%; height: 800px; border: none; border-radius: 12px;">
-            </iframe>
+        <div style="background: white; border-radius: 20px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+            <div style="display: flex; gap: 10px; margin-bottom: 20px; background: #f1f5f9; padding: 5px; border-radius: 12px;">
+                <button onclick="showBusinessCaseTab('executive')" class="bc-tab-btn active" style="padding: 10px 20px; border: none; background: white; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                    Executive View
+                </button>
+                <button onclick="showBusinessCaseTab('transparent')" class="bc-tab-btn" style="padding: 10px 20px; border: none; background: transparent; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                    Transparent View
+                </button>
+            </div>
+            
+            <div id="bc-executive" class="bc-tab-content" style="display: block;">
+                <iframe src="business-case-executive.html" style="width: 100%; height: 800px; border: none; border-radius: 12px;"></iframe>
+            </div>
+            
+            <div id="bc-transparent" class="bc-tab-content" style="display: none;">
+                <iframe src="business-case-transparent.html" style="width: 100%; height: 800px; border: none; border-radius: 12px;"></iframe>
+            </div>
         </div>
     </div>
 </div>
@@ -1900,28 +1973,84 @@
    `;
    document.head.appendChild(style);
 
-   // Workflow Tab Switching
-function showWorkflowTab(tabName) {
-    // Update buttons
-    document.querySelectorAll('.workflow-tab-btn').forEach(btn => {
+  // Workflow Navigation Functions
+function showAgentWorkflows(agent) {
+    document.getElementById('agent-overview').style.display = 'none';
+    document.getElementById('workflow-list').style.display = 'block';
+    
+    const workflowData = {
+        controller: [
+            { name: 'Business Case "Projekt Polen"', status: 'In Bearbeitung', priority: 'Hoch', progress: 65 },
+            { name: 'Monatsabschluss Oktober', status: 'In Bearbeitung', priority: 'Normal', progress: 40 },
+            { name: 'Budget Planung 2025', status: 'Review', priority: 'Hoch', progress: 85 },
+            { name: 'Quartalsreport Q3', status: 'Abgeschlossen', priority: 'Normal', progress: 100 }
+        ],
+        treasury: [
+            { name: 'Cash Flow Forecast', status: 'In Bearbeitung', priority: 'Hoch', progress: 30 },
+            { name: 'Liquiditätsplanung', status: 'Review', priority: 'Normal', progress: 75 }
+        ],
+        risk: [
+            { name: 'Risk Assessment Polen', status: 'In Bearbeitung', priority: 'Hoch', progress: 50 },
+            { name: 'Compliance Check', status: 'Pending', priority: 'Normal', progress: 0 }
+        ]
+    };
+    
+    document.getElementById('workflow-list-title').textContent = agent.charAt(0).toUpperCase() + agent.slice(1) + ' Workflows';
+    
+    const items = workflowData[agent] || [];
+    const container = document.getElementById('workflow-items');
+    container.innerHTML = items.map((item, index) => `
+        <div onclick="openBusinessCase('${item.name}')" style="background: white; border-radius: 12px; padding: 20px; cursor: pointer; transition: all 0.3s; box-shadow: 0 2px 10px rgba(0,0,0,0.08);" onmouseover="this.style.transform='translateX(10px)'" onmouseout="this.style.transform='translateX(0)'">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h3 style="margin: 0 0 10px 0;">${item.name}</h3>
+                    <div style="display: flex; gap: 15px; align-items: center;">
+                        <span style="background: ${item.priority === 'Hoch' ? '#fee2e2' : '#f3f4f6'}; color: ${item.priority === 'Hoch' ? '#dc2626' : '#6b7280'}; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;">
+                            ${item.priority}
+                        </span>
+                        <span style="background: ${item.status === 'In Bearbeitung' ? '#fef3c7' : item.status === 'Review' ? '#dbeafe' : '#d1fae5'}; color: ${item.status === 'In Bearbeitung' ? '#92400e' : item.status === 'Review' ? '#1e40af' : '#065f46'}; padding: 4px 12px; border-radius: 20px; font-size: 12px;">
+                            ${item.status}
+                        </span>
+                    </div>
+                </div>
+                <div style="text-align: right;">
+                    <div style="font-size: 24px; font-weight: bold; color: #4f46e5;">${item.progress}%</div>
+                    <div style="width: 100px; height: 6px; background: #e5e7eb; border-radius: 3px; margin-top: 5px;">
+                        <div style="width: ${item.progress}%; height: 100%; background: linear-gradient(90deg, #4f46e5, #6366f1); border-radius: 3px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function backToAgentOverview() {
+    document.getElementById('workflow-list').style.display = 'none';
+    document.getElementById('agent-overview').style.display = 'block';
+}
+
+function openBusinessCase(name) {
+    document.getElementById('workflow-list').style.display = 'none';
+    document.getElementById('business-case-detail').style.display = 'block';
+}
+
+function backToWorkflowList() {
+    document.getElementById('business-case-detail').style.display = 'none';
+    document.getElementById('workflow-list').style.display = 'block';
+}
+
+function showBusinessCaseTab(tab) {
+    document.querySelectorAll('.bc-tab-btn').forEach(btn => {
         btn.style.background = 'transparent';
         btn.classList.remove('active');
     });
     event.target.style.background = 'white';
     event.target.classList.add('active');
     
-    // Update content
-    document.querySelectorAll('.workflow-tab-content').forEach(content => {
+    document.querySelectorAll('.bc-tab-content').forEach(content => {
         content.style.display = 'none';
     });
-    
-    document.getElementById(tabName + '-tab').style.display = 'block';
-    
-    // Optional: Refresh iframe wenn gewechselt wird
-    const iframe = document.querySelector(`#${tabName}-tab iframe`);
-    if (iframe) {
-        iframe.src = iframe.src; // Reload
-    }
+    document.getElementById('bc-' + tab).style.display = 'block';
 }
 
 // Message passing zwischen iframes
