@@ -582,7 +582,7 @@
                 
                 <!-- Workflow Execution -->
                 <div class="execution-controls">
-                    <button class="control-btn" onclick="window.open('ma-process-workflow.html', '_blank')">
+                    <button class="control-btn" onclick="toggleMAProcess()">
                          📊 Vollständiger M&A Prozess
                         </button>
                         <button class="control-btn" onclick="startMAWorkflow()">▶️ Quick Start</button>
@@ -631,6 +631,14 @@ Mitarbeiter: 45
 Asking Price: 15 Mio EUR"></textarea>
                     </div>
                     
+                    <!-- M&A Process Workflow Frame -->
+                    <div id="ma-process-frame" style="display: none; margin-top: 20px;">
+                        <iframe 
+                            src="ma-process-workflow.html" 
+                            style="width: 100%; height: 700px; border: none; border-radius: 15px; background: transparent;">
+                        </iframe>
+                    </div>
+
                     <!-- Results Display -->
                     <div class="results-display" id="resultsDisplay">
                         <h3>📊 Analyse Ergebnisse</h3>
@@ -835,6 +843,20 @@ Asking Price: 15 Mio EUR"></textarea>
         // INITIALISIERUNG
         // ========================================
         
+// M&A Process Frame Toggle
+        function toggleMAProcess() {
+            const frame = document.getElementById('ma-process-frame');
+            const inputArea = document.querySelector('.ma-input-area');
+            
+            if (frame.style.display === 'none') {
+                frame.style.display = 'block';
+                inputArea.style.display = 'none';
+            } else {
+                frame.style.display = 'none';
+                inputArea.style.display = 'block';
+            }
+        }
+
         console.log('ALBO AI Workflows geladen');
         console.log('Klicken Sie auf eine Workflow-Karte um zu starten!');
     </script>
