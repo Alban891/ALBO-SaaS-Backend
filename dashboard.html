@@ -1291,15 +1291,45 @@
 
 </div>
 
-<!-- Workflow Modal -->
-<div class="modal" id="workflowModal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2 class="modal-title" id="workflowTitle">Workflow</h2>
-            <button class="modal-close" onclick="closeModal('workflowModal')">✕</button>
+<!-- Workflows View -->
+<div class="mode-content" id="workflows-view">
+    <!-- Business Case Analysis Section -->
+    <div style="background: white; border-radius: 20px; padding: 30px; margin-bottom: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+        <h2 style="color: #1e293b; margin-bottom: 20px;">📊 Business Case Analysis mit Multi-Agent System</h2>
+        
+        <!-- Tabs für verschiedene Views -->
+        <div style="display: flex; gap: 10px; margin-bottom: 20px; background: #f1f5f9; padding: 5px; border-radius: 12px;">
+            <button onclick="showWorkflowTab('executive')" class="workflow-tab-btn active" style="padding: 10px 20px; border: none; background: white; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                Executive View
+            </button>
+            <button onclick="showWorkflowTab('transparent')" class="workflow-tab-btn" style="padding: 10px 20px; border: none; background: transparent; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                Transparent View
+            </button>
+            <button onclick="showWorkflowTab('workflows')" class="workflow-tab-btn" style="padding: 10px 20px; border: none; background: transparent; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                Workflows
+            </button>
         </div>
-        <div id="workflowContent">
-            <!-- Dynamic content -->
+        
+        <!-- Tab Content -->
+        <div id="executive-tab" class="workflow-tab-content" style="display: block;">
+            <iframe 
+                src="business-case-executive.html" 
+                style="width: 100%; height: 800px; border: none; border-radius: 12px;">
+            </iframe>
+        </div>
+        
+        <div id="transparent-tab" class="workflow-tab-content" style="display: none;">
+            <iframe 
+                src="business-case-transparent.html" 
+                style="width: 100%; height: 800px; border: none; border-radius: 12px;">
+            </iframe>
+        </div>
+        
+        <div id="workflows-tab" class="workflow-tab-content" style="display: none;">
+            <iframe 
+                src="workflows-enhanced.html" 
+                style="width: 100%; height: 800px; border: none; border-radius: 12px;">
+            </iframe>
         </div>
     </div>
 </div>
@@ -1888,6 +1918,56 @@
        }
    `;
    document.head.appendChild(style);
+
+   // Workflow Tab Switching
+function showWorkflowTab(tabName) {
+    // Update buttons
+    document.querySelectorAll('.workflow-tab-btn').forEach(btn => {
+        btn.style.background = 'transparent';
+        btn.classList.remove('active');
+    });
+    event.target.style.background = 'white';
+    event.target.classList.add('active');
+    
+    // Update content
+    document.querySelectorAll('.workflow-tab-content').forEach(content => {
+        content.style.display = 'none';
+    });
+    
+    document.getElementById(tabName + '-tab').style.display = 'block';
+    
+    // Optional: Refresh iframe wenn gewechselt wird
+    const iframe = document.querySelector(`#${tabName}-tab iframe`);
+    if (iframe) {
+        iframe.src = iframe.src; // Reload
+    }
+}
+
+// Message passing zwischen iframes
+window.addEventListener('message', function(event) {
+    // Sicherheitscheck
+    if (event.origin !== window.location.origin) return;
+    
+    if (event.data.type === 'agent-decision') {
+        // Zeige Notification im Hauptdashboard
+        showNotification(`Agent Entscheidung: ${event.data.decision}`, 'success');
+        
+        // Update KPIs wenn nötig
+        if (event.data.updateKPIs) {
+            updateDashboardKPIs(event.data.kpis);
+        }
+    }
+});
+
+function updateDashboardKPIs(kpis) {
+    if (kpis.openTasks) {
+        document.getElementById('openTasks').textContent = kpis.openTasks;
+    }
+    if (kpis.roi) {
+        document.getElementById('roi').textContent = kpis.roi;
+    }
+}
+
 </script>
 
 </body>
