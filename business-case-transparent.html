@@ -1,4 +1,606 @@
- <!-- Multi-Agent Discussion Section -->
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Case Executive View - ALBO AI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8f9fa;
+            color: #2d3748;
+            line-height: 1.6;
+        }
+        
+        /* Executive Header */
+        .executive-header {
+            background: white;
+            border-bottom: 2px solid #e2e8f0;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .project-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1a202c;
+        }
+        
+        .status-badge {
+            background: linear-gradient(135deg, #48bb78, #38a169);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        /* Main Container */
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px;
+        }
+        
+        /* Key Metrics Section */
+        .key-metrics {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .metric-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: transform 0.2s;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        }
+        
+        .metric-label {
+            font-size: 12px;
+            color: #718096;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+        
+        .metric-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #1a202c;
+            margin-bottom: 5px;
+        }
+        
+        .metric-change {
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .metric-change.positive {
+            color: #48bb78;
+        }
+        
+        .metric-change.negative {
+            color: #f56565;
+        }
+        
+        /* Scenario Comparison */
+        .scenario-section {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 25px;
+            color: #1a202c;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        /* Scenario Table */
+        .scenario-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .scenario-table th {
+            background: #f7fafc;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #4a5568;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .scenario-table td {
+            padding: 15px 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .scenario-table tr:hover {
+            background: #f7fafc;
+        }
+        
+        .scenario-header {
+            font-weight: 600;
+            color: #2d3748;
+        }
+        
+        .best-case {
+            color: #48bb78;
+            font-weight: 600;
+        }
+        
+        .base-case {
+            color: #4299e1;
+            font-weight: 600;
+        }
+        
+        .stress-case {
+            color: #f56565;
+            font-weight: 600;
+        }
+        
+        /* Visualization */
+        .chart-container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        
+        .kpi-corridor {
+            position: relative;
+            height: 300px;
+            margin: 20px 0;
+        }
+        
+        .corridor-bar {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60%;
+            background: linear-gradient(180deg, #48bb78 0%, #4299e1 50%, #f56565 100%);
+            opacity: 0.1;
+            border-radius: 8px;
+        }
+        
+        .corridor-line {
+            position: absolute;
+            left: 10%;
+            right: 10%;
+            height: 2px;
+            background: #4299e1;
+        }
+        
+        .corridor-point {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: white;
+            border: 3px solid #4299e1;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+        
+        /* Decision & Recommendations */
+        .decision-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .decision-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .decision-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+        }
+        
+        .recommendation-text {
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        
+        .recommendation-text strong {
+            color: #fbbf24;
+        }
+        
+        .decision-metrics {
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 20px;
+        }
+        
+        .decision-metric {
+            margin-bottom: 15px;
+        }
+        
+        .decision-metric-label {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+        
+        .decision-metric-value {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        /* Action Items */
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .action-card {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            padding: 15px;
+        }
+        
+        .action-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .action-description {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        /* Transparency Toggle */
+        .transparency-toggle {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: white;
+            border-radius: 50px;
+            padding: 8px 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .transparency-toggle:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(0,0,0,0.2);
+        }
+        
+        .toggle-icon {
+            width: 20px;
+            height: 20px;
+            background: #667eea;
+            border-radius: 50%;
+            position: relative;
+        }
+        
+        .toggle-text {
+            font-size: 13px;
+            font-weight: 600;
+            color: #4a5568;
+        }
+        
+        /* Transparency Panel (initially hidden) */
+        .transparency-panel {
+            position: fixed;
+            right: -400px;
+            top: 0;
+            width: 400px;
+            height: 100vh;
+            background: white;
+            box-shadow: -4px 0 20px rgba(0,0,0,0.1);
+            transition: right 0.3s ease;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+        
+        .transparency-panel.active {
+            right: 0;
+        }
+        
+        .transparency-header {
+            padding: 20px;
+            background: #f7fafc;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .transparency-content {
+            padding: 20px;
+        }
+        
+        .calculation-step {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f7fafc;
+            border-radius: 8px;
+            border-left: 3px solid #667eea;
+        }
+        
+        .step-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #2d3748;
+        }
+        
+        .step-formula {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            background: #1a202c;
+            color: #68d391;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 8px;
+        }
+        
+        .assumption-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            font-size: 13px;
+        }
+        
+        .assumption-label {
+            color: #718096;
+        }
+        
+        .assumption-value {
+            font-weight: 600;
+            color: #2d3748;
+        }
+    </style>
+</head>
+<body>
+    <!-- Executive Header -->
+    <div class="executive-header">
+        <div class="project-title">
+            Business Case: Neubau Werk Bioplastik-Komponenten Polen
+        </div>
+        <div class="status-badge">
+            ✓ Analyse abgeschlossen
+        </div>
+    </div>
+    
+    <!-- Main Dashboard -->
+    <div class="dashboard-container">
+        
+        <!-- Key Metrics Overview -->
+        <div class="key-metrics">
+            <div class="metric-card">
+                <div class="metric-label">Empfehlung</div>
+                <div class="metric-value" style="color: #48bb78;">FREIGABE</div>
+                <div class="metric-change positive">
+                    <span>↑</span>
+                    <span>Mit Risikopuffer</span>
+                </div>
+            </div>
+            
+            <div class="metric-card">
+                <div class="metric-label">NPV (Base Case)</div>
+                <div class="metric-value">480 T€</div>
+                <div class="metric-change positive">
+                    <span>↑</span>
+                    <span>Über Mindestwert</span>
+                </div>
+            </div>
+            
+            <div class="metric-card">
+                <div class="metric-label">Payback Period</div>
+                <div class="metric-value">3.8 Jahre</div>
+                <div class="metric-change">
+                    <span style="color: #ed8936;">⚠</span>
+                    <span style="color: #ed8936;">Grenzwertig</span>
+                </div>
+            </div>
+            
+            <div class="metric-card">
+                <div class="metric-label">IRR (Base Case)</div>
+                <div class="metric-value">14%</div>
+                <div class="metric-change positive">
+                    <span>↑</span>
+                    <span>Über WACC (12%)</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Scenario Comparison Table -->
+        <div class="scenario-section">
+            <h2 class="section-title">
+                <span>📊</span>
+                <span>Szenarioanalyse</span>
+            </h2>
+            
+            <table class="scenario-table">
+                <thead>
+                    <tr>
+                        <th>Kennzahl</th>
+                        <th>Best Case</th>
+                        <th>Base Case</th>
+                        <th>Stress Case</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="scenario-header">Umsatz p.a. (ø)</td>
+                        <td class="best-case">7,0 Mio. €</td>
+                        <td class="base-case">5,0 Mio. €</td>
+                        <td class="stress-case">3,2 Mio. €</td>
+                    </tr>
+                    <tr>
+                        <td class="scenario-header">DB-Marge</td>
+                        <td class="best-case">38 %</td>
+                        <td class="base-case">32 %</td>
+                        <td class="stress-case">25 %</td>
+                    </tr>
+                    <tr>
+                        <td class="scenario-header">ROI (5 Jahre)</td>
+                        <td class="best-case">28 %</td>
+                        <td class="base-case">14 %</td>
+                        <td class="stress-case">-4 %</td>
+                    </tr>
+                    <tr>
+                        <td class="scenario-header">Payback</td>
+                        <td class="best-case">2,5 Jahre</td>
+                        <td class="base-case">3,8 Jahre</td>
+                        <td class="stress-case">> 6 Jahre</td>
+                    </tr>
+                    <tr>
+                        <td class="scenario-header">Kapitalwert (NPV)</td>
+                        <td class="best-case">1,1 Mio. €</td>
+                        <td class="base-case">480 T€</td>
+                        <td class="stress-case">-150 T€</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Visualization -->
+        <div class="chart-container">
+            <h2 class="section-title">
+                <span>📈</span>
+                <span>KPI-Korridor Visualisierung</span>
+            </h2>
+            
+            <div class="kpi-corridor">
+                <!-- Simplified visualization - would be Chart.js in production -->
+                <div style="position: relative; height: 250px; display: flex; align-items: center; justify-content: space-around;">
+                    <div style="text-align: center;">
+                        <div style="height: 180px; width: 80px; background: linear-gradient(to top, #f7fafc, #48bb78); border-radius: 8px; margin-bottom: 10px;"></div>
+                        <strong>Best Case</strong><br>
+                        <span style="color: #48bb78;">1.1 Mio €</span>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="height: 120px; width: 80px; background: linear-gradient(to top, #f7fafc, #4299e1); border-radius: 8px; margin-bottom: 10px; margin-top: 60px;"></div>
+                        <strong>Base Case</strong><br>
+                        <span style="color: #4299e1;">480 T€</span>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="height: 40px; width: 80px; background: linear-gradient(to top, #f7fafc, #f56565); border-radius: 8px; margin-bottom: 10px; margin-top: 140px;"></div>
+                        <strong>Stress Case</strong><br>
+                        <span style="color: #f56565;">-150 T€</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Decision & Recommendations -->
+        <div class="decision-box">
+            <h2 class="decision-title">
+                <span>✅</span>
+                <span>KI-Entscheidungsempfehlung</span>
+            </h2>
+            
+            <div class="decision-content">
+                <div class="recommendation-text">
+                    <p><strong>Empfehlung:</strong> Freigabe mit gestaffelter Investition</p>
+                    <p style="margin-top: 15px;">
+                        Der Business Case zeigt ein <strong>positives Risiko-Rendite-Profil</strong>. 
+                        Der Base Case erreicht die Mindestanforderungen (NPV > 0, ROI > 10%). 
+                        Selbst mit einem Risikopuffer von 20% bleibt das Projekt wirtschaftlich.
+                    </p>
+                    <p style="margin-top: 15px; opacity: 0.9;">
+                        <strong>Kritischer Erfolgsfaktor:</strong> Die Absatzentwicklung in den ersten 
+                        18 Monaten sollte engmaschig überwacht werden.
+                    </p>
+                </div>
+                
+                <div class="decision-metrics">
+                    <div class="decision-metric">
+                        <div class="decision-metric-label">Erfolgswahrscheinlichkeit</div>
+                        <div class="decision-metric-value">72%</div>
+                    </div>
+                    <div class="decision-metric">
+                        <div class="decision-metric-label">Risikopuffer</div>
+                        <div class="decision-metric-value">20%</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Action Items -->
+            <div class="actions-grid">
+                <div class="action-card">
+                    <div class="action-title">
+                        <span>1️⃣</span>
+                        <span>Staffelung</span>
+                    </div>
+                    <div class="action-description">
+                        Investitionsfreigabe: 50% sofort, 50% nach Jahr 1
+                    </div>
+                </div>
+                
+                <div class="action-card">
+                    <div class="action-title">
+                        <span>2️⃣</span>
+                        <span>Incentivierung</span>
+                    </div>
+                    <div class="action-description">
+                        Bonus-Malus-Mechanismen im Vertrieb einbauen
+                    </div>
+                </div>
+                
+                <div class="action-card">
+                    <div class="action-title">
+                        <span>3️⃣</span>
+                        <span>Absicherung</span>
+                    </div>
+                    <div class="action-description">
+                        Währungsabsicherung ab Phase 2 implementieren
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+
+     <!-- Multi-Agent Discussion Section -->
         <div class="scenario-section" style="background: linear-gradient(135deg, #f7fafc, #e2e8f0); margin-bottom: 30px;">
             <h2 class="section-title">
                 <span>🤝</span>
@@ -31,3 +633,1051 @@
         </div>
         
     </div>
+    
+    <!-- Transparency Toggle Button -->
+    <div class="transparency-toggle" onclick="toggleTransparency()">
+        <div class="toggle-icon"></div>
+        <span class="toggle-text">KI-Transparenz anzeigen</span>
+    </div>
+    
+    <!-- Transparency Panel (Hidden by default) -->
+    <div class="transparency-panel" id="transparencyPanel">
+        <div class="transparency-header">
+            <h3>🔍 KI-Berechnungen</h3>
+            <button onclick="toggleTransparency()" style="background: none; border: none; font-size: 24px; cursor: pointer;">×</button>
+        </div>
+        
+        <div class="transparency-content">
+            <!-- Annahmen - Interaktiv -->
+            <div class="calculation-step">
+                <div class="step-title">📌 Annahmen anpassen</div>
+                
+                <!-- WACC Slider -->
+                <div style="margin: 15px 0; padding: 15px; background: white; border-radius: 8px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span style="font-weight: 600;">WACC</span>
+                        <span id="wacc-value" style="font-weight: bold; color: #667eea;">12%</span>
+                    </div>
+                    <input type="range" id="wacc-slider" min="5" max="20" value="12" step="0.5" 
+                           style="width: 100%; margin-bottom: 10px;"
+                           onchange="adjustWACC(this.value)">
+                    <div id="wacc-feedback" style="display: none; padding: 10px; background: #fef5e7; border-radius: 6px; font-size: 12px; color: #744210; margin-top: 10px;">
+                        <!-- KI Feedback wird hier angezeigt -->
+                    </div>
+                </div>
+                
+                <!-- Wachstumsrate Slider -->
+                <div style="margin: 15px 0; padding: 15px; background: white; border-radius: 8px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span style="font-weight: 600;">Wachstumsrate (Base)</span>
+                        <span id="growth-value" style="font-weight: bold; color: #667eea;">15%</span>
+                    </div>
+                    <input type="range" id="growth-slider" min="0" max="50" value="15" step="1"
+                           style="width: 100%; margin-bottom: 10px;"
+                           onchange="adjustGrowth(this.value)">
+                    <div id="growth-feedback" style="display: none; padding: 10px; background: #fef5e7; border-radius: 6px; font-size: 12px; color: #744210; margin-top: 10px;">
+                        <!-- KI Feedback wird hier angezeigt -->
+                    </div>
+                </div>
+                
+                <!-- DB-Marge Adjustment -->
+                <div style="margin: 15px 0; padding: 15px; background: white; border-radius: 8px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span style="font-weight: 600;">DB-Marge</span>
+                        <span id="margin-value" style="font-weight: bold; color: #667eea;">32%</span>
+                    </div>
+                    <input type="range" id="margin-slider" min="10" max="60" value="32" step="1"
+                           style="width: 100%; margin-bottom: 10px;"
+                           onchange="adjustMargin(this.value)">
+                    <div id="margin-feedback" style="display: none; padding: 10px; background: #fef5e7; border-radius: 6px; font-size: 12px; color: #744210; margin-top: 10px;">
+                        <!-- KI Feedback wird hier angezeigt -->
+                    </div>
+                </div>
+                
+                <!-- Neuberechnung Button -->
+                <button onclick="recalculateWithNewAssumptions()" 
+                        style="width: 100%; padding: 12px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 15px;">
+                    🔄 Szenarien neu berechnen
+                </button>
+            </div>
+            
+            <!-- NPV Berechnung -->
+            <div class="calculation-step">
+                <div class="step-title">📊 NPV Berechnung (Base Case)</div>
+                <div class="step-formula">
+NPV = Σ(FCF_t / (1 + WACC)^t)
+    = 250k/(1.12)^1 + 380k/(1.12)^2 + ...
+    = 480.000 €
+                </div>
+            </div>
+            
+            <!-- Sensitivität -->
+            <div class="calculation-step">
+                <div class="step-title">📈 Sensitivitätsanalyse</div>
+                <div class="assumption-item">
+                    <span class="assumption-label">Bei -10% Absatz</span>
+                    <span class="assumption-value">NPV: 320 T€</span>
+                </div>
+                <div class="assumption-item">
+                    <span class="assumption-label">Bei +10% Kosten</span>
+                    <span class="assumption-value">NPV: 410 T€</span>
+                </div>
+            </div>
+            
+            <!-- Audit Log -->
+            <div class="calculation-step">
+                <div class="step-title">📋 Audit Trail</div>
+                <div style="font-size: 12px; color: #718096; line-height: 1.8;">
+                    14:23:15 - Daten validiert<br>
+                    14:23:18 - Treiberanalyse durchgeführt<br>
+                    14:23:21 - Szenarien berechnet<br>
+                    14:23:24 - Risikobewertung abgeschlossen<br>
+                    14:23:26 - Empfehlung generiert
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function toggleTransparency() {
+            const panel = document.getElementById('transparencyPanel');
+            panel.classList.toggle('active');
+            
+            // Update button text
+            const toggleText = document.querySelector('.toggle-text');
+            if (panel.classList.contains('active')) {
+                toggleText.textContent = 'KI-Transparenz ausblenden';
+            } else {
+                toggleText.textContent = 'KI-Transparenz anzeigen';
+            }
+        }
+        
+        // Globale Variablen für Annahmen
+        let assumptions = {
+            wacc: 12,
+            growthRate: 15,
+            dbMargin: 32,
+            terminalGrowth: 2.5
+        };
+        
+        // KI-Analyse Simulationen für verschiedene Annahmen
+        const aiAnalysis = {
+            wacc: {
+                5: {
+                    type: 'warning',
+                    message: '⚠️ WACC von 5% ist unrealistisch niedrig für diese Branche. Benchmark: 10-14%. Risiko: Überbewertung des Projekts.',
+                    details: 'Branchendurchschnitt Tech/Manufacturing: 11.5%. Ihr historischer WACC: 11-13%. Bei 5% würde NPV auf 1.2 Mio € steigen - zu optimistisch!'
+                },
+                8: {
+                    type: 'caution',
+                    message: '⚡ WACC von 8% ist optimistisch. Nur gerechtfertigt bei sehr niedrigem Risiko oder Staatsgarantien.',
+                    details: 'Könnte akzeptabel sein bei: Förderungen, langfristigen Abnahmeverträgen, oder niedrigerer Eigenkapitalquote.'
+                },
+                12: {
+                    type: 'success',
+                    message: '✅ WACC von 12% entspricht dem Branchenstandard und Ihrer Kapitalstruktur.',
+                    details: 'Basiert auf: Beta 1.2, Risk-free rate 3%, Market premium 7%, Debt/Equity 40/60.'
+                },
+                16: {
+                    type: 'info',
+                    message: '📊 WACC von 16% ist konservativ. Gut für Risikopuffer, reduziert aber NPV auf 180 T€.',
+                    details: 'Sinnvoll bei: Erstinvestition in neuen Markt, politischen Risiken, oder als Stress-Test.'
+                },
+                20: {
+                    type: 'warning',
+                    message: '🔴 WACC von 20% macht Projekt unwirtschaftlich. NPV wird negativ (-230 T€).',
+                    details: 'Nur gerechtfertigt bei: Extrem hohem Risiko, Venture Capital, oder als Worst-Case-Szenario.'
+                }
+            },
+            growth: {
+                0: {
+                    type: 'warning',
+                    message: '📉 0% Wachstum ist sehr pessimistisch. NPV sinkt auf 120 T€.',
+                    details: 'Markt wächst mit 8% p.a. - Stagnation würde Marktanteilsverlust bedeuten.'
+                },
+                15: {
+                    type: 'success',
+                    message: '✅ 15% Wachstum ist realistisch basierend auf Marktanalyse.',
+                    details: 'Entspricht: Markt +8%, Marktanteilsgewinn +7%. Historisch haben Sie 12-18% erreicht.'
+                },
+                30: {
+                    type: 'caution',
+                    message: '🚀 30% Wachstum ist ambitioniert. NPV steigt auf 820 T€, aber Risiko hoch.',
+                    details: 'Erfordert: Perfekte Execution, keine Wettbewerber-Reaktion, volle Kapazitätsauslastung.'
+                },
+                50: {
+                    type: 'warning',
+                    message: '⚠️ 50% Wachstum ist unrealistisch für etablierte Märkte.',
+                    details: 'Nur bei disruptiver Innovation oder komplett neuem Markt denkbar. Kapazitäten fehlen.'
+                }
+            },
+            margin: {
+                10: {
+                    type: 'warning',
+                    message: '🔴 10% DB-Marge macht Projekt unrentabel. Break-even erst nach 7+ Jahren.',
+                    details: 'Minimum in Ihrer Branche: 25%. Bei 10% fehlt Puffer für Marktschwankungen.'
+                },
+                25: {
+                    type: 'caution',
+                    message: '⚡ 25% DB-Marge ist unteres Ende des Akzeptablen.',
+                    details: 'Branchenschnitt: 30-35%. Wenig Spielraum für Kostensteigerungen.'
+                },
+                32: {
+                    type: 'success',
+                    message: '✅ 32% DB-Marge entspricht Ihrem Durchschnitt und ist realistisch.',
+                    details: 'Basiert auf: Material 45%, Personal 15%, Sonstige 8%. Gut validiert.'
+                },
+                45: {
+                    type: 'caution',
+                    message: '📈 45% DB-Marge ist optimistisch. Premium-Pricing nötig.',
+                    details: 'Erreichbar mit: Premium-Positionierung, Automatisierung, Skaleneffekten.'
+                },
+                60: {
+                    type: 'warning',
+                    message: '⚠️ 60% DB-Marge unrealistisch für Manufacturing. Software-Level!',
+                    details: 'Nur bei reinen Software/Lizenz-Modellen möglich. Nicht für physische Produkte.'
+                }
+            }
+        };
+        
+        // WACC anpassen
+        function adjustWACC(value) {
+            assumptions.wacc = parseFloat(value);
+            document.getElementById('wacc-value').textContent = value + '%';
+            
+            // KI-Analyse abrufen
+            const analysis = getAIAnalysis('wacc', value);
+            const feedbackDiv = document.getElementById('wacc-feedback');
+            
+            feedbackDiv.style.display = 'block';
+            feedbackDiv.innerHTML = `
+                <strong>KI-Analyse:</strong><br>
+                ${analysis.message}<br>
+                <span style="font-size: 11px; line-height: 1.4; display: block; margin-top: 8px; opacity: 0.9;">
+                    ${analysis.details}
+                </span>
+            `;
+            
+            // Farbcodierung basierend auf Typ
+            if (analysis.type === 'warning') {
+                feedbackDiv.style.background = '#fee';
+                feedbackDiv.style.color = '#c53030';
+            } else if (analysis.type === 'success') {
+                feedbackDiv.style.background = '#f0fdf4';
+                feedbackDiv.style.color = '#166534';
+            } else if (analysis.type === 'caution') {
+                feedbackDiv.style.background = '#fef5e7';
+                feedbackDiv.style.color = '#744210';
+            }
+            
+            // Live-Update der Metriken (vereinfacht)
+            updateMetrics();
+        }
+        
+        // Wachstumsrate anpassen
+        function adjustGrowth(value) {
+            assumptions.growthRate = parseFloat(value);
+            document.getElementById('growth-value').textContent = value + '%';
+            
+            const analysis = getAIAnalysis('growth', value);
+            const feedbackDiv = document.getElementById('growth-feedback');
+            
+            feedbackDiv.style.display = 'block';
+            feedbackDiv.innerHTML = `
+                <strong>KI-Analyse:</strong><br>
+                ${analysis.message}<br>
+                <span style="font-size: 11px; line-height: 1.4; display: block; margin-top: 8px; opacity: 0.9;">
+                    ${analysis.details}
+                </span>
+            `;
+            
+            if (analysis.type === 'warning') {
+                feedbackDiv.style.background = '#fee';
+                feedbackDiv.style.color = '#c53030';
+            } else if (analysis.type === 'success') {
+                feedbackDiv.style.background = '#f0fdf4';
+                feedbackDiv.style.color = '#166534';
+            } else {
+                feedbackDiv.style.background = '#fef5e7';
+                feedbackDiv.style.color = '#744210';
+            }
+            
+            updateMetrics();
+        }
+        
+        // DB-Marge anpassen
+        function adjustMargin(value) {
+            assumptions.dbMargin = parseFloat(value);
+            document.getElementById('margin-value').textContent = value + '%';
+            
+            const analysis = getAIAnalysis('margin', value);
+            const feedbackDiv = document.getElementById('margin-feedback');
+            
+            feedbackDiv.style.display = 'block';
+            feedbackDiv.innerHTML = `
+                <strong>KI-Analyse:</strong><br>
+                ${analysis.message}<br>
+                <span style="font-size: 11px; line-height: 1.4; display: block; margin-top: 8px; opacity: 0.9;">
+                    ${analysis.details}
+                </span>
+            `;
+            
+            if (analysis.type === 'warning') {
+                feedbackDiv.style.background = '#fee';
+                feedbackDiv.style.color = '#c53030';
+            } else if (analysis.type === 'success') {
+                feedbackDiv.style.background = '#f0fdf4';
+                feedbackDiv.style.color = '#166534';
+            } else {
+                feedbackDiv.style.background = '#fef5e7';
+                feedbackDiv.style.color = '#744210';
+            }
+            
+            updateMetrics();
+        }
+        
+        // KI-Analyse abrufen (vereinfacht)
+        function getAIAnalysis(type, value) {
+            const analyses = aiAnalysis[type];
+            const numValue = parseFloat(value);
+            
+            // Finde die nächstgelegene Analyse
+            let closestKey = null;
+            let minDiff = Infinity;
+            
+            for (let key in analyses) {
+                const diff = Math.abs(parseFloat(key) - numValue);
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    closestKey = key;
+                }
+            }
+            
+            return analyses[closestKey] || {
+                type: 'info',
+                message: 'Analysiere...',
+                details: 'Berechnung läuft...'
+            };
+        }
+        
+        // Metriken aktualisieren
+        function updateMetrics() {
+            // Vereinfachte NPV-Neuberechnung
+            const baseNPV = 480000; // Base NPV bei Standard-Annahmen
+            
+            // Adjustierungen basierend auf Annahmen
+            const waccAdjustment = (12 - assumptions.wacc) * 40000; // Jeder % WACC = 40k NPV
+            const growthAdjustment = (assumptions.growthRate - 15) * 20000; // Jeder % Wachstum = 20k NPV
+            const marginAdjustment = (assumptions.dbMargin - 32) * 15000; // Jeder % Marge = 15k NPV
+            
+            const newNPV = baseNPV + waccAdjustment + growthAdjustment + marginAdjustment;
+            
+            // Update NPV Anzeige
+            const npvDisplay = document.querySelector('.metric-card:nth-child(2) .metric-value');
+            if (npvDisplay) {
+                if (newNPV > 1000000) {
+                    npvDisplay.textContent = (newNPV / 1000000).toFixed(1) + ' Mio €';
+                } else if (newNPV > 0) {
+                    npvDisplay.textContent = Math.round(newNPV / 1000) + ' T€';
+                } else {
+                    npvDisplay.textContent = Math.round(newNPV / 1000) + ' T€';
+                    npvDisplay.style.color = '#f56565';
+                }
+            }
+            
+            // Update Empfehlung
+            const recommendationDisplay = document.querySelector('.metric-card:nth-child(1) .metric-value');
+            if (recommendationDisplay) {
+                if (newNPV > 500000) {
+                    recommendationDisplay.textContent = 'FREIGABE';
+                    recommendationDisplay.style.color = '#48bb78';
+                } else if (newNPV > 100000) {
+                    recommendationDisplay.textContent = 'PRÜFEN';
+                    recommendationDisplay.style.color = '#ed8936';
+                } else {
+                    recommendationDisplay.textContent = 'ABLEHNEN';
+                    recommendationDisplay.style.color = '#f56565';
+                }
+            }
+            
+            // Update KI-Entscheidungsempfehlung Box
+            updateDecisionRecommendation(newNPV);
+        }
+        
+        // KI-Entscheidungsempfehlung dynamisch aktualisieren
+        function updateDecisionRecommendation(npv) {
+            const decisionBox = document.querySelector('.decision-box');
+            if (!decisionBox) return;
+            
+            // Berechne alle Szenarien für Entscheidung
+            const bestNPV = calculateNPV('best');
+            const baseNPV = calculateNPV('base');
+            const stressNPV = calculateNPV('stress');
+            
+            // Erfolgswahrscheinlichkeit berechnen
+            let successProbability = 50;
+            if (baseNPV > 500000) successProbability = 72;
+            if (baseNPV > 1000000) successProbability = 85;
+            if (baseNPV < 100000) successProbability = 35;
+            if (stressNPV > 0) successProbability += 10;
+            if (assumptions.wacc > 15) successProbability -= 15;
+            successProbability = Math.max(10, Math.min(95, successProbability));
+            
+            // Risikopuffer berechnen
+            const riskBuffer = stressNPV > 0 ? 20 : (stressNPV > -200000 ? 30 : 40);
+            
+            // Empfehlungstext generieren
+            let recommendationText = '';
+            let mainRecommendation = '';
+            let criticalFactor = '';
+            let actionItems = [];
+            
+            if (baseNPV > 800000 && stressNPV > 0) {
+                mainRecommendation = 'STARKE FREIGABE - Vollständige Investition empfohlen';
+                recommendationText = `Der Business Case zeigt ein <strong>exzellentes Risiko-Rendite-Profil</strong>. 
+                    Alle Szenarien sind profitabel. NPV von ${formatNPV(baseNPV)} deutlich über Mindestanforderungen.`;
+                criticalFactor = 'Schnelle Markteinführung zur Nutzung des First-Mover Vorteils';
+                decisionBox.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+                actionItems = [
+                    { icon: '✅', title: 'Sofortstart', desc: '100% Investition freigeben' },
+                    { icon: '🚀', title: 'Fast-Track', desc: 'Beschleunigtes Rollout' },
+                    { icon: '📈', title: 'Skalierung', desc: 'Expansion vorbereiten' }
+                ];
+            } else if (baseNPV > 300000 && stressNPV > -100000) {
+                mainRecommendation = 'FREIGABE mit gestaffelter Investition';
+                recommendationText = `Der Business Case zeigt ein <strong>positives Risiko-Rendite-Profil</strong>. 
+                    Der Base Case mit ${formatNPV(baseNPV)} erreicht die Mindestanforderungen. 
+                    Risikopuffer von ${riskBuffer}% empfohlen.`;
+                criticalFactor = 'Die Absatzentwicklung in den ersten 18 Monaten sollte engmaschig überwacht werden';
+                decisionBox.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                actionItems = [
+                    { icon: '1️⃣', title: 'Staffelung', desc: `Investition: 50% sofort, 50% nach Jahr 1` },
+                    { icon: '2️⃣', title: 'Incentivierung', desc: 'Bonus-Malus im Vertrieb' },
+                    { icon: '3️⃣', title: 'Absicherung', desc: 'Währungshedging ab Phase 2' }
+                ];
+            } else if (baseNPV > 0) {
+                mainRecommendation = 'BEDINGTE FREIGABE - Erhöhte Auflagen';
+                recommendationText = `Der Business Case ist <strong>grenzwertig</strong>. 
+                    NPV von ${formatNPV(baseNPV)} nur knapp positiv. 
+                    Stress Case mit ${formatNPV(stressNPV)} zeigt erhebliche Risiken.`;
+                criticalFactor = 'Monatliches Review mit Abbruch-Option bei Zielverfehlung';
+                decisionBox.style.background = 'linear-gradient(135deg, #ed8936 0%, #dd6b20 100%)';
+                actionItems = [
+                    { icon: '⚠️', title: 'Pilot', desc: 'Nur 25% Initial-Invest' },
+                    { icon: '📊', title: 'Gates', desc: 'Quartalsweise Freigaben' },
+                    { icon: '🛡️', title: 'Exit-Plan', desc: 'Ausstiegsszenario definiert' }
+                ];
+            } else {
+                mainRecommendation = 'ABLEHNUNG - Projekt nicht wirtschaftlich';
+                recommendationText = `Der Business Case ist <strong>nicht tragfähig</strong>. 
+                    NPV negativ mit ${formatNPV(baseNPV)}. 
+                    Selbst Best Case mit ${formatNPV(bestNPV)} nicht ausreichend.`;
+                criticalFactor = 'Grundlegende Überarbeitung des Geschäftsmodells erforderlich';
+                decisionBox.style.background = 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
+                actionItems = [
+                    { icon: '🔴', title: 'Stopp', desc: 'Keine Freigabe' },
+                    { icon: '🔄', title: 'Neukonzeption', desc: 'Geschäftsmodell überarbeiten' },
+                    { icon: '🎯', title: 'Alternative', desc: 'Andere Projekte priorisieren' }
+                ];
+            }
+            
+            // HTML aktualisieren
+            const recommendationTextDiv = decisionBox.querySelector('.recommendation-text');
+            if (recommendationTextDiv) {
+                recommendationTextDiv.innerHTML = `
+                    <p><strong>Empfehlung:</strong> ${mainRecommendation}</p>
+                    <p style="margin-top: 15px;">${recommendationText}</p>
+                    <p style="margin-top: 15px; opacity: 0.9;">
+                        <strong>Kritischer Erfolgsfaktor:</strong> ${criticalFactor}
+                    </p>
+                `;
+            }
+            
+            // Metriken in der Box aktualisieren
+            const successDiv = decisionBox.querySelector('.decision-metric-value');
+            if (successDiv) {
+                successDiv.textContent = successProbability + '%';
+            }
+            
+            const bufferDiv = decisionBox.querySelectorAll('.decision-metric-value')[1];
+            if (bufferDiv) {
+                bufferDiv.textContent = riskBuffer + '%';
+            }
+            
+            // Action Items aktualisieren
+            const actionsGrid = decisionBox.querySelector('.actions-grid');
+            if (actionsGrid) {
+                actionsGrid.innerHTML = actionItems.map(item => `
+                    <div class="action-card">
+                        <div class="action-title">
+                            <span>${item.icon}</span>
+                            <span>${item.title}</span>
+                        </div>
+                        <div class="action-description">${item.desc}</div>
+                    </div>
+                `).join('');
+            }
+        }
+        
+        // Neuberechnung mit allen Annahmen
+        function recalculateWithNewAssumptions() {
+            // Animation für Berechnung
+            const button = event.target;
+            button.textContent = '⏳ Berechne...';
+            button.disabled = true;
+            
+            setTimeout(() => {
+                // Update alle Szenarien in der Tabelle
+                updateScenarioTable();
+                
+                // Button zurücksetzen
+                button.textContent = '🔄 Szenarien neu berechnen';
+                button.disabled = false;
+                
+                // Notification
+                alert(`Szenarien neu berechnet mit:\nWACC: ${assumptions.wacc}%\nWachstum: ${assumptions.growthRate}%\nDB-Marge: ${assumptions.dbMargin}%`);
+            }, 1500);
+        }
+        
+        // Szenario-Tabelle aktualisieren
+        function updateScenarioTable() {
+            // Basis-Werte für Berechnung
+            const baseRevenue = 5.0; // Mio EUR
+            const baseInvestment = 15.0; // Mio EUR
+            
+            // BASE CASE berechnen
+            const baseCaseRevenue = baseRevenue * (1 + assumptions.growthRate / 100);
+            const baseCaseMargin = assumptions.dbMargin;
+            const baseCaseNPV = calculateNPV('base');
+            const baseCaseROI = ((baseCaseNPV / 1000000) / baseInvestment * 100).toFixed(0);
+            const baseCasePayback = (baseInvestment / (baseCaseRevenue * baseCaseMargin / 100)).toFixed(1);
+            
+            // BEST CASE berechnen (optimistischer)
+            const bestCaseRevenue = baseRevenue * (1 + (assumptions.growthRate + 10) / 100);
+            const bestCaseMargin = Math.min(60, assumptions.dbMargin + 6);
+            const bestCaseNPV = calculateNPV('best');
+            const bestCaseROI = ((bestCaseNPV / 1000000) / baseInvestment * 100).toFixed(0);
+            const bestCasePayback = (baseInvestment / (bestCaseRevenue * bestCaseMargin / 100)).toFixed(1);
+            
+            // STRESS CASE berechnen (pessimistischer)
+            const stressCaseRevenue = baseRevenue * (1 + Math.max(-10, assumptions.growthRate - 20) / 100);
+            const stressCaseMargin = Math.max(10, assumptions.dbMargin - 7);
+            const stressCaseNPV = calculateNPV('stress');
+            const stressCaseROI = ((stressCaseNPV / 1000000) / baseInvestment * 100).toFixed(0);
+            const stressCasePayback = stressCaseNPV > 0 ? 
+                (baseInvestment / (stressCaseRevenue * stressCaseMargin / 100)).toFixed(1) : '>6';
+            
+            // Tabellen-Zeilen aktualisieren
+            const rows = document.querySelectorAll('.scenario-table tbody tr');
+            
+            // Umsatz
+            if (rows[0]) {
+                rows[0].querySelector('.best-case').textContent = bestCaseRevenue.toFixed(1) + ' Mio. €';
+                rows[0].querySelector('.base-case').textContent = baseCaseRevenue.toFixed(1) + ' Mio. €';
+                rows[0].querySelector('.stress-case').textContent = stressCaseRevenue.toFixed(1) + ' Mio. €';
+            }
+            
+            // DB-Marge
+            if (rows[1]) {
+                rows[1].querySelector('.best-case').textContent = bestCaseMargin + ' %';
+                rows[1].querySelector('.base-case').textContent = baseCaseMargin + ' %';
+                rows[1].querySelector('.stress-case').textContent = stressCaseMargin + ' %';
+            }
+            
+            // ROI
+            if (rows[2]) {
+                rows[2].querySelector('.best-case').textContent = bestCaseROI + ' %';
+                rows[2].querySelector('.base-case').textContent = baseCaseROI + ' %';
+                rows[2].querySelector('.stress-case').textContent = stressCaseROI + ' %';
+            }
+            
+            // Payback
+            if (rows[3]) {
+                rows[3].querySelector('.best-case').textContent = bestCasePayback + ' Jahre';
+                rows[3].querySelector('.base-case').textContent = baseCasePayback + ' Jahre';
+                rows[3].querySelector('.stress-case').textContent = stressCasePayback + ' Jahre';
+            }
+            
+            // NPV
+            if (rows[4]) {
+                rows[4].querySelector('.best-case').textContent = formatNPV(bestCaseNPV);
+                rows[4].querySelector('.base-case').textContent = formatNPV(baseCaseNPV);
+                rows[4].querySelector('.stress-case').textContent = formatNPV(stressCaseNPV);
+            }
+            
+            // Visualisierung aktualisieren
+            updateVisualization(bestCaseNPV, baseCaseNPV, stressCaseNPV);
+        }
+        
+        // NPV berechnen für verschiedene Szenarien
+        function calculateNPV(scenario) {
+            const baseNPV = 480000;
+            
+            let waccToUse = assumptions.wacc;
+            let growthToUse = assumptions.growthRate;
+            let marginToUse = assumptions.dbMargin;
+            
+            if (scenario === 'best') {
+                growthToUse += 10;
+                marginToUse = Math.min(60, marginToUse + 6);
+                waccToUse = Math.max(5, waccToUse - 2);
+            } else if (scenario === 'stress') {
+                growthToUse = Math.max(-10, growthToUse - 20);
+                marginToUse = Math.max(10, marginToUse - 7);
+                waccToUse = Math.min(20, waccToUse + 3);
+            }
+            
+            const waccAdjustment = (12 - waccToUse) * 40000;
+            const growthAdjustment = (growthToUse - 15) * 20000;
+            const marginAdjustment = (marginToUse - 32) * 15000;
+            
+            return baseNPV + waccAdjustment + growthAdjustment + marginAdjustment;
+        }
+        
+        // NPV formatieren
+        function formatNPV(npv) {
+            if (npv >= 1000000) {
+                return (npv / 1000000).toFixed(1) + ' Mio. €';
+            } else if (npv >= 0) {
+                return Math.round(npv / 1000) + ' T€';
+            } else {
+                return Math.round(npv / 1000) + ' T€';
+            }
+        }
+        
+        // Visualisierung aktualisieren
+        function updateVisualization(bestNPV, baseNPV, stressNPV) {
+            // Chart-Höhen anpassen basierend auf NPV
+            const maxNPV = Math.max(bestNPV, baseNPV, stressNPV, 1000000);
+            const minNPV = Math.min(bestNPV, baseNPV, stressNPV, -200000);
+            const range = maxNPV - minNPV;
+            
+            // Finde die Balken-Divs
+            const chartContainer = document.querySelector('.kpi-corridor > div');
+            if (chartContainer) {
+                const bars = chartContainer.querySelectorAll('div[style*="height"]');
+                
+                if (bars[0]) { // Best Case
+                    const bestHeight = Math.max(20, (bestNPV - minNPV) / range * 180);
+                    bars[0].style.height = bestHeight + 'px';
+                    bars[0].style.marginTop = (200 - bestHeight) + 'px';
+                }
+                
+                if (bars[1]) { // Base Case
+                    const baseHeight = Math.max(20, (baseNPV - minNPV) / range * 180);
+                    bars[1].style.height = baseHeight + 'px';
+                    bars[1].style.marginTop = (200 - baseHeight) + 'px';
+                }
+                
+                if (bars[2]) { // Stress Case
+                    const stressHeight = Math.max(20, Math.abs(stressNPV - minNPV) / range * 180);
+                    bars[2].style.height = stressHeight + 'px';
+                    bars[2].style.marginTop = (200 - stressHeight) + 'px';
+                    
+                    // Farbe ändern wenn negativ
+                    if (stressNPV < 0) {
+                        bars[2].style.background = 'linear-gradient(to top, #fee, #f56565)';
+                    }
+                }
+                
+                // Werte unter den Balken aktualisieren
+                const valueSpans = chartContainer.querySelectorAll('span[style*="color"]');
+                if (valueSpans[0]) valueSpans[0].textContent = formatNPV(bestNPV);
+                if (valueSpans[1]) valueSpans[1].textContent = formatNPV(baseNPV);
+                if (valueSpans[2]) valueSpans[2].textContent = formatNPV(stressNPV);
+            }
+        }
+        
+// Multi-Agent Orchestrierung mit kontextabhängiger Aktivierung
+        const agents = {
+            controller: {
+                name: "Controller",
+                icon: "📊",
+                role: "Financial Analysis",
+                shouldActivate: function(context) {
+                    return true;
+                },
+                analyze: function(data) {
+                    const npv = calculateNPV('base');
+                    const irr = 14 + (assumptions.growthRate - 15) * 0.3;
+                    const payback = 3.8 - (assumptions.dbMargin - 32) * 0.1;
+                    
+                    let assessment = npv > 500000 ? "sehr positiv" : npv > 200000 ? "akzeptabel" : "grenzwertig";
+                    
+                    return {
+                        message: `Business Case Bewertung: NPV ${formatNPV(npv)}, IRR ${irr.toFixed(1)}%, Payback ${payback.toFixed(1)} Jahre.`,
+                        concern: npv < 300000 ? `Achtung: NPV unter kritischem Schwellenwert. Projekt nur bei Optimierung der Annahmen empfehlenswert.` : null,
+                        data: [`NPV: ${formatNPV(npv)}`, `IRR: ${irr.toFixed(1)}%`, `Payback: ${payback.toFixed(1)} Jahre`],
+                        visual: {
+                            type: 'gauge',
+                            value: Math.min(100, (npv / 1000000) * 100),
+                            label: 'Projekt-Score',
+                            color: npv > 500000 ? '#48bb78' : npv > 200000 ? '#4299e1' : '#f56565'
+                        }
+                    };
+                }
+            },
+            treasury: {
+                name: "Treasury",
+                icon: "🏦",
+                role: "Financing & Liquidity",
+                shouldActivate: function(context) {
+                    return context.investment > 5;
+                },
+                analyze: function(data) {
+                    const debtCapacity = 5 + (assumptions.dbMargin - 30) * 0.5;
+                    const gap = Math.max(0, data.investment - debtCapacity);
+                    
+                    return {
+                        message: `Finanzierungskapazität: ${debtCapacity.toFixed(1)} Mio € bei aktuellem Rating.`,
+                        concern: gap > 0 ? `Finanzierungslücke von ${gap.toFixed(1)} Mio €. Alternative Finanzierungsquellen erforderlich.` : null,
+                        data: [`Fremdkapital: ${debtCapacity.toFixed(1)} Mio €`, `Eigenkapital-Bedarf: ${gap.toFixed(1)} Mio €`],
+                        visual: {
+                            type: 'bar',
+                            values: [
+                                { label: 'Verfügbar', value: debtCapacity, color: '#48bb78' },
+                                { label: 'Benötigt', value: data.investment, color: '#4299e1' },
+                                { label: 'Lücke', value: gap, color: '#f56565' }
+                            ]
+                        }
+                    };
+                }
+            },
+            risk: {
+                name: "Risk Manager",
+                icon: "⚠️",
+                role: "Risk Assessment",
+                shouldActivate: function(context) {
+                    return context.investment > 10 || context.marketVolatility === 'high';
+                },
+                analyze: function(data) {
+                    const riskScore = 50 + (assumptions.wacc - 12) * 5 - (assumptions.dbMargin - 30);
+                    const maxLoss = calculateNPV('stress');
+                    
+                    return {
+                        message: `Risiko-Score: ${riskScore.toFixed(0)}/100. Maximum Loss im Worst Case: ${formatNPV(Math.abs(maxLoss))}.`,
+                        concern: riskScore > 70 ? `Hohes Risikoprofil! Hedging-Strategien dringend empfohlen.` : null,
+                        data: [`Risk Score: ${riskScore.toFixed(0)}`, `Max Loss: ${formatNPV(maxLoss)}`, `Hedge-Kosten: 45k€/Jahr`],
+                        visual: {
+                            type: 'risk-matrix',
+                            probability: riskScore / 100,
+                            impact: Math.abs(maxLoss) / 1000000,
+                            label: 'Risiko-Position'
+                        }
+                    };
+                }
+            },
+            cfo: {
+                name: "CFO",
+                icon: "👔",
+                role: "Strategic Decision",
+                shouldActivate: function(context) {
+                    return true;
+                },
+                analyze: function(activeAgents) {
+                    const npv = calculateNPV('base');
+                    let decision, confidence;
+                    
+                    if (npv > 800000) {
+                        decision = "VOLLE FREIGABE";
+                        confidence = 90;
+                    } else if (npv > 300000) {
+                        decision = "BEDINGTE FREIGABE";
+                        confidence = 65;
+                    } else if (npv > 0) {
+                        decision = "WEITERE PRÜFUNG";
+                        confidence = 40;
+                    } else {
+                        decision = "ABLEHNUNG EMPFOHLEN";
+                        confidence = 20;
+                    }
+                    
+                    return {
+                        message: `Nach Analyse aller Faktoren: ${decision}`,
+                        recommendation: this.generateRecommendations(npv, activeAgents),
+                        decision: decision,
+                        confidence: confidence,
+                        visual: {
+                            type: 'decision-matrix',
+                            confidence: confidence,
+                            factors: activeAgents.length
+                        }
+                    };
+                },
+                generateRecommendations: function(npv, activeAgents) {
+                    const recs = [];
+                    if (npv > 500000) {
+                        recs.push("Projekt wie geplant umsetzen");
+                    } else {
+                        recs.push("Annahmen optimieren vor Freigabe");
+                    }
+                    
+                    if (activeAgents.some(a => a.name === 'Treasury')) {
+                        recs.push("Finanzierungsstruktur diversifizieren");
+                    }
+                    
+                    if (activeAgents.some(a => a.name === 'Risk Manager')) {
+                        recs.push("Risiko-Monitoring quartalsweise");
+                    }
+                    
+                    recs.push("Review nach 12 Monaten");
+                    return recs;
+                }
+            }
+        };
+        
+        async function startAgentDiscussion() {
+            const discussionDiv = document.getElementById('agent-discussion');
+            const loadingDiv = document.getElementById('discussion-loading');
+            const button = event.target;
+            
+            discussionDiv.style.display = 'block';
+            discussionDiv.innerHTML = '';
+            loadingDiv.style.display = 'block';
+            button.disabled = true;
+            
+            const context = {
+                investment: 15,
+                askingPrice: 15,
+                ebitda: 1.3,
+                revenue: 5.0,
+                margin: assumptions.dbMargin,
+                marketVolatility: assumptions.wacc > 14 ? 'high' : 'normal'
+            };
+            
+            const activeAgents = [];
+            for (const key in agents) {
+                if (agents[key].shouldActivate && agents[key].shouldActivate(context)) {
+                    activeAgents.push(agents[key]);
+                }
+            }
+            
+            const analysisResults = [];
+            let delay = 500;
+            
+            for (const agent of activeAgents) {
+                if (agent.name !== 'CFO') {
+                    const analysis = agent.analyze(context);
+                    analysisResults.push({ agent, analysis });
+                    await addEnhancedAgentMessage(agent, analysis, delay);
+                    delay += 1200;
+                }
+            }
+            
+            const cfoAgent = agents.cfo;
+            if (cfoAgent) {
+                setTimeout(() => {
+                    const cfoAnalysis = cfoAgent.analyze(analysisResults.map(r => r.agent));
+                    addCFOEnhancedConsensus(cfoAnalysis);
+                    loadingDiv.style.display = 'none';
+                    button.disabled = false;
+                    button.textContent = '🔄 Diskussion wiederholen';
+                }, delay);
+            }
+        }
+        
+        async function addEnhancedAgentMessage(agent, analysis, delay) {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    const discussionDiv = document.getElementById('agent-discussion');
+                    
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = 'agent-message';
+                    
+                    let visualComponent = '';
+                    if (analysis.visual) {
+                        visualComponent = createVisualComponent(analysis.visual);
+                    }
+                    
+                    messageDiv.innerHTML = `
+                        <div class="agent-avatar">${agent.icon}</div>
+                        <div class="agent-content">
+                            <div class="agent-name">
+                                ${agent.name}
+                                <span class="agent-role">${agent.role}</span>
+                            </div>
+                            <div class="agent-message-text">
+                                ${analysis.message}
+                            </div>
+                            ${analysis.concern ? `
+                                <div class="agent-warning">
+                                    ${analysis.concern}
+                                </div>
+                            ` : ''}
+                            ${visualComponent}
+                            ${analysis.data ? `
+                                <div style="margin-top: 10px;">
+                                    ${analysis.data.map(d => `<span class="agent-data-point">${d}</span>`).join('')}
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                    
+                    discussionDiv.appendChild(messageDiv);
+                    discussionDiv.scrollTop = discussionDiv.scrollHeight;
+                    resolve();
+                }, delay);
+            });
+        }
+        
+        function createVisualComponent(visual) {
+            if (visual.type === 'gauge') {
+                return `
+                    <div style="margin: 15px 0;">
+                        <div style="position: relative; width: 200px; height: 100px;">
+                            <svg viewBox="0 0 200 100" style="width: 100%;">
+                                <path d="M 20 80 A 60 60 0 0 1 180 80" stroke="#e2e8f0" stroke-width="12" fill="none"/>
+                                <path d="M 20 80 A 60 60 0 0 1 180 80" stroke="${visual.color}" stroke-width="12" fill="none"
+                                      stroke-dasharray="${visual.value * 1.57} 157" stroke-linecap="round"/>
+                            </svg>
+                            <div style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); text-align: center;">
+                                <div style="font-size: 24px; font-weight: bold; color: ${visual.color};">${visual.value.toFixed(0)}%</div>
+                                <div style="font-size: 12px; color: #718096;">${visual.label}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (visual.type === 'bar') {
+                const maxValue = Math.max(...visual.values.map(v => v.value));
+                return `
+                    <div style="margin: 15px 0; background: #f7fafc; padding: 15px; border-radius: 8px;">
+                        ${visual.values.map(item => `
+                            <div style="margin-bottom: 10px;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                    <span style="font-size: 12px; color: #718096;">${item.label}</span>
+                                    <span style="font-size: 12px; font-weight: bold;">${item.value.toFixed(1)} Mio €</span>
+                                </div>
+                                <div style="background: #e2e8f0; height: 20px; border-radius: 10px; overflow: hidden;">
+                                    <div style="width: ${(item.value / maxValue) * 100}%; height: 100%; background: ${item.color}; transition: width 0.5s ease;"></div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            } else if (visual.type === 'risk-matrix') {
+                const x = visual.probability * 180;
+                const y = (1 - visual.impact) * 180;
+                return `
+                    <div style="margin: 15px 0; background: #f7fafc; padding: 15px; border-radius: 8px;">
+                        <div style="position: relative; width: 200px; height: 200px; margin: 0 auto;">
+                            <svg viewBox="0 0 200 200" style="width: 100%; background: linear-gradient(135deg, #48bb78 0%, #fbbf24 50%, #f56565 100%); opacity: 0.2; border-radius: 8px;">
+                                <line x1="0" y1="100" x2="200" y2="100" stroke="#cbd5e0" stroke-width="1"/>
+                                <line x1="100" y1="0" x2="100" y2="200" stroke="#cbd5e0" stroke-width="1"/>
+                                <circle cx="${x + 10}" cy="${y + 10}" r="8" fill="#f56565" stroke="white" stroke-width="2"/>
+                            </svg>
+                            <div style="position: absolute; bottom: -25px; left: 50%; transform: translateX(-50%); font-size: 11px; color: #718096;">Wahrscheinlichkeit →</div>
+                            <div style="position: absolute; left: -35px; top: 50%; transform: translateY(-50%) rotate(-90deg); font-size: 11px; color: #718096;">Impact →</div>
+                        </div>
+                    </div>
+                `;
+            }
+            return '';
+        }
+        
+        function addCFOEnhancedConsensus(analysis) {
+            const discussionDiv = document.getElementById('agent-discussion');
+            
+            let bgGradient = 'linear-gradient(135deg, #10b981, #059669)';
+            if (analysis.decision.includes('BEDINGTE')) {
+                bgGradient = 'linear-gradient(135deg, #f59e0b, #d97706)';
+            } else if (analysis.decision.includes('ABLEHNUNG')) {
+                bgGradient = 'linear-gradient(135deg, #ef4444, #dc2626)';
+            } else if (analysis.decision.includes('PRÜFUNG')) {
+                bgGradient = 'linear-gradient(135deg, #6b7280, #4b5563)';
+            }
+            
+            const consensusDiv = document.createElement('div');
+            consensusDiv.className = 'consensus-box';
+            consensusDiv.style.background = bgGradient;
+            
+            const confidenceGauge = `
+                <div style="margin: 20px 0;">
+                    <div style="text-align: center; margin-bottom: 10px;">
+                        <span style="font-size: 14px; opacity: 0.9;">Entscheidungs-Konfidenz</span>
+                    </div>
+                    <div style="position: relative; width: 250px; height: 20px; background: rgba(255,255,255,0.2); border-radius: 10px; margin: 0 auto; overflow: hidden;">
+                        <div style="width: ${analysis.confidence}%; height: 100%; background: rgba(255,255,255,0.8); border-radius: 10px; transition: width 1s ease;">
+                            <span style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 12px; font-weight: bold; color: #1a202c;">
+                                ${analysis.confidence}%
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            consensusDiv.innerHTML = `
+                <div class="consensus-title">
+                    <span>🤝</span>
+                    <span>Management Team Konsens</span>
+                </div>
+                <div style="margin-bottom: 15px; opacity: 0.95;">
+                    ${analysis.message}
+                </div>
+                ${confidenceGauge}
+                <div class="consensus-points">
+                    ${analysis.recommendation.map(rec => `
+                        <div class="consensus-point">
+                            <span class="consensus-icon">✓</span>
+                            <span>${rec}</span>
+                        </div>
+                    `).join('')}
+                </div>
+                <div style="margin-top: 20px; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 8px; text-align: center;">
+                    <strong style="font-size: 18px;">${analysis.decision}</strong>
+                </div>
+            `;
+            
+            discussionDiv.appendChild(consensusDiv);
+            updateMainDashboardAfterDiscussion(analysis);
+        }
+        
+        function updateMainDashboardAfterDiscussion(analysis) {
+            const recommendationDisplay = document.querySelector('.metric-card:nth-child(1) .metric-value');
+            if (recommendationDisplay) {
+                const shortDecision = analysis.decision.split(' ')[0];
+                recommendationDisplay.textContent = shortDecision;
+                
+                if (analysis.confidence > 70) {
+                    recommendationDisplay.style.color = '#48bb78';
+                } else if (analysis.confidence > 40) {
+                    recommendationDisplay.style.color = '#f59e0b';
+                } else {
+                    recommendationDisplay.style.color = '#f56565';
+                }
+            }
+        }
+        
+        function addCFOConsensus(analysis) {
+            const discussionDiv = document.getElementById('agent-discussion');
+            
+            const consensusDiv = document.createElement('div');
+            consensusDiv.className = 'consensus-box';
+            consensusDiv.innerHTML = `
+                <div class="consensus-title">
+                    <span>🤝</span>
+                    <span>Management Team Konsens</span>
+                </div>
+                <div style="margin-bottom: 15px; opacity: 0.95;">
+                    ${analysis.message}
+                </div>
+                <div class="consensus-points">
+                    ${analysis.recommendation.map(rec => `
+                        <div class="consensus-point">
+                            <span class="consensus-icon">✓</span>
+                            <span>${rec}</span>
+                        </div>
+                    `).join('')}
+                </div>
+                <div style="margin-top: 20px; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 8px; text-align: center;">
+                    <strong style="font-size: 18px;">Finale Entscheidung: ${analysis.decision}</strong>
+                </div>
+            `;
+            
+            discussionDiv.appendChild(consensusDiv);
+        }
+        
+        // Chart.js würde hier für echte Visualisierungen verwendet
+        console.log('Executive Dashboard geladen - Mit interaktiven Annahmen');
+    </script>
+</body>
+</html>
