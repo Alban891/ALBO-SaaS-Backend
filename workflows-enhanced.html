@@ -581,14 +581,13 @@
                 </div>
                 
                 <!-- Workflow Execution -->
-                <div class="workflow-execution">
-                    <div class="execution-header">
-                        <div class="execution-title">Workflow Ausführung</div>
-                        <div class="execution-controls">
-                            <button class="control-btn" onclick="startMAWorkflow()">▶️ Start</button>
-                            <button class="control-btn" onclick="pauseWorkflow()" disabled>⏸️ Pause</button>
-                            <button class="control-btn" onclick="resetWorkflow()">🔄 Reset</button>
-                        </div>
+                <<div class="execution-controls">
+                    <button class="control-btn" onclick="window.open('ma-process-workflow.html', '_blank')">
+                         📊 Vollständiger M&A Prozess
+                        </button>
+                        <button class="control-btn" onclick="startMAWorkflow()">▶️ Quick Start</button>
+                        <button class="control-btn" onclick="pauseWorkflow()" disabled>⏸️ Pause</button>
+                        <button class="control-btn" onclick="resetWorkflow()">🔄 Reset</button>
                     </div>
                     
                     <!-- Workflow Steps -->
