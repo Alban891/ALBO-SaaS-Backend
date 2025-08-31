@@ -2033,17 +2033,24 @@ function openBusinessCase(name) {
     document.getElementById('workflow-list').style.display = 'none';
     document.getElementById('business-case-detail').style.display = 'block';
     
-    // Unterschiedliche Templates basierend auf Workflow-Typ
-   if (name.includes('Business Case') || name.includes('Projekt Polen')) {
-    // Business Case zeigt die Multi-Agent Analyse
-    document.getElementById('bc-executive').innerHTML = '<iframe src="business-case-executive.html" style="width: 100%; height: 800px; border: none; border-radius: 12px;"></iframe>';
-    document.getElementById('bc-transparent').innerHTML = '<iframe src="business-case-transparent.html" style="width: 100%; height: 800px; border: none; border-radius: 12px;"></iframe>';
-    
-    // Wichtig: Tabs sichtbar machen
-    document.querySelector('.bc-tab-btn.active').click();
-}
+    // Business Case Polen - NEUE VERSION MIT VERZÖGERUNG
+    if (name.includes('Business Case') || name.includes('Projekt Polen')) {
+        // Container vorbereiten
+        const bcExec = document.getElementById('bc-executive');
+        const bcTrans = document.getElementById('bc-transparent');
+        
+        // Erst leeren
+        bcExec.innerHTML = '';
+        bcTrans.innerHTML = '';
+        
+        // Nach 100ms laden (WICHTIG!)
+        setTimeout(() => {
+            bcExec.innerHTML = '<iframe src="business-case-executive.html" style="width: 100%; height: 800px; border: none; border-radius: 12px;"></iframe>';
+            bcTrans.innerHTML = '<iframe src="business-case-transparent.html" style="width: 100%; height: 800px; border: none; border-radius: 12px;"></iframe>';
+        }, 100);
+    }
     else if (name.includes('Quartalsreport')) {
-        // Quartalsreport zeigt andere Inhalte
+        // Quartalsreport Template (BLEIBT GLEICH)
         document.getElementById('bc-executive').innerHTML = `
             <div style="padding: 30px;">
                 <h2>Quartalsreport Q3 2024</h2>
@@ -2064,7 +2071,7 @@ function openBusinessCase(name) {
         document.getElementById('bc-transparent').innerHTML = '<div style="padding: 30px;">Detailansicht für Quartalsreport</div>';
     }
     else if (name.includes('Monatsabschluss')) {
-        // Monatsabschluss Template
+        // Monatsabschluss Template (BLEIBT GLEICH)
         document.getElementById('bc-executive').innerHTML = `
             <div style="padding: 30px;">
                 <h2>Monatsabschluss Oktober 2024</h2>
@@ -2085,7 +2092,7 @@ function openBusinessCase(name) {
         document.getElementById('bc-transparent').innerHTML = '<div style="padding: 30px;">Detailansicht für Monatsabschluss</div>';
     }
     else if (name.includes('Budget')) {
-        // Budget Planung Template
+        // Budget Planung Template (BLEIBT GLEICH)
         document.getElementById('bc-executive').innerHTML = `
             <div style="padding: 30px;">
                 <h2>Budget Planung 2025</h2>
@@ -2109,7 +2116,6 @@ function openBusinessCase(name) {
     // Update title
     document.querySelector('#business-case-detail h2').textContent = name;
 }
-
 function backToWorkflowList() {
     document.getElementById('business-case-detail').style.display = 'none';
     document.getElementById('workflow-list').style.display = 'block';
