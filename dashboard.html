@@ -1451,25 +1451,30 @@
         setupOutlookListener();
     });
 
-    function switchMode(mode, buttonElement) {
+    f// Mode Switching
+function switchMode(mode) {
     currentMode = mode;
     
     // Update buttons
     document.querySelectorAll('.mode-btn').forEach(btn => {
         btn.classList.remove('active');
+        // Prüfe ob dieser Button der geklickte ist
+        if (btn.textContent.toLowerCase().includes(mode.toLowerCase()) || 
+            btn.onclick.toString().includes(mode)) {
+            btn.classList.add('active');
+        }
     });
     
-    // Find and activate the clicked button
-    if (buttonElement) {
-        buttonElement.classList.add('active');
-    } else {
-        // Fallback: find button by mode name
-        document.querySelectorAll('.mode-btn').forEach(btn => {
-            if (btn.onclick && btn.onclick.toString().includes(mode)) {
-                btn.classList.add('active');
-            }
-        });
+    // Update content
+    document.querySelectorAll('.mode-content').forEach(content => {
+        content.classList.remove('active');
+    });
+    
+    const targetView = document.getElementById(mode + '-view');
+    if (targetView) {
+        targetView.classList.add('active');
     }
+}
     
     // Update content
     document.querySelectorAll('.mode-content').forEach(content => {
