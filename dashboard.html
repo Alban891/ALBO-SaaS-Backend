@@ -703,18 +703,18 @@
         </div>
         
         <div class="mode-switcher">
-            <button class="mode-btn active" onclick="switchMode('command', this)">
-    ⚡ Command Center
-</button>
-<button class="mode-btn" onclick="switchMode('emails', this)">
-    📧 Email Center
-</button>
-<button class="mode-btn" onclick="switchMode('agents', this)">
-    🤖 Agenten
-</button>
-<button class="mode-btn" onclick="switchMode('workflows', this)">
-    📊 Workflows
-</button>
+            <button class="mode-btn active" onclick="switchMode('command')">
+                ⚡ Command Center
+            </button>
+            <button class="mode-btn" onclick="switchMode('emails')">
+                📧 Email Center
+            </button>
+            <button class="mode-btn" onclick="switchMode('agents')">
+                🤖 Agenten
+            </button>
+            <button class="mode-btn" onclick="switchMode('workflows')">
+                📊 Workflows
+            </button>
         </div>
         
         <div style="display: flex; align-items: center; gap: 20px;">
@@ -1451,41 +1451,26 @@
         setupOutlookListener();
     });
 
-    f// Mode Switching
-function switchMode(mode) {
-    currentMode = mode;
-    
-    // Update buttons
-    document.querySelectorAll('.mode-btn').forEach(btn => {
-        btn.classList.remove('active');
-        // Prüfe ob dieser Button der geklickte ist
-        if (btn.textContent.toLowerCase().includes(mode.toLowerCase()) || 
-            btn.onclick.toString().includes(mode)) {
-            btn.classList.add('active');
+    // Mode Switching
+    function switchMode(mode) {
+        currentMode = mode;
+        
+        // Update buttons
+        document.querySelectorAll('.mode-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        event.target.closest('.mode-btn').classList.add('active');
+        
+        // Update content
+        document.querySelectorAll('.mode-content').forEach(content => {
+            content.classList.remove('active');
+        });
+        
+        const targetView = document.getElementById(mode + '-view');
+        if (targetView) {
+            targetView.classList.add('active');
         }
-    });
-    
-    // Update content
-    document.querySelectorAll('.mode-content').forEach(content => {
-        content.classList.remove('active');
-    });
-    
-    const targetView = document.getElementById(mode + '-view');
-    if (targetView) {
-        targetView.classList.add('active');
     }
-}
-    
-    // Update content
-    document.querySelectorAll('.mode-content').forEach(content => {
-        content.classList.remove('active');
-    });
-    
-    const targetView = document.getElementById(mode + '-view');
-    if (targetView) {
-        targetView.classList.add('active');
-    }
-}
 
     // Load Notion Prompts
     async function loadNotionPrompts() {
@@ -2049,57 +2034,26 @@ function openBusinessCase(name) {
     document.getElementById('business-case-detail').style.display = 'block';
     
     if (name.includes('Business Case') || name.includes('Projekt Polen')) {
+        // Executive View zeigt normalen HTML Inhalt
         document.getElementById('bc-executive').innerHTML = `
             <div style="padding: 30px;">
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 30px;">
-                    <h2 style="margin: 0;">Business Case "Projekt Polen" - Bioplastik-Komponenten</h2>
-                    <span style="background: #fef3c7; color: #92400e; padding: 8px 16px; border-radius: 20px; font-weight: 600;">
-                        In Bearbeitung
-                    </span>
-                </div>
-                
-                <div style="background: linear-gradient(135deg, #f0f9ff, #e0f2fe); padding: 25px; border-radius: 16px; margin-bottom: 25px; border: 2px solid #0ea5e9;">
-                    <div style="display: flex; align-items: center; gap: 20px;">
-                        <div style="font-size: 48px;">🤖</div>
-                        <div style="flex: 1;">
-                            <h3 style="margin: 0 0 8px 0; color: #0369a1;">Controller-Agent Analyse</h3>
-                            <p style="color: #0c4a6e; margin: 0;">
-                                KI-Agent analysiert mit 3-Szenarien-Modell (Base/Best/Stress)
-                            </p>
-                        </div>
-                        <button onclick="runInlinePlaybook()" style="
-                            padding: 14px 28px;
-                            background: linear-gradient(135deg, #4f46e5, #6366f1);
-                            color: white;
-                            border: none;
-                            border-radius: 10px;
-                            cursor: pointer;
-                            font-weight: 600;
-                            font-size: 16px;
-                        ">
-                            🚀 Agent-Analyse starten
-                        </button>
-                    </div>
-                </div>
-                
-                <div id="playbook-result-container"></div>
-                
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
-                    <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-                        <h4 style="margin: 0 0 15px 0; color: #64748b;">INVESTMENT</h4>
-                        <p style="font-size: 28px; font-weight: bold; margin: 0;">€480.000</p>
-                    </div>
-                    <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-                        <h4 style="margin: 0 0 15px 0; color: #64748b;">ROI (BASE)</h4>
-                        <p style="font-size: 28px; font-weight: bold; margin: 0; color: #10b981;">14%</p>
-                    </div>
-                    <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-                        <h4 style="margin: 0 0 15px 0; color: #64748b;">PAYBACK</h4>
-                        <p style="font-size: 28px; font-weight: bold; margin: 0;">3.8 Jahre</p>
-                    </div>
+                <h2>Executive View - Business Case Polen</h2>
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 12px; margin: 20px 0;">
+                    <h3>Key Metrics:</h3>
+                    <p><strong>NPV:</strong> 480 T€</p>
+                    <p><strong>ROI:</strong> 14%</p>
+                    <p><strong>Payback:</strong> 3.8 Jahre</p>
+                    <p><strong>Empfehlung:</strong> FREIGABE</p>
                 </div>
             </div>
         `;
+        
+        // Transparent View lädt die existierende Datei
+        document.getElementById('bc-transparent').innerHTML = '';
+        setTimeout(() => {
+            document.getElementById('bc-transparent').innerHTML = '<iframe src="business-case-transparent.html" style="width: 100%; height: 800px; border: none; border-radius: 12px;"></iframe>';
+        }, 100);
+    }
     else if (name.includes('Quartalsreport')) {
         document.getElementById('bc-executive').innerHTML = `
             <div style="padding: 30px;">
@@ -2206,345 +2160,6 @@ function updateDashboardKPIs(kpis) {
         document.getElementById('roi').textContent = kpis.roi;
     }
 }
-
-// ========== PLAYBOOK ENGINE ==========
-class PlaybookEngine {
-    constructor() {
-        this.playbooks = {
-            'business-case': {
-                name: 'Business Case Bewertung',
-                minTrust: 70,
-                steps: [
-                    {
-                        name: 'Datenextraktion',
-                        action: 'extractData',
-                        trustWeight: 0.2,
-                        required: ['investment', 'roi', 'payback']
-                    },
-                    {
-                        name: 'Plausibilität',
-                        action: 'validateNumbers',
-                        trustWeight: 0.3,
-                        rules: {
-                            'roi': { min: 5, max: 50 },
-                            'payback': { min: 0.5, max: 10 }
-                        }
-                    },
-                    {
-                        name: 'Berechnung',
-                        action: 'calculateMetrics',
-                        trustWeight: 0.3
-                    },
-                    {
-                        name: 'Entscheidung',
-                        action: 'makeRecommendation',
-                        trustWeight: 0.2
-                    }
-                ]
-            }
-        };
-        this.currentTrust = 0;
-    }
-    
-    async executePlaybook(playbookId, inputData) {
-        const playbook = this.playbooks[playbookId];
-        const results = {
-            playbookName: playbook.name,
-            startTime: new Date(),
-            steps: [],
-            finalTrust: 0,
-            recommendation: null
-        };
-        
-        this.showPlaybookUI(playbook.name);
-        
-        for (const step of playbook.steps) {
-            const stepResult = await this.executeStep(step, inputData);
-            results.steps.push(stepResult);
-            this.updateTrustUI(stepResult.trust, step.name);
-            
-            if (stepResult.trust < 50) {
-                results.needsHuman = true;
-                break;
-            }
-        }
-        
-        results.finalTrust = this.calculateFinalTrust(results.steps);
-        return results;
-    }
-    
-    async executeStep(step, data) {
-        await this.sleep(800);
-        let trust = 70;
-        
-        switch(step.action) {
-            case 'extractData':
-                const hasAllFields = step.required.every(field => data[field]);
-                trust = hasAllFields ? 85 : 40;
-                break;
-            case 'validateNumbers':
-                if (data.roi && step.rules.roi) {
-                    if (data.roi >= step.rules.roi.min && data.roi <= step.rules.roi.max) {
-                        trust = 90;
-                    } else {
-                        trust = 60;
-                    }
-                }
-                break;
-            case 'calculateMetrics':
-                trust = 85;
-                break;
-            case 'makeRecommendation':
-                trust = this.currentTrust > 75 ? 88 : 65;
-                break;
-        }
-        
-        this.currentTrust = trust;
-        
-        return {
-            stepName: step.name,
-            trust: trust,
-            timestamp: new Date(),
-            result: `${step.name} completed`
-        };
-    }
-    
-    showPlaybookUI(name) {
-        const modal = document.createElement('div');
-        modal.id = 'playbook-modal';
-        modal.style.cssText = `
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: white;
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            z-index: 10000;
-            min-width: 500px;
-        `;
-        
-        modal.innerHTML = `
-            <h2 style="margin: 0 0 20px 0; color: #1e293b;">
-                🚀 Playbook: ${name}
-            </h2>
-            <div id="playbook-steps"></div>
-            <div style="margin-top: 20px;">
-                <div style="display: flex; align-items: center; gap: 15px;">
-                    <span style="font-weight: 600;">Trust Score:</span>
-                    <div style="flex: 1; height: 8px; background: #e5e7eb; border-radius: 4px;">
-                        <div id="trust-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #4f46e5, #6366f1); border-radius: 4px; transition: all 0.5s;"></div>
-                    </div>
-                    <span id="trust-value" style="font-weight: bold; color: #4f46e5;">0%</span>
-                </div>
-            </div>
-        `;
-        
-        document.body.appendChild(modal);
-    }
-    
-    updateTrustUI(trust, stepName) {
-        const stepsDiv = document.getElementById('playbook-steps');
-        const trustBar = document.getElementById('trust-bar');
-        const trustValue = document.getElementById('trust-value');
-        
-        const stepDiv = document.createElement('div');
-        stepDiv.style.cssText = 'padding: 10px; background: #f8f9fa; border-radius: 8px; margin-bottom: 10px;';
-        
-        let emoji = trust > 80 ? '✅' : trust > 60 ? '⚠️' : '❌';
-        stepDiv.innerHTML = `
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span>${emoji} ${stepName}</span>
-                <span style="color: ${trust > 70 ? '#10b981' : '#ef4444'}; font-weight: 600;">
-                    ${trust}%
-                </span>
-            </div>
-        `;
-        
-        stepsDiv.appendChild(stepDiv);
-        trustBar.style.width = trust + '%';
-        trustValue.textContent = trust + '%';
-        
-        if (trust < 50) {
-            trustBar.style.background = 'linear-gradient(90deg, #dc2626, #ef4444)';
-        } else if (trust < 80) {
-            trustBar.style.background = 'linear-gradient(90deg, #f59e0b, #fbbf24)';
-        } else {
-            trustBar.style.background = 'linear-gradient(90deg, #10b981, #34d399)';
-        }
-    }
-    
-    calculateFinalTrust(steps) {
-        const weights = steps.map(s => s.trust);
-        return Math.round(weights.reduce((a, b) => a + b, 0) / weights.length);
-    }
-    
-    sleep(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-    }
-}
-
-// HIER IST DIE ZEILE DIE DU GESUCHT HAST:
-const playbookEngine = new PlaybookEngine();
-
-// Business Case Playbook Starter
-function startBusinessCasePlaybook() {
-    const polenData = {
-        investment: 480000,
-        roi: 14,
-        payback: 3.8,
-        project: 'Polen Expansion',
-        source: 'workflow'
-    };
-    
-    showNotification('Controller-Agent analysiert Business Case...', 'info');
-    
-    playbookEngine.executePlaybook('business-case', polenData).then(result => {
-        setTimeout(() => {
-            const modal = document.getElementById('playbook-modal');
-            if (modal) {
-                modal.innerHTML += `
-                    <div style="margin-top: 20px; padding: 20px; background: ${result.finalTrust > 75 ? '#dcfce7' : '#fee2e2'}; border-radius: 12px;">
-                        <h3 style="margin: 0 0 10px 0;">📊 Agent-Entscheidung</h3>
-                        <p><strong>Projekt:</strong> Polen Expansion</p>
-                        <p><strong>Investment:</strong> €480.000</p>
-                        <p><strong>Final Trust Score:</strong> ${result.finalTrust}%</p>
-                        <p><strong>Empfehlung:</strong> ${result.finalTrust > 75 ? '✅ FREIGABE - Agent empfiehlt Durchführung' : '⚠️ MANUELLE PRÜFUNG - Weitere Analyse erforderlich'}</p>
-                        <div style="margin-top: 15px; display: flex; gap: 10px;">
-                            <button onclick="acceptAgentDecision()" style="flex: 1; padding: 10px 20px; background: #10b981; color: white; border: none; border-radius: 8px; cursor: pointer;">
-                                ✅ Akzeptieren
-                            </button>
-                            <button onclick="document.getElementById('playbook-modal').remove()" style="flex: 1; padding: 10px 20px; background: #6b7280; color: white; border: none; border-radius: 8px; cursor: pointer;">
-                                Schließen
-                            </button>
-                        </div>
-                    </div>
-                `;
-            }
-        }, 3500);
-    });
-}
-
-function acceptAgentDecision() {
-    document.getElementById('playbook-modal').remove();
-    showNotification('✅ Business Case wurde freigegeben', 'success');
-    
-    const bcTitle = document.querySelector('#business-case-detail h2');
-    if (bcTitle) {
-        bcTitle.innerHTML = bcTitle.textContent + ' <span style="background: #10b981; color: white; padding: 4px 12px; border-radius: 20px; font-size: 14px; margin-left: 10px;">Agent-Approved</span>';
-    }
-}
-
-// Test-Funktion
-async function runBusinessCaseDemo() {
-    const testData = {
-        investment: 100000,
-        roi: 15,
-        payback: 3.5,
-        source: 'test'
-    };
-    
-    const result = await playbookEngine.executePlaybook('business-case', testData);
-    
-    setTimeout(() => {
-        const modal = document.getElementById('playbook-modal');
-        if (modal) {
-            modal.innerHTML += `
-                <div style="margin-top: 20px; padding: 20px; background: ${result.finalTrust > 75 ? '#dcfce7' : '#fee2e2'}; border-radius: 12px;">
-                    <h3 style="margin: 0 0 10px 0;">📊 Ergebnis</h3>
-                    <p><strong>Final Trust Score:</strong> ${result.finalTrust}%</p>
-                    <p><strong>Empfehlung:</strong> ${result.finalTrust > 75 ? 'FREIGABE' : 'MANUELLE PRÜFUNG'}</p>
-                    <button onclick="document.getElementById('playbook-modal').remove()" style="margin-top: 10px; padding: 10px 20px; background: #4f46e5; color: white; border: none; border-radius: 8px; cursor: pointer;">
-                        Schließen
-                    </button>
-                </div>
-            `;
-        }
-    }, 3500);
-}
-
-// ========== INLINE PLAYBOOK FUNKTIONEN ==========
-function runInlinePlaybook() {
-    const container = document.getElementById('playbook-result-container');
-    
-    container.innerHTML = `
-        <div style="background: white; padding: 30px; border-radius: 12px; margin: 25px 0; text-align: center;">
-            <div style="font-size: 48px; margin-bottom: 15px;">🤖</div>
-            <h3>Agent analysiert Business Case...</h3>
-            <div style="margin: 20px auto; width: 200px; height: 6px; background: #e5e7eb; border-radius: 3px;">
-                <div style="width: 0%; height: 100%; background: linear-gradient(90deg, #4f46e5, #6366f1); animation: loadProgress 3s forwards;"></div>
-            </div>
-        </div>
-    `;
-    
-    setTimeout(() => {
-        showFinalResult();
-    }, 3000);
-}
-
-function showFinalResult() {
-    const container = document.getElementById('playbook-result-container');
-    container.innerHTML = `
-        <div style="background: linear-gradient(135deg, #dcfce7, #d1fae5); padding: 30px; border-radius: 16px; margin: 25px 0; border: 2px solid #10b981;">
-            <h3 style="margin: 0 0 20px 0; color: #065f46;">✅ Agent-Analyse abgeschlossen</h3>
-            
-            <table style="width: 100%; background: white; border-radius: 8px; margin-bottom: 20px;">
-                <tr style="background: #f1f5f9;">
-                    <th style="padding: 12px;">Kennzahl</th>
-                    <th style="padding: 12px;">Best Case</th>
-                    <th style="padding: 12px; background: #e0f2fe;">Base Case</th>
-                    <th style="padding: 12px;">Stress Case</th>
-                </tr>
-                <tr>
-                    <td style="padding: 12px;">ROI</td>
-                    <td style="padding: 12px; color: #10b981; font-weight: 600;">28%</td>
-                    <td style="padding: 12px; background: #f0f9ff; font-weight: 600;">14%</td>
-                    <td style="padding: 12px; color: #ef4444;">-4%</td>
-                </tr>
-                <tr>
-                    <td style="padding: 12px;">Payback</td>
-                    <td style="padding: 12px; color: #10b981; font-weight: 600;">2.5 Jahre</td>
-                    <td style="padding: 12px; background: #f0f9ff; font-weight: 600;">3.8 Jahre</td>
-                    <td style="padding: 12px; color: #ef4444;">> 6 Jahre</td>
-                </tr>
-            </table>
-            
-            <div style="display: flex; align-items: center; gap: 20px; padding: 20px; background: white; border-radius: 12px;">
-                <div style="font-size: 48px;">🎯</div>
-                <div style="flex: 1;">
-                    <h4 style="margin: 0 0 8px 0;">Trust Score: 85%</h4>
-                    <p style="margin: 0; color: #065f46;">
-                        <strong>Empfehlung:</strong> FREIGABE mit Risikopuffer
-                    </p>
-                </div>
-                <button onclick="acceptBusinessCase()" style="
-                    padding: 12px 24px;
-                    background: #10b981;
-                    color: white;
-                    border: none;
-                    border-radius: 8px;
-                    cursor: pointer;
-                    font-weight: 600;
-                ">✅ Freigeben</button>
-            </div>
-        </div>
-    `;
-}
-
-function acceptBusinessCase() {
-    showNotification('✅ Business Case wurde freigegeben', 'success');
-}
-
-// CSS für Ladebalken hinzufügen
-const progressStyle = document.createElement('style');
-progressStyle.textContent = `
-    @keyframes loadProgress {
-        to { width: 100%; }
-    }
-`;
-document.head.appendChild(progressStyle);
-// ========== ENDE INLINE PLAYBOOK ==========
 
 </script>
 
