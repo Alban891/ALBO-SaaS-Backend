@@ -2531,9 +2531,14 @@ function acceptBusinessCase() {
     showNotification('✅ Business Case wurde freigegeben', 'success');
 }
 
-@keyframes loadProgress {
-    to { width: 100%; }
-}
+// CSS für Ladebalken hinzufügen
+const progressStyle = document.createElement('style');
+progressStyle.textContent = `
+    @keyframes loadProgress {
+        to { width: 100%; }
+    }
+`;
+document.head.appendChild(progressStyle);
 // ========== ENDE INLINE PLAYBOOK ==========
 
 </script>
