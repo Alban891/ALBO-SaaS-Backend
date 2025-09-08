@@ -703,18 +703,18 @@
         </div>
         
         <div class="mode-switcher">
-            <button class="mode-btn active" onclick="switchMode('command')">
-                ⚡ Command Center
-            </button>
-            <button class="mode-btn" onclick="switchMode('emails')">
-                📧 Email Center
-            </button>
-            <button class="mode-btn" onclick="switchMode('agents')">
-                🤖 Agenten
-            </button>
-            <button class="mode-btn" onclick="switchMode('workflows')">
-                📊 Workflows
-            </button>
+            <button class="mode-btn active" onclick="switchMode('command', this)">
+    ⚡ Command Center
+</button>
+<button class="mode-btn" onclick="switchMode('emails', this)">
+    📧 Email Center
+</button>
+<button class="mode-btn" onclick="switchMode('agents', this)">
+    🤖 Agenten
+</button>
+<button class="mode-btn" onclick="switchMode('workflows', this)">
+    📊 Workflows
+</button>
         </div>
         
         <div style="display: flex; align-items: center; gap: 20px;">
@@ -1451,26 +1451,36 @@
         setupOutlookListener();
     });
 
-    // Mode Switching
-    function switchMode(mode) {
-        currentMode = mode;
-        
-        // Update buttons
+    function switchMode(mode, buttonElement) {
+    currentMode = mode;
+    
+    // Update buttons
+    document.querySelectorAll('.mode-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Find and activate the clicked button
+    if (buttonElement) {
+        buttonElement.classList.add('active');
+    } else {
+        // Fallback: find button by mode name
         document.querySelectorAll('.mode-btn').forEach(btn => {
-            btn.classList.remove('active');
+            if (btn.onclick && btn.onclick.toString().includes(mode)) {
+                btn.classList.add('active');
+            }
         });
-        event.target.closest('.mode-btn').classList.add('active');
-        
-        // Update content
-        document.querySelectorAll('.mode-content').forEach(content => {
-            content.classList.remove('active');
-        });
-        
-        const targetView = document.getElementById(mode + '-view');
-        if (targetView) {
-            targetView.classList.add('active');
-        }
     }
+    
+    // Update content
+    document.querySelectorAll('.mode-content').forEach(content => {
+        content.classList.remove('active');
+    });
+    
+    const targetView = document.getElementById(mode + '-view');
+    if (targetView) {
+        targetView.classList.add('active');
+    }
+}
 
     // Load Notion Prompts
     async function loadNotionPrompts() {
