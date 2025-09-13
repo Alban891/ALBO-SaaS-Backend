@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>ALBO Controller - Material Cost Excellence</title>
     <style>
         * {
@@ -937,11 +938,11 @@
                     <div style="margin-top: 25px;">
                         <div class="input-section-title">Quick Actions</div>
                         <div class="executive-actions">
-                            <button class="exec-btn exec-btn-primary">
+                            <button class="exec-btn exec-btn-primary" onclick="updateAnalysis()">
                                 <span>📊</span>
                                 <span>Update</span>
                             </button>
-                            <button class="exec-btn exec-btn-secondary">
+                            <button class="exec-btn exec-btn-secondary" onclick="exportData()">
                                 <span>📥</span>
                                 <span>Export</span>
                             </button>
@@ -965,6 +966,18 @@
                 }
             });
         });
+        
+        // Simple update function
+        function updateAnalysis() {
+            console.log('Updating analysis...');
+            alert('Analyse wird aktualisiert...');
+        }
+        
+        // Simple export function
+        function exportData() {
+            console.log('Exporting data...');
+            alert('Daten werden exportiert...');
+        }
     </script>
 </body>
 </html>
