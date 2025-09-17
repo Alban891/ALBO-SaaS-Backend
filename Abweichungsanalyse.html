@@ -1,0 +1,1458 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALBO Decision Cockpit - McKinsey Style</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #003A70;
+            --accent: #00B0CA;
+            --success: #00A86B;
+            --warning: #FFA500;
+            --danger: #DC143C;
+            --dark: #1a1a1a;
+            --gray: #6b7280;
+            --light: #f8f9fa;
+            --white: #ffffff;
+        }
+
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f5f5f7;
+            color: var(--dark);
+            overflow-x: hidden;
+        }
+
+        /* Top Navigation Bar */
+        .top-bar {
+            background: var(--white);
+            border-bottom: 1px solid #e5e5e7;
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: var(--gray);
+        }
+
+        .breadcrumb-active {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .execution-status {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #00A86B, #00B0CA);
+            color: white;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Main Layout */
+        .container {
+            display: flex;
+            height: calc(100vh - 57px);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: var(--white);
+            border-right: 1px solid #e5e5e7;
+            padding: 24px 16px;
+            overflow-y: auto;
+        }
+
+        .workflow-categories {
+            margin-bottom: 24px;
+        }
+
+        .category-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--gray);
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .workflow-item {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+        }
+
+        .workflow-item:hover {
+            background: var(--light);
+        }
+
+        .workflow-item.active {
+            background: linear-gradient(135deg, rgba(0,58,112,0.08), rgba(0,176,202,0.08));
+            border-left: 3px solid var(--primary);
+            font-weight: 600;
+        }
+
+        .workflow-icon {
+            font-size: 18px;
+        }
+
+        .workflow-match {
+            margin-left: auto;
+            background: var(--success);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        /* Main Canvas */
+        .main-canvas {
+            flex: 1;
+            padding: 32px;
+            overflow-y: auto;
+            background: linear-gradient(180deg, #fafafa 0%, #f5f5f7 100%);
+        }
+
+        /* Executive Summary */
+        .executive-summary {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+        }
+
+        .decision-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 24px;
+        }
+
+        .decision-verdict {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .verdict-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--gray);
+            font-weight: 600;
+        }
+
+        .verdict-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--success);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .confidence-meter {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 8px;
+        }
+
+        .confidence-value {
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .confidence-bar {
+            width: 200px;
+            height: 8px;
+            background: #e5e5e7;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            transition: width 0.5s ease;
+        }
+
+        /* Key Metrics Grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            padding: 24px 0;
+            border-top: 1px solid #e5e5e7;
+            border-bottom: 1px solid #e5e5e7;
+        }
+
+        .metric-box {
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 4px;
+        }
+
+        .metric-label {
+            font-size: 12px;
+            color: var(--gray);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .metric-change {
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
+        .metric-change.positive {
+            color: var(--success);
+        }
+
+        .metric-change.negative {
+            color: var(--danger);
+        }
+
+        /* Driver Analysis Section */
+        .driver-section {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .scenario-toggles {
+            display: flex;
+            gap: 8px;
+            background: var(--light);
+            padding: 4px;
+            border-radius: 8px;
+        }
+
+        .scenario-btn {
+            padding: 8px 16px;
+            border: none;
+            background: transparent;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--gray);
+            transition: all 0.2s ease;
+        }
+
+        .scenario-btn.active {
+            background: white;
+            color: var(--primary);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        /* Interactive Drivers */
+        .drivers-container {
+            display: grid;
+            gap: 24px;
+        }
+
+        .driver-item {
+            padding: 20px;
+            background: var(--light);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .driver-item.active {
+            background: linear-gradient(135deg, rgba(0,176,202,0.05), rgba(0,58,112,0.05));
+            border: 2px solid var(--accent);
+        }
+
+        .driver-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .driver-name {
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 16px;
+        }
+
+        .driver-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .driver-slider {
+            width: 100%;
+            height: 6px;
+            background: #e5e5e7;
+            border-radius: 3px;
+            outline: none;
+            -webkit-appearance: none;
+            cursor: pointer;
+        }
+
+        .driver-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: var(--primary);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0,58,112,0.3);
+        }
+
+        /* AI Insight Box */
+        .ai-insight {
+            margin-top: 16px;
+            padding: 16px;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid var(--accent);
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .ai-insight-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .ai-insight-text {
+            color: var(--dark);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .ai-insight-metrics {
+            display: flex;
+            gap: 16px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #e5e5e7;
+        }
+
+        .insight-metric {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .insight-metric-label {
+            font-size: 11px;
+            color: var(--gray);
+            text-transform: uppercase;
+        }
+
+        .insight-metric-value {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        /* Waterfall Chart */
+        .waterfall-section {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+        }
+
+        .waterfall-container {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            height: 300px;
+            padding: 20px 0;
+        }
+
+        .waterfall-bar {
+            flex: 1;
+            margin: 0 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+        }
+
+        .bar-value {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .bar-column {
+            width: 100%;
+            border-radius: 8px 8px 0 0;
+            transition: height 0.5s ease;
+        }
+
+        .bar-positive {
+            background: linear-gradient(180deg, var(--success), #00C853);
+        }
+
+        .bar-negative {
+            background: linear-gradient(180deg, var(--danger), #FF5252);
+        }
+
+        .bar-neutral {
+            background: linear-gradient(180deg, var(--primary), var(--accent));
+        }
+
+        .bar-label {
+            margin-top: 12px;
+            font-size: 12px;
+            color: var(--gray);
+            text-align: center;
+        }
+
+        /* Scenario Comparison */
+        .scenario-comparison {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+        }
+
+        .scenario-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-top: 24px;
+        }
+
+        .scenario-card {
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid #e5e5e7;
+            transition: all 0.3s ease;
+        }
+
+        .scenario-card.recommended {
+            border-color: var(--success);
+            background: linear-gradient(135deg, rgba(0,168,107,0.05), rgba(0,176,202,0.05));
+        }
+
+        .scenario-card-title {
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--dark);
+        }
+
+        .scenario-metrics {
+            display: grid;
+            gap: 12px;
+        }
+
+        .scenario-metric {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+        }
+
+        .scenario-metric-label {
+            color: var(--gray);
+        }
+
+        .scenario-metric-value {
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        /* Agent Panel */
+        .agent-panel {
+            position: fixed;
+            right: 0;
+            top: 57px;
+            width: 380px;
+            height: calc(100vh - 57px);
+            background: white;
+            border-left: 1px solid #e5e5e7;
+            padding: 24px;
+            overflow-y: auto;
+            box-shadow: -2px 0 20px rgba(0,0,0,0.08);
+        }
+
+        .agent-header {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--dark);
+        }
+
+        .agent-message {
+            background: var(--light);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .agent-name {
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .agent-text {
+            font-size: 14px;
+            line-height: 1.5;
+            color: var(--dark);
+        }
+
+        .agent-action {
+            margin-top: 12px;
+            padding: 8px 12px;
+            background: white;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .agent-action:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Action Buttons */
+        .action-bar {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid #e5e5e7;
+        }
+
+        .action-button {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 14px;
+        }
+
+        .action-button.primary {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+        }
+
+        .action-button.secondary {
+            background: white;
+            border: 2px solid #e5e5e7;
+            color: var(--dark);
+        }
+
+        .action-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+
+        /* Hide/Show Elements */
+        .workflow-content {
+            display: none;
+        }
+
+        .workflow-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Top Navigation Bar -->
+<div class="top-bar">
+    <div class="breadcrumb">
+        <span>Workflow Center</span>
+        <span>›</span>
+        <span>Controller</span>
+        <span>›</span>
+        <span class="breadcrumb-active" id="current-workflow">Variance Analysis Deep Dive</span>
+    </div>
+    
+    <div class="execution-status">
+        <div class="status-dot"></div>
+        <span>Auto-Executing mit Ihren Daten</span>
+    </div>
+</div>
+
+<div class="container">
+    
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="workflow-categories">
+            <div class="category-title">Quick Wins</div>
+            
+            <div class="workflow-item" onclick="loadVarianceAnalysis()">
+                <span class="workflow-icon">📊</span>
+                <span>Variance Analysis</span>
+                <span class="workflow-match">95%</span>
+            </div>
+            
+            <div class="workflow-item active" onclick="loadBusinessCase()">
+                <span class="workflow-icon">💼</span>
+                <span>Business Case Builder</span>
+                <span class="workflow-match" style="background: var(--warning);">HOT</span>
+            </div>
+            
+            <div class="workflow-item">
+                <span class="workflow-icon">📈</span>
+                <span>Budget vs. Actual</span>
+            </div>
+            
+            <div class="workflow-item">
+                <span class="workflow-icon">💰</span>
+                <span>Cost Center Review</span>
+            </div>
+        </div>
+        
+        <div class="workflow-categories">
+            <div class="category-title">Strategic Analysis</div>
+            
+            <div class="workflow-item">
+                <span class="workflow-icon">📋</span>
+                <span>Monthly Close</span>
+            </div>
+            
+            <div class="workflow-item">
+                <span class="workflow-icon">🔍</span>
+                <span>Profitability Analysis</span>
+            </div>
+        </div>
+        
+        <div class="workflow-categories">
+            <div class="category-title">Reporting</div>
+            
+            <div class="workflow-item">
+                <span class="workflow-icon">📑</span>
+                <span>Management Report</span>
+            </div>
+            
+            <div class="workflow-item">
+                <span class="workflow-icon">📊</span>
+                <span>KPI Dashboard</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Canvas -->
+    <div class="main-canvas" style="margin-right: 380px;">
+        
+        <!-- Business Case Workflow Content -->
+        <div id="business-case-content" class="workflow-content active">
+            
+            <!-- Executive Summary for Business Case -->
+            <div class="executive-summary">
+                <div class="decision-header">
+                    <div class="decision-verdict">
+                        <span class="verdict-label">INVESTITIONSENTSCHEIDUNG</span>
+                        <div class="verdict-value">
+                            <span id="investment-decision">FREIGABE EMPFOHLEN</span>
+                            <span style="font-size: 16px; color: var(--success);">✓</span>
+                        </div>
+                    </div>
+                    
+                    <div class="confidence-meter">
+                        <div class="confidence-value" id="bc-confidence">92%</div>
+                        <div class="confidence-bar">
+                            <div class="confidence-fill" id="bc-confidence-bar" style="width: 92%"></div>
+                        </div>
+                        <span style="font-size: 12px; color: var(--gray);">Wirtschaftlichkeit</span>
+                    </div>
+                </div>
+                
+                <div class="metrics-grid">
+                    <div class="metric-box">
+                        <div class="metric-value" id="npv-value">+267k€</div>
+                        <div class="metric-label">NPV (Kapitalwert)</div>
+                        <div class="metric-change positive">↑ Über Hurdle Rate</div>
+                    </div>
+                    
+                    <div class="metric-box">
+                        <div class="metric-value" id="irr-value">11.8%</div>
+                        <div class="metric-label">IRR (Interner Zins)</div>
+                        <div class="metric-change positive">WACC: 11.5%</div>
+                    </div>
+                    
+                    <div class="metric-box">
+                        <div class="metric-value" id="payback-value">4.7 Jahre</div>
+                        <div class="metric-label">Amortisation</div>
+                        <div class="metric-change positive">Target: < 5 Jahre</div>
+                    </div>
+                    
+                    <div class="metric-box">
+                        <div class="metric-value" id="roi-value">21%</div>
+                        <div class="metric-label">ROI p.a.</div>
+                        <div class="metric-change positive">Branche: 15%</div>
+                    </div>
+                </div>
+                
+                <div class="action-bar">
+                    <button class="action-button primary" onclick="generateInvestmentReport()">
+                        📊 Investment Committee Report
+                    </button>
+                    <button class="action-button secondary" onclick="exportBusinessCase()">
+                        📥 Excel-Modell exportieren
+                    </button>
+                    <button class="action-button secondary" onclick="createSAPRequest()">
+                        📋 SAP-Antrag erstellen
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Interactive Investment Parameters -->
+            <div class="driver-section">
+                <div class="section-header">
+                    <h2 class="section-title">💼 Investment Parameter (Live-Berechnung)</h2>
+                    
+                    <div class="scenario-toggles">
+                        <button class="scenario-btn active" onclick="setScenario('base')">Base Case</button>
+                        <button class="scenario-btn" onclick="setScenario('optimistic')">Optimistic</button>
+                        <button class="scenario-btn" onclick="setScenario('pessimistic')">Conservative</button>
+                    </div>
+                </div>
+                
+                <div class="drivers-container">
+                    
+                    <!-- Investment Volume -->
+                    <div class="driver-item active">
+                        <div class="driver-header">
+                            <span class="driver-name">Investitionsvolumen (CNC-Fräse)</span>
+                            <span class="driver-value" id="investment-value">850k€</span>
+                        </div>
+                        
+                        <input type="range" class="driver-slider" min="500" max="1200" value="850"
+                               oninput="adjustInvestment('volume', this.value)">
+                        
+                        <div class="ai-insight">
+                            <div class="ai-insight-header">
+                                <span>🤖</span>
+                                <span>KI-Analyse</span>
+                            </div>
+                            <div class="ai-insight-text">
+                                <strong>Benchmark-Analyse:</strong> CNC-Fräsen dieser Kategorie kosten im Markt 750-950k€. 
+                                Ihr Angebot liegt im mittleren Bereich. Alternative: Gebrauchtmaschine für 550k€ verfügbar (3 Jahre alt).
+                            </div>
+                            <div class="ai-insight-metrics">
+                                <div class="insight-metric">
+                                    <span class="insight-metric-label">vs. Leasing</span>
+                                    <span class="insight-metric-value">+145k€ NPV</span>
+                                </div>
+                                <div class="insight-metric">
+                                    <span class="insight-metric-label">Restwert Jahr 8</span>
+                                    <span class="insight-metric-value">150k€</span>
+                                </div>
+                                <div class="insight-metric">
+                                    <span class="insight-metric-label">Förderung möglich</span>
+                                    <span class="insight-metric-value">bis 20%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Annual Savings -->
+                    <div class="driver-item">
+                        <div class="driver-header">
+                            <span class="driver-name">Jährliche Einsparung (vs. Fremdfertigung)</span>
+                            <span class="driver-value" id="savings-value">180k€</span>
+                        </div>
+                        
+                        <input type="range" class="driver-slider" min="100" max="300" value="180"
+                               oninput="adjustInvestment('savings', this.value)">
+                        
+                        <div class="ai-insight" style="display: none;">
+                            <div class="ai-insight-header">
+                                <span>🤖</span>
+                                <span>KI-Analyse</span>
+                            </div>
+                            <div class="ai-insight-text">
+                                <strong>Sensitivität:</strong> Bei 180k€ Einsparung amortisiert sich die Investition in 4.7 Jahren. 
+                                Break-even bei mindestens 142k€/Jahr. Achtung: Berücksichtigen Sie Anlaufverluste im ersten Jahr.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Utilization Rate -->
+                    <div class="driver-item">
+                        <div class="driver-header">
+                            <span class="driver-name">Erwartete Auslastung</span>
+                            <span class="driver-value" id="utilization-value">75%</span>
+                        </div>
+                        
+                        <input type="range" class="driver-slider" min="40" max="100" value="75"
+                               oninput="adjustInvestment('utilization', this.value)">
+                        
+                        <div class="ai-insight" style="display: none;">
+                            <div class="ai-insight-header">
+                                <span>🤖</span>
+                                <span>KI-Analyse</span>
+                            </div>
+                            <div class="ai-insight-text">
+                                <strong>Kritischer Punkt:</strong> Unter 65% Auslastung wird NPV negativ. 
+                                Ihre historische Maschinenauslastung: Ø 72%. Empfehlung: Auftragspipeline für 12 Monate sichern.
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+            
+            <!-- NPV Waterfall -->
+            <div class="waterfall-section">
+                <div class="section-header">
+                    <h2 class="section-title">📈 NPV Waterfall (8 Jahre)</h2>
+                </div>
+                
+                <div class="waterfall-container">
+                    <div class="waterfall-bar">
+                        <span class="bar-value">-850k€</span>
+                        <div class="bar-column bar-negative" style="height: 85%"></div>
+                        <span class="bar-label">Initial</span>
+                    </div>
+                    
+                    <div class="waterfall-bar">
+                        <span class="bar-value">+170k</span>
+                        <div class="bar-column bar-positive" style="height: 17%"></div>
+                        <span class="bar-label">Jahr 1</span>
+                    </div>
+                    
+                    <div class="waterfall-bar">
+                        <span class="bar-value">+180k</span>
+                        <div class="bar-column bar-positive" style="height: 18%"></div>
+                        <span class="bar-label">Jahr 2</span>
+                    </div>
+                    
+                    <div class="waterfall-bar">
+                        <span class="bar-value">+180k</span>
+                        <div class="bar-column bar-positive" style="height: 18%"></div>
+                        <span class="bar-label">Jahr 3</span>
+                    </div>
+                    
+                    <div class="waterfall-bar">
+                        <span class="bar-value">+540k</span>
+                        <div class="bar-column bar-positive" style="height: 54%"></div>
+                        <span class="bar-label">Jahr 4-6</span>
+                    </div>
+                    
+                    <div class="waterfall-bar">
+                        <span class="bar-value">+510k</span>
+                        <div class="bar-column bar-positive" style="height: 51%"></div>
+                        <span class="bar-label">Jahr 7-8+RW</span>
+                    </div>
+                    
+                    <div class="waterfall-bar">
+                        <span class="bar-value" style="color: var(--success);">+267k€</span>
+                        <div class="bar-column bar-neutral" style="height: 27%"></div>
+                        <span class="bar-label">NPV</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Scenario Comparison -->
+            <div class="scenario-comparison">
+                <div class="section-header">
+                    <h2 class="section-title">🎯 Entscheidungsmatrix</h2>
+                </div>
+                
+                <div class="scenario-cards">
+                    <div class="scenario-card recommended">
+                        <div class="scenario-card-title">✓ KAUFEN (Empfohlen)</div>
+                        <div class="scenario-metrics">
+                            <div class="scenario-metric">
+                                <span class="scenario-metric-label">NPV</span>
+                                <span class="scenario-metric-value" style="color: var(--success);">+267k€</span>
+                            </div>
+                            <div class="scenario-metric">
+                                <span class="scenario-metric-label">IRR</span>
+                                <span class="scenario-metric-value">11.8%</span>
+                            </div>
+                            <div class="scenario-metric">
+                                <span class="scenario-metric-label">Payback</span>
+                                <span class="scenario-metric-value">4.7 Jahre</span>
+                            </div>
+                            <div class="scenario-metric">
+                                <span class="scenario-metric-label">Flexibilität</span>
+                                <span class="scenario-metric-value">Hoch</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="scenario-card">
+                        <div class="scenario-card-title">LEASEN</div>
+                        <div class="scenario-metrics">
+                            <div class="scenario-metric">
+                                <span class="scenario-metric-label">NPV</span>
+                                <span class="scenario-metric-value">+145k€</span>
+                            </div>
+                            <div class="scenario-metric">
+                                <span class="scenario-metric-label">IRR</span>
+                                <span class="scenario-metric-value">8.2%</span>
+                            </div>
+                            <div class="scenario-metric">
+                                <span class="scenario-metric-label">Mtl. Rate</span>
+                                <span class="scenario-metric-value">12k€</span>
+                            </div>
+                            <div class="scenario-metric">
+                                <span class="scenario-metric-label">Flexibilität</span>
+                                <span class="scenario-metric-value">Mittel</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="scenario-card">
+                        <div class="scenario-card-title">STATUS QUO</div>
+                        <div class="scenario-metrics">
+                            <div class="scenario-metric">
+                                <span class="scenario-metric-label">NPV</span>
+                                <span class="scenario-metric-value" style="color: var(--danger);">-1.44M€</span>
+                            </div>
+                            <div class="scenario-metric">
+                                <span class="scenario-metric-label">Opportunity Cost</span>
+                                <span class="scenario-metric-value">180k€/Jahr</span>
+                            </div>
+                            <div class="scenario-metric">
+                                <span class="scenario-metric-label">Risiko</span>
+                                <span class="scenario-metric-value">Lieferantenabhängig</span>
+                            </div>
+                            <div class="scenario-metric">
+                                <span class="scenario-metric-label">Flexibilität</span>
+                                <span class="scenario-metric-value">Niedrig</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+        
+        <!-- Variance Analysis Content (Hidden by default) -->
+        <div id="variance-content" class="workflow-content">
+            <!-- Original Variance Analysis content here -->
+        </div>
+        
+    </div>
+    
+    <!-- Agent Panel -->
+    <div class="agent-panel">
+        <h3 class="agent-header">🤖 Multi-Agent Investment Analysis</h3>
+        
+        <div id="agent-messages">
+            <div class="agent-message">
+                <div class="agent-name">
+                    <span>📊</span>
+                    <span>Controller Agent</span>
+                </div>
+                <div class="agent-text">
+                    <strong>Wirtschaftlichkeitsanalyse:</strong> NPV von 267k€ bei WACC 11.5% zeigt positive Wirtschaftlichkeit. 
+                    IRR liegt mit 11.8% knapp über Hurdle Rate. Investition erfüllt Mindestanforderungen.
+                </div>
+                <button class="agent-action" onclick="showControllerDetails()">
+                    Kalkulation prüfen
+                </button>
+            </div>
+            
+            <div class="agent-message">
+                <div class="agent-name">
+                    <span>⚠️</span>
+                    <span>Risk Manager</span>
+                </div>
+                <div class="agent-text">
+                    <strong>Risikobewertung:</strong> Kritischer Punkt bei 65% Auslastung. 
+                    Technologierisiko: 3D-Druck könnte Fräsen teilweise ersetzen (Zeithorizont 5-7 Jahre). 
+                    Empfehle Exit-Klausel nach Jahr 3.
+                </div>
+            </div>
+            
+            <div class="agent-message">
+                <div class="agent-name">
+                    <span>💰</span>
+                    <span>Treasury Agent</span>
+                </div>
+                <div class="agent-text">
+                    <strong>Finanzierung:</strong> Liquidität für Vollfinanzierung vorhanden. 
+                    Alternative: 50/50 Eigen-/Fremdkapital verbessert ROE um 3.2pp. 
+                    Cash-Impact Q1: -670k€ (inkl. Anlaufkosten).
+                </div>
+                <button class="agent-action" onclick="showFinancingOptions()">
+                    Finanzierungsoptionen
+                </button>
+            </div>
+            
+            <div class="agent-message" style="background: linear-gradient(135deg, rgba(0,176,202,0.1), rgba(0,58,112,0.1)); border: 2px solid var(--accent);">
+                <div class="agent-name">
+                    <span>👔</span>
+                    <span>CFO Decision Summary</span>
+                </div>
+                <div class="agent-text">
+                    <strong>Finale Empfehlung: FREIGABE MIT AUFLAGEN</strong><br><br>
+                    
+                    ✓ Wirtschaftlichkeit gegeben (NPV +267k€)<br>
+                    ✓ Strategischer Fit (Reduktion Lieferantenabhängigkeit)<br>
+                    ⚠️ Auslastungsrisiko beachten<br><br>
+                    
+                    <strong>Auflagen:</strong><br>
+                    1. Stufenweise Investition: 60% sofort, 40% nach 6 Monaten<br>
+                    2. Quarterly Review der Auslastung (Min. 65%)<br>
+                    3. Exit-Option nach Jahr 3 vertraglich sichern<br>
+                    4. Förderantrag parallel stellen (bis zu 170k€ möglich)<br><br>
+                    
+                    <strong>Nächste Schritte:</strong><br>
+                    → Investment Committee Präsentation am 15.11.<br>
+                    → Angebotsverhandlung (Ziel: -5% = 42k€)<br>
+                    → Förderantrag bis 30.11.
+                </div>
+                <button class="agent-action" style="background: var(--primary); color: white;">
+                    Freigabeprozess starten
+                </button>
+            </div>
+        </div>
+    </div>
+    
+</div>
+
+<script>
+// Business Case Builder System
+class BusinessCaseSystem {
+    constructor() {
+        this.investment = {
+            volume: 850000,
+            savings: 180000,
+            utilization: 75,
+            lifetime: 8,
+            wacc: 11.5,
+            residualValue: 150000
+        };
+        
+        this.companyContext = {
+            hurdle_rate: 10,
+            typical_payback: 5,
+            risk_premium: 2,
+            tax_rate: 30
+        };
+        
+        this.initialize();
+    }
+    
+    initialize() {
+        this.calculateMetrics();
+        this.loadCompanyBenchmarks();
+    }
+    
+    adjustInvestment(parameter, value) {
+        const numValue = parseFloat(value);
+        
+        switch(parameter) {
+            case 'volume':
+                this.investment.volume = numValue * 1000;
+                document.getElementById('investment-value').textContent = numValue + 'k€';
+                break;
+            case 'savings':
+                this.investment.savings = numValue * 1000;
+                document.getElementById('savings-value').textContent = numValue + 'k€';
+                break;
+            case 'utilization':
+                this.investment.utilization = numValue;
+                document.getElementById('utilization-value').textContent = numValue + '%';
+                break;
+        }
+        
+        // Recalculate all metrics
+        this.calculateMetrics();
+        
+        // Update AI insights
+        this.updateAIInsights(parameter, numValue);
+        
+        // Trigger agent analysis
+        this.triggerAgentAnalysis(parameter);
+    }
+    
+    calculateMetrics() {
+        // Calculate NPV
+        let npv = -this.investment.volume;
+        const adjustedSavings = this.investment.savings * (this.investment.utilization / 100);
+        
+        for (let year = 1; year <= this.investment.lifetime; year++) {
+            const discountFactor = Math.pow(1 + this.investment.wacc / 100, year);
+            const yearSavings = year === 1 ? adjustedSavings * 0.95 : adjustedSavings; // Anlaufverluste Jahr 1
+            npv += yearSavings / discountFactor;
+        }
+        
+        // Add residual value
+        npv += this.investment.residualValue / Math.pow(1 + this.investment.wacc / 100, this.investment.lifetime);
+        
+        // Calculate IRR (simplified)
+        const irr = (adjustedSavings / this.investment.volume) * 100;
+        
+        // Calculate Payback
+        const payback = this.investment.volume / adjustedSavings;
+        
+        // Calculate ROI
+        const roi = ((adjustedSavings - (this.investment.volume / this.investment.lifetime)) / this.investment.volume) * 100;
+        
+        // Update displays
+        this.updateDisplays(npv, irr, payback, roi);
+        
+        // Update decision
+        this.updateDecision(npv, irr, payback);
+        
+        // Update waterfall
+        this.updateWaterfall(adjustedSavings);
+    }
+    
+    updateDisplays(npv, irr, payback, roi) {
+        document.getElementById('npv-value').textContent = 
+            npv > 0 ? '+' + Math.round(npv/1000) + 'k€' : Math.round(npv/1000) + 'k€';
+        
+        document.getElementById('irr-value').textContent = irr.toFixed(1) + '%';
+        document.getElementById('payback-value').textContent = payback.toFixed(1) + ' Jahre';
+        document.getElementById('roi-value').textContent = roi.toFixed(0) + '%';
+        
+        // Update confidence based on NPV
+        const confidence = Math.min(99, Math.max(10, 50 + (npv / 10000)));
+        document.getElementById('bc-confidence').textContent = Math.round(confidence) + '%';
+        document.getElementById('bc-confidence-bar').style.width = confidence + '%';
+    }
+    
+    updateDecision(npv, irr, payback) {
+        const decisionElement = document.getElementById('investment-decision');
+        
+        if (npv > 200000 && irr > this.investment.wacc && payback < 5) {
+            decisionElement.textContent = 'FREIGABE EMPFOHLEN';
+            decisionElement.style.color = 'var(--success)';
+        } else if (npv > 0) {
+            decisionElement.textContent = 'BEDINGTE FREIGABE';
+            decisionElement.style.color = 'var(--warning)';
+        } else {
+            decisionElement.textContent = 'ABLEHNUNG EMPFOHLEN';
+            decisionElement.style.color = 'var(--danger)';
+        }
+    }
+    
+    updateWaterfall(adjustedSavings) {
+        // Update waterfall visualization
+        const bars = document.querySelectorAll('.waterfall-section .bar-column');
+        const year1 = adjustedSavings * 0.95 / 10000;
+        const yearNormal = adjustedSavings / 10000;
+        
+        if (bars[1]) bars[1].style.height = Math.min(100, year1) + '%';
+        if (bars[2]) bars[2].style.height = Math.min(100, yearNormal) + '%';
+        
+        // Update NPV bar
+        const npvBar = bars[bars.length - 1];
+        if (npvBar) {
+            const npvHeight = Math.abs(this.calculateNPV() / 10000);
+            npvBar.style.height = Math.min(100, npvHeight) + '%';
+        }
+    }
+    
+    calculateNPV() {
+        let npv = -this.investment.volume;
+        const adjustedSavings = this.investment.savings * (this.investment.utilization / 100);
+        
+        for (let year = 1; year <= this.investment.lifetime; year++) {
+            const discountFactor = Math.pow(1 + this.investment.wacc / 100, year);
+            npv += adjustedSavings / discountFactor;
+        }
+        
+        npv += this.investment.residualValue / Math.pow(1 + this.investment.wacc / 100, this.investment.lifetime);
+        return npv;
+    }
+    
+    updateAIInsights(parameter, value) {
+        const insights = document.querySelectorAll('.driver-item .ai-insight');
+        
+        if (parameter === 'utilization' && value < 65) {
+            insights[2].style.display = 'block';
+            insights[2].querySelector('.ai-insight-text').innerHTML = 
+                '<strong style="color: var(--danger);">⚠️ KRITISCH:</strong> Bei ' + value + '% Auslastung wird NPV negativ! ' +
+                'Minimum für Wirtschaftlichkeit: 65%. Empfehlung: Auftragsgarantien einholen oder Investition verschieben.';
+        }
+        
+        if (parameter === 'savings') {
+            insights[1].style.display = 'block';
+            const breakeven = (this.investment.volume / this.investment.lifetime) * 1.2;
+            insights[1].querySelector('.ai-insight-text').innerHTML = 
+                '<strong>Sensitivität:</strong> Bei ' + value + 'k€ Einsparung amortisiert sich die Investition in ' +
+                (this.investment.volume / (value * 1000)).toFixed(1) + ' Jahren. ' +
+                'Break-even bei mindestens ' + Math.round(breakeven/1000) + 'k€/Jahr. ' +
+                (value < breakeven/1000 ? '<span style="color: var(--danger);">Unter Break-even!</span>' : '');
+        }
+    }
+    
+    triggerAgentAnalysis(parameter) {
+        // Simulate agent responses
+        setTimeout(() => {
+            this.addAgentUpdate(parameter);
+        }, 800);
+    }
+    
+    addAgentUpdate(parameter) {
+        const agentMessages = document.getElementById('agent-messages');
+        
+        if (parameter === 'volume') {
+            // Update Controller Agent message
+            const controllerMsg = agentMessages.querySelector('.agent-message');
+            if (controllerMsg) {
+                const npv = this.calculateNPV();
+                controllerMsg.querySelector('.agent-text').innerHTML = 
+                    '<strong>Neu kalkuliert:</strong> Bei Investition von ' + (this.investment.volume/1000) + 'k€ ' +
+                    'beträgt der NPV ' + (npv > 0 ? '+' : '') + Math.round(npv/1000) + 'k€. ' +
+                    (npv > 200000 ? 'Investition weiterhin empfohlen.' : 'Wirtschaftlichkeit grenzwertig.');
+            }
+        }
+    }
+    
+    loadCompanyBenchmarks() {
+        // Load company-specific benchmarks
+        console.log('Company benchmarks loaded:', this.companyContext);
+    }
+}
+
+// McKinsey-Style Dynamic System (for Variance Analysis)
+class McKinseyDecisionCockpit {
+    constructor() {
+        this.currentVariance = {
+            personnel: 89000,
+            material: 34000,
+            energy: 22000,
+            other: -28000
+        };
+        
+        this.companyContext = {
+            industry: 'Manufacturing',
+            size: 'Mittelstand',
+            benchmark: {
+                personnelCost: 0.35,
+                materialCost: 0.45,
+                overheadRate: 0.15
+            }
+        };
+    }
+}
+
+// Initialize systems
+const businessCase = new BusinessCaseSystem();
+const cockpit = new McKinseyDecisionCockpit();
+
+// Workflow Switching Functions
+function loadBusinessCase() {
+    // Hide all workflow contents
+    document.querySelectorAll('.workflow-content').forEach(content => {
+        content.classList.remove('active');
+    });
+    
+    // Show business case content
+    document.getElementById('business-case-content').classList.add('active');
+    
+    // Update sidebar
+    document.querySelectorAll('.workflow-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    event.target.closest('.workflow-item').classList.add('active');
+    
+    // Update breadcrumb
+    document.getElementById('current-workflow').textContent = 'Business Case Builder';
+    
+    // Recalculate metrics
+    businessCase.calculateMetrics();
+}
+
+function loadVarianceAnalysis() {
+    // Switch to variance analysis view
+    alert('Switching to Variance Analysis workflow...');
+    document.getElementById('current-workflow').textContent = 'Variance Analysis Deep Dive';
+}
+
+// UI Functions
+function adjustInvestment(parameter, value) {
+    businessCase.adjustInvestment(parameter, value);
+}
+
+function setScenario(scenario) {
+    // Update scenario buttons
+    document.querySelectorAll('.scenario-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.target.classList.add('active');
+    
+    // Adjust parameters based on scenario
+    if (scenario === 'optimistic') {
+        document.querySelector('input[oninput*="savings"]').value = 220;
+        document.querySelector('input[oninput*="utilization"]').value = 85;
+        businessCase.adjustInvestment('savings', 220);
+        businessCase.adjustInvestment('utilization', 85);
+    } else if (scenario === 'pessimistic') {
+        document.querySelector('input[oninput*="savings"]').value = 140;
+        document.querySelector('input[oninput*="utilization"]').value = 60;
+        businessCase.adjustInvestment('savings', 140);
+        businessCase.adjustInvestment('utilization', 60);
+    } else {
+        document.querySelector('input[oninput*="savings"]').value = 180;
+        document.querySelector('input[oninput*="utilization"]').value = 75;
+        businessCase.adjustInvestment('savings', 180);
+        businessCase.adjustInvestment('utilization', 75);
+    }
+}
+
+function generateInvestmentReport() {
+    alert('Investment Committee Report wird generiert...\n\n' +
+          '• Executive Summary\n' +
+          '• Wirtschaftlichkeitsrechnung (NPV, IRR, Payback)\n' +
+          '• Sensitivitätsanalyse\n' +
+          '• Risikobeurteilung\n' +
+          '• Finanzierungsoptionen\n' +
+          '• Entscheidungsvorlage\n\n' +
+          'Format: PowerPoint + Excel-Modell');
+}
+
+function exportBusinessCase() {
+    alert('Excel-Export wird erstellt...\n\n' +
+          'Enthält:\n' +
+          '• Cashflow-Tabelle (8 Jahre)\n' +
+          '• NPV/IRR Berechnung\n' +
+          '• Sensitivitätstabellen\n' +
+          '• Szenario-Vergleich\n' +
+          '• Grafiken für Präsentation');
+}
+
+function createSAPRequest() {
+    alert('SAP-Investitionsantrag wird erstellt...\n\n' +
+          'Automatisch ausgefüllt:\n' +
+          '• Kostenstelle: 4100\n' +
+          '• Investitionsart: Sachanlagen\n' +
+          '• PSP-Element: Wird generiert\n' +
+          '• Genehmigungsstufe: > 500k€\n' +
+          '• Workflow: CFO-Freigabe erforderlich');
+}
+
+function showControllerDetails() {
+    alert('Controller-Kalkulation:\n\n' +
+          'Methodik: DCF mit WACC 11.5%\n' +
+          'Steuersatz: 30%\n' +
+          'AfA: Linear über 8 Jahre\n' +
+          'Working Capital Impact: -45k€ Jahr 1\n' +
+          'Maintenance: 15k€/Jahr ab Jahr 2');
+}
+
+function showFinancingOptions() {
+    alert('Finanzierungsoptionen:\n\n' +
+          '1. VOLLFINANZIERUNG EIGENKAPITAL\n' +
+          '   • Keine Zinsen\n' +
+          '   • ROE: 14.2%\n\n' +
+          '2. 50/50 SPLIT\n' +
+          '   • Kredit: 425k€ zu 3.5%\n' +
+          '   • ROE: 17.4%\n' +
+          '   • Monatliche Rate: 5.8k€\n\n' +
+          '3. LEASING\n' +
+          '   • Monatlich: 12k€\n' +
+          '   • Keine Bilanzierung\n' +
+          '   • NPV: +145k€');
+}
+
+// Simulate real-time updates
+setInterval(() => {
+    // Update agent confidence
+    const confidence = 88 + Math.random() * 10;
+    if (document.getElementById('bc-confidence')) {
+        document.getElementById('bc-confidence').textContent = Math.round(confidence) + '%';
+        document.getElementById('bc-confidence-bar').style.width = confidence + '%';
+    }
+}, 8000);
+</script>
+
+</body>
+</html>
