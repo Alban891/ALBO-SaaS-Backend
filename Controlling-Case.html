@@ -1508,11 +1508,11 @@ function switchTab(tabName) {
             text: 'Executive View aktiviert. Live-Charts und KPIs für schnelle Business Case Bewertung.',
             level: 'info'
         },
-        'assumptions': {
-            title: '⚙️ Annahmen-Modus',
-            text: 'Artikel-Portfolio bereit zur Bearbeitung. Parameter-Anpassungen werden in Echtzeit berechnet.',
-            level: 'success'
-        },
+       'assumptions': {
+    title: '⚙️ Annahmen-Modus',
+    text: 'Artikel-Portfolio bereit zur Bearbeitung. Parameter-Anpassungen werden in Echtzeit berechnet.',
+    level: 'success'
+},
         'analysis': {
             title: '📈 Analyse-Modus',
             text: 'Deep-Analytics verfügbar. Sensitivität, Monte-Carlo und Benchmarks abrufbar.',
@@ -1526,6 +1526,15 @@ function switchTab(tabName) {
             timestamp: 'Navigation'
         });
     }
+}
+
+// Bei assumptions Tab automatisch zur Listenansicht
+if (tabName === 'assumptions') {
+    setTimeout(() => {
+        if (typeof setArtikelView === 'function') {
+            setArtikelView('list');
+        }
+    }, 100);
 }
 
 // New Article Creation Functions
@@ -2110,7 +2119,7 @@ function showListView() {
         const db2Color = db2Value >= 40 ? 'var(--success)' : db2Value >= 30 ? 'var(--primary)' : 'var(--warning)';
         
         html += `
-            <tr class="artikel-list-row" onclick="openArtikelDetail('${index}')">
+            <tr class="artikel-list-row" onclick="openArtikelEditMode('${artikel.name.toLowerCase().replace(/ /g, '-')}')">
                 <td class="artikel-name-cell">${artikel.name}</td>
                 <td><span class="type-badge ${typeClass}">${artikel.type}</span></td>
                 <td>${artikel.release}</td>
@@ -2237,12 +2246,43 @@ function backToArtikelOverview() {
     document.getElementById('artikel-overview').style.display = 'block';
     document.getElementById('artikel-detail-view').style.display = 'none';
     
+    // Automatisch zur Listenansicht wechseln
+    setTimeout(() => setArtikelView('list'), 50);
+    
     cfoDashboard.aiController.addAIMessage({
         level: 'info',
         title: '📋 Zurück zur Übersicht',
         text: 'Portfolio-Ansicht aktiviert. Alle Änderungen wurden gespeichert.',
         timestamp: 'Navigation'
     });
+}
+
+function openArtikelEditMode(artikelId) {
+    // Mapping für Standard-Artikel
+    const artikelMapping = {
+        'crimpautomat': 'crimp',
+        'mini-komax-ohne-core': 'komax',
+        'digital-shopfloor-backend': 'digital'
+    };
+    
+    const mappedId = artikelMapping[artikelId] || artikelId;
+    
+    // Öffne Detail-View
+    cfoDashboard.currentArtikel = mappedId;
+    
+    // Verstecke Übersicht, zeige Detail
+    document.getElementById('artikel-overview').style.display = 'none';
+    document.getElementById('artikel-detail-view').style.display = 'block';
+    
+    // Update Titel
+    const artikelName = artikelId.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    document.getElementById('current-artikel-name').textContent = artikelName;
+    
+    // Direkt zum Artikel-Tab (mit Mengen/Jahren)
+    switchSubTab('artikel');
+    
+    // Lade Artikel-Daten
+    loadArtikelData();
 }
 
 function switchSubTab(subTabName) {
