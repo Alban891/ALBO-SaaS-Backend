@@ -831,6 +831,85 @@
                 max-height: 300px;
             }
         }
+
+        /* List View Styles */
+.artikel-list-container {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    margin-top: 20px;
+}
+
+.artikel-list-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.artikel-list-header {
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    color: white;
+}
+
+.artikel-list-header th {
+    padding: 14px 16px;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-right: 1px solid rgba(255,255,255,0.1);
+}
+
+.artikel-list-header th:last-child {
+    border-right: none;
+}
+
+.artikel-list-row {
+    border-bottom: 1px solid var(--border);
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.artikel-list-row:hover {
+    background: #f8fafc;
+    transform: translateX(2px);
+}
+
+.artikel-list-row td {
+    padding: 16px;
+    font-size: 13px;
+    border-right: 1px solid #f1f3f5;
+}
+
+.artikel-list-row td:last-child {
+    border-right: none;
+}
+
+.artikel-name-cell {
+    font-weight: 600;
+    color: var(--text);
+}
+
+.type-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.type-badge.neu {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.type-badge.cross {
+    background: #dcfce7;
+    color: #059669;
+}
     </style>
 </head>
 <body>
@@ -1093,6 +1172,7 @@
                         <div class="assumptions-section" id="artikel-overview">
                             <div class="section-title">📦 Artikel Portfolio - Erweiterte Ansicht</div>
                             
+                        <div id="artikel-container-wrapper"></div>
                             <div class="artikel-grid" id="artikel-grid-container">
                                 <!-- Crimpautomat -->
                                 <div class="artikel-card" onclick="openArtikelDetail('crimp')">
@@ -1205,7 +1285,23 @@
                                     </div>
                                 </div>
                             </div>
-                            
+                            <!-- View Toggle Buttons -->
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 0 20px;">
+                                <div style="display: flex; gap: 0; border: 1px solid var(--border); border-radius: 6px; overflow: hidden;">
+                                    <button id="view-grid-btn" class="view-toggle active" onclick="setArtikelView('grid')" 
+                                        style="padding: 8px 16px; border: none; background: var(--primary); color: white; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s;">
+                                        ⊞ Karten
+                                    </button>
+                                    <button id="view-list-btn" class="view-toggle" onclick="setArtikelView('list')"
+                                        style="padding: 8px 16px; border: none; border-left: 1px solid var(--border); background: white; color: var(--gray); font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s;">
+                                    ☰ Liste
+                                </button>
+                            </div>
+                            <span style="font-size: 13px; color: var(--gray);">
+                                <span id="artikel-count">3</span> Artikel im Portfolio
+                                </span>
+                            </div>
+
                             <div style="text-align: center; margin-top: 20px;">
                                 <button class="add-artikel-btn" onclick="addNewArtikel()">
                                     ➕ Neuer Artikel hinzufügen
@@ -1912,6 +2008,154 @@ function updateDashboardTotals() {
     }
 }
 
+// View Management
+let currentView = 'grid';
+
+function setArtikelView(view) {
+    currentView = view;
+    
+    // Update button states
+    if (view === 'grid') {
+        document.getElementById('view-grid-btn').style.background = 'var(--primary)';
+        document.getElementById('view-grid-btn').style.color = 'white';
+        document.getElementById('view-list-btn').style.background = 'white';
+        document.getElementById('view-list-btn').style.color = 'var(--gray)';
+        showGridView();
+    } else {
+        document.getElementById('view-list-btn').style.background = 'var(--primary)';
+        document.getElementById('view-list-btn').style.color = 'white';
+        document.getElementById('view-grid-btn').style.background = 'white';
+        document.getElementById('view-grid-btn').style.color = 'var(--gray)';
+        showListView();
+    }
+    
+    // Save preference
+    localStorage.setItem('artikelViewPreference', view);
+}
+
+function showGridView() {
+    const wrapper = document.getElementById('artikel-container-wrapper');
+    // For now, just reload to show grid
+    location.reload();
+}
+
+function showListView() {
+    const wrapper = document.getElementById('artikel-container-wrapper');
+    
+    // Collect all artikel data
+    const artikels = [
+        {
+            name: 'Crimpautomat',
+            type: 'NEU-PRODUKT',
+            release: 'Dez 2024',
+            startMenge: '200',
+            startPreis: '5,00€',
+            db2: '37%',
+            revenue: '87,2M€'
+        },
+        {
+            name: 'Mini-Komax ohne CORE',
+            type: 'NEU-PRODUKT',
+            release: 'Dez 2024',
+            startMenge: '6',
+            startPreis: '1.000,00€',
+            db2: '31%',
+            revenue: '24,8M€'
+        },
+        {
+            name: 'Digital Shopfloor Backend',
+            type: 'CROSS-SELLING',
+            release: 'Jun 2025',
+            startMenge: '50',
+            startPreis: '480,00€',
+            db2: '58%',
+            revenue: '5,8M€'
+        }
+    ];
+    
+    // Add custom artikels from cfoDashboard
+    Object.values(cfoDashboard.artikelData || {}).forEach(artikel => {
+        artikels.push({
+            name: artikel.name,
+            type: artikel.type === 'neu' ? 'NEU-PRODUKT' : 'CROSS-SELLING',
+            release: formatDateShort(artikel.release),
+            startMenge: formatThousands(artikel.startVolume),
+            startPreis: formatDecimal(artikel.startPrice) + '€',
+            db2: '35%',
+            revenue: calculateTotalRevenue(artikel)
+        });
+    });
+    
+    // Build list HTML
+    let html = `
+        <div class="artikel-list-container">
+            <table class="artikel-list-table">
+                <thead class="artikel-list-header">
+                    <tr>
+                        <th style="width: 25%;">Artikel</th>
+                        <th style="width: 15%;">Typ</th>
+                        <th style="width: 12%;">Release</th>
+                        <th style="width: 12%; text-align: right;">Start-Menge</th>
+                        <th style="width: 12%; text-align: right;">Start-Preis</th>
+                        <th style="width: 10%; text-align: center;">DB2 (Ø)</th>
+                        <th style="width: 14%; text-align: right;">Total Revenue</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+    
+    artikels.forEach((artikel, index) => {
+        const typeClass = artikel.type.includes('NEU') ? 'neu' : 'cross';
+        const db2Value = parseFloat(artikel.db2);
+        const db2Color = db2Value >= 40 ? 'var(--success)' : db2Value >= 30 ? 'var(--primary)' : 'var(--warning)';
+        
+        html += `
+            <tr class="artikel-list-row" onclick="openArtikelDetail('${index}')">
+                <td class="artikel-name-cell">${artikel.name}</td>
+                <td><span class="type-badge ${typeClass}">${artikel.type}</span></td>
+                <td>${artikel.release}</td>
+                <td style="text-align: right; font-family: monospace;">${artikel.startMenge}</td>
+                <td style="text-align: right; font-family: monospace;">${artikel.startPreis}</td>
+                <td style="text-align: center; font-weight: 600; color: ${db2Color};">${artikel.db2}</td>
+                <td style="text-align: right; font-weight: 600; color: var(--success);">${artikel.revenue}</td>
+            </tr>
+        `;
+    });
+    
+    html += `
+                </tbody>
+            </table>
+        </div>
+    `;
+    
+    wrapper.innerHTML = html;
+    
+    // Update count
+    document.getElementById('artikel-count').textContent = artikels.length;
+}
+
+function formatDateShort(dateStr) {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    const months = ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'];
+    return months[date.getMonth()] + ' ' + date.getFullYear();
+}
+
+function calculateTotalRevenue(artikel) {
+    let total = 0;
+    if (artikel.years) {
+        Object.values(artikel.years).forEach(year => {
+            total += (year.volume * year.price);
+        });
+    }
+    
+    if (total >= 1000000) {
+        return (total / 1000000).toFixed(1) + 'M€';
+    } else if (total >= 1000) {
+        return (total / 1000).toFixed(0) + 'k€';
+    }
+    return total.toFixed(0) + '€';
+}
 // Number formatting functions
 function formatThousands(num) {
     if (!num && num !== 0) return '';
