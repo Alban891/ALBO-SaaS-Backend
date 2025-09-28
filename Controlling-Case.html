@@ -3118,17 +3118,31 @@ function switchDetailTab(tabName) {
 function adjustAssumption(type, value) {
     switch(type) {
         case 'market':
+            cfoDashboard.currentValues.marketVolume = value;
             document.getElementById('market-value').textContent = value + '%';
             break;
         case 'price':
+            cfoDashboard.currentValues.pricePremium = value;
             const priceDiff = value - 100;
             document.getElementById('price-value').textContent = (priceDiff >= 0 ? '+' : '') + priceDiff + '%';
             break;
         case 'capex':
+            cfoDashboard.currentValues.capexRisk = value;
             const capexText = value > 110 ? 'Überschreitung' : value < 90 ? 'Einsparung' : 'Plan';
             document.getElementById('capex-value').textContent = capexText;
             break;
     }
+    
+    // HIER IST DIE MAGIE: Update all charts with new values
+    updateAllCharts();
+    
+    // AI Feedback
+    cfoDashboard.aiController.addAIMessage({
+        level: 'info',
+        title: '📊 Dashboard aktualisiert',
+        text: `${type === 'market' ? 'Marktvolumen' : type === 'price' ? 'Preis-Premium' : 'CAPEX-Risiko'} angepasst auf ${value}%`,
+        timestamp: new Date().toLocaleTimeString('de-DE', {hour: '2-digit', minute: '2-digit'})
+    });
 }
 
 function toggleArtikel(filter) {
@@ -3145,15 +3159,43 @@ function aiAction(action) {
     });
 }
 
-function saveArtikelChanges() {
+window.saveArtikelChanges = function() {
+    if (!cfoDashboard.currentArtikel) return;
+    
+    // WICHTIG: Hier werden die Eingaben aus den Feldern geholt und gespeichert
+    for (let year = 2025; year <= 2030; year++) {
+        const volumeInput = document.getElementById(`year-${year}-volume`);
+        const priceInput = document.getElementById(`year-${year}-price`);
+        
+        if (volumeInput) {
+            cfoDashboard.artikelData[cfoDashboard.currentArtikel].volumes[year] = 
+                parseFormattedNumber(volumeInput.value);
+        }
+        if (priceInput) {
+            cfoDashboard.artikelData[cfoDashboard.currentArtikel].prices[year] = 
+                parseFormattedNumber(priceInput.value);
+        }
+    }
+    
+    // Update HK if changed
+    const hkInput = document.getElementById('param-hk-stueck');
+    if (hkInput) {
+        cfoDashboard.artikelData[cfoDashboard.currentArtikel].hk = 
+            parseFormattedNumber(hkInput.value);
+    }
+    
+    // HIER PASSIERT DIE ECHTZEIT-AKTUALISIERUNG
+    updateAllCharts();
+    
     cfoDashboard.aiController.addAIMessage({
         level: 'success',
-        title: '✅ Änderungen gespeichert',
-        text: 'Artikel-Parameter aktualisiert.',
-        timestamp: 'Speicherung'
+        title: '✅ Änderungen gespeichert & Dashboard aktualisiert',
+        text: `Artikel "${cfoDashboard.artikelData[cfoDashboard.currentArtikel].name}" wurde aktualisiert. Alle Diagramme neu berechnet.`,
+        timestamp: new Date().toLocaleTimeString('de-DE', {hour: '2-digit', minute: '2-digit'})
     });
+    
     backToArtikelOverview();
-}
+};
 
 // Artikel data loading functions
 function loadArtikelData() {
