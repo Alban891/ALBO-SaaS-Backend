@@ -4158,6 +4158,7 @@ function updateErsteZeile() {
     const startPreis = document.getElementById('start-preis').value;  
     const startHK = document.getElementById('start-hk').value;
     
+    // Nur erste Zeile updaten
     const mengeInput = document.getElementById('menge-jahr-1');
     const preisInput = document.getElementById('preis-jahr-1');
     const hkInput = document.getElementById('hk-jahr-1');
@@ -4166,8 +4167,12 @@ function updateErsteZeile() {
     if(preisInput) preisInput.value = startPreis;
     if(hkInput) hkInput.value = startHK;
     
-    // AUTOMATISCH Modelle neu berechnen
-    berechneModelle();
+    // Nur bei NICHT-manuellen Modellen die anderen Jahre berechnen
+    if(selectedModels.menge !== 'manuell' || 
+       selectedModels.preis !== 'manuell' || 
+       selectedModels.kosten !== 'manuell') {
+        berechneModelle();
+    }
 }
 
 function applyModell(typ, modell) {
