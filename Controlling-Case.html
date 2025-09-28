@@ -4130,40 +4130,25 @@ function setzeZeithorizont(jahre) {
 }
 
 function updateTabellenSpalten() {
-    const startDate = document.getElementById('release-datum').value;
+    const startDate = document.getElementById('release-datum')?.value;
     if (!startDate) return;
     
     const startYear = parseInt(startDate.split('-')[0]);
     
-    // Aktualisiere ALLE Headers in der Ergebnis-Vorschau Tabelle
-    const tableHeaders = document.querySelectorAll('#vorschau-tabelle thead th');
-    let headerIndex = 0;
-    
-    tableHeaders.forEach(th => {
-        if (th.classList.contains('jahr-col')) {
-            const jahrNummer = Array.from(th.classList).find(c => c.match(/jahr-\d/))?.split('-')[1];
-            if (jahrNummer) {
-                const yearToShow = startYear + parseInt(jahrNummer) - 1;
-                th.textContent = yearToShow;
-                
-                // Zeige/verstecke basierend auf Horizont
-                if (parseInt(jahrNummer) <= currentHorizont) {
-                    th.style.display = '';
-                } else {
-                    th.style.display = 'none';
-                }
-            }
-        }
-    });
-    
-    // Aktualisiere auch die Datenzellen-Spalten
+    // Aktualisiere die Jahr-Headers
     for(let i = 1; i <= 7; i++) {
-        const columns = document.querySelectorAll(`.jahr-col.jahr-${i}`);
-        columns.forEach(col => {
+        const headers = document.querySelectorAll(`.jahr-col.jahr-${i}`);
+        headers.forEach(element => {
+            // Nur TH-Elemente (Table Headers) updaten
+            if (element.tagName === 'TH') {
+                element.textContent = startYear + i - 1;
+            }
+            
+            // Zeige/Verstecke basierend auf Horizont
             if(i <= currentHorizont) {
-                col.style.display = '';
+                element.style.display = '';
             } else {
-                col.style.display = 'none';
+                element.style.display = 'none';
             }
         });
     }
@@ -4209,26 +4194,46 @@ function applyModell(typ, modell) {
     berechneModelle();
 }
 
-function berechneModelle() {
+// Stelle sicher, dass diese Funktion global verfügbar ist
+window.berechneModelle = function() {
     const startMenge = parseFormattedNumber(document.getElementById('start-menge').value);
     const startPreis = parseFormattedNumber(document.getElementById('start-preis').value);
     const startHK = parseFormattedNumber(document.getElementById('start-hk').value);
     
     // Mengen berechnen
-    const mengen = berechneMengen(startMenge, selectedModels.menge);
+    if (selectedModels.menge !== 'manuell') {
+        const mengen = berechneMengen(startMenge, selectedModels.menge);
+        for(let i = 1; i <= currentHorizont; i++) {
+            const input = document.getElementById(`menge-jahr-${i}`);
+            if (input) input.value = formatThousands(Math.round(mengen[i-1]));
+        }
+    } else {
+        // Bei Manuell nur erstes Jahr
+        const input = document.getElementById('menge-jahr-1');
+        if (input) input.value = formatThousands(Math.round(startMenge));
+    }
     
     // Preise berechnen
     const preise = berechnePreise(startPreis, selectedModels.preis);
+    for(let i = 1; i <= currentHorizont; i++) {
+        const input = document.getElementById(`preis-jahr-${i}`);
+        if (input) input.value = formatDecimal(preise[i-1]);
+    }
     
     // Kosten berechnen
-    const kosten = berechneKosten(startHK, selectedModels.kosten, mengen);
-    
-    // In Tabelle eintragen
+    const mengen = [];
     for(let i = 1; i <= currentHorizont; i++) {
-        document.getElementById(`menge-jahr-${i}`).value = formatThousands(Math.round(mengen[i-1]));
-        document.getElementById(`preis-jahr-${i}`).value = formatDecimal(preise[i-1]);
-        document.getElementById(`hk-jahr-${i}`).value = formatDecimal(kosten[i-1]);
+        const mengeInput = document.getElementById(`menge-jahr-${i}`);
+        if (mengeInput) mengen.push(parseFormattedNumber(mengeInput.value));
     }
+    const kosten = berechneKosten(startHK, selectedModels.kosten, mengen);
+    for(let i = 1; i <= currentHorizont; i++) {
+        const input = document.getElementById(`hk-jahr-${i}`);
+        if (input) input.value = formatDecimal(kosten[i-1]);
+    }
+    
+    // Tabellen-Header aktualisieren
+    updateTabellenSpalten();
 }
 
 function berechneMengen(start, modell) {
