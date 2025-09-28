@@ -2025,58 +2025,143 @@ artikelData.prices = artikelData.prices || {};
                     <!-- Artikel Tab -->
                     <div id="artikel-tab-content">
                         <!-- Basis-Informationen -->
-                        <div style="background: var(--gray-light); padding: 16px; border-radius: 8px; margin-bottom: 24px;">
-                            <h3 style="font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 16px;">
-                                📋 Basis-Informationen
-                            </h3>
-                            
-                            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 16px;">
-                                <div>
-                                    <label style="font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase; display: block; margin-bottom: 6px;">
-                                        Artikel-Bezeichnung
-                                    </label>
-                                    <input type="text" value="${artikelData.name}" 
-                                           style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; background: white;">
-                                </div>
-                                <div>
-                                    <label style="font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase; display: block; margin-bottom: 6px;">
-                                        Effekt-Typ
-                                    </label>
-                                    <select style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; background: white;">
-                                        <option value="neu" ${artikelData.type === 'neu' ? 'selected' : ''}>Neu-Produkt</option>
-                                        <option value="cross" ${artikelData.type === 'cross' ? 'selected' : ''}>Cross-Selling</option>
-                                    </select>
-                                </div>
-                            </div>
-                            
-                            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
-                                <div>
-                                    <label style="font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase; display: block; margin-bottom: 6px;">
-                                        Release-Datum
-                                    </label>
-                                    <input type="month" value="${artikelData.release}" 
-                                           style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; background: white;">
-                                </div>
-                                <div>
-                                    <label style="font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase; display: block; margin-bottom: 6px;">
-                                        Umsatzerhaltung
-                                    </label>
-                                    <select style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; background: white;">
-                                        <option value="nein" ${artikelData.umsatzerhaltung === 'Nein' ? 'selected' : ''}>Nein</option>
-                                        <option value="ja" ${artikelData.umsatzerhaltung === 'Ja' ? 'selected' : ''}>Ja</option>
-                                    </select>
-                                </div>
-                            </div>
-                            
-                            <div style="margin-top: 16px;">
-                                <label style="font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase; display: block; margin-bottom: 6px;">
-                                    Annahmen & Basis für Abschätzung
-                                </label>
-                                <textarea style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; background: white; min-height: 60px; resize: vertical;">
-${artikelData.annahmen}
-                                </textarea>
-                            </div>
-                        </div>
+<div style="background: var(--gray-light); padding: 16px; border-radius: 8px; margin-bottom: 24px;">
+    <h3 style="font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 16px;">
+        📋 Basis-Informationen
+    </h3>
+    
+    <!-- Erste Zeile -->
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 16px;">
+        <div>
+            <label style="font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase; display: block; margin-bottom: 6px;">
+                Artikel-Bezeichnung 
+                <span class="info-icon" title="Eindeutige Produktbezeichnung gemäß Artikelstamm" style="cursor: help;">ⓘ</span>
+            </label>
+            <input type="text" id="artikel-name" value="${artikelData.name}" 
+                   style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; background: white;">
+        </div>
+        
+        <div>
+            <label style="font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase; display: block; margin-bottom: 6px;">
+                Produktkategorie 
+                <span class="info-icon" title="Hauptkategorie des Produkts für Risikobewertung" style="cursor: help;">ⓘ</span>
+            </label>
+            <select id="produkt-kategorie" onchange="handleCategoryChange(this)" 
+                    style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; background: white;">
+                <option value="hardware">Hardware</option>
+                <option value="software">Software</option>
+                <option value="service">Service</option>
+                <option value="hybrid">Hybrid</option>
+                <option value="andere">Andere...</option>
+            </select>
+            <input type="text" id="kategorie-andere" placeholder="Kategorie eingeben..." 
+                   style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; background: white; margin-top: 8px; display: none;"
+                   onblur="validateCustomCategory(this)">
+        </div>
+    </div>
+    
+    <!-- Zweite Zeile -->
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 16px;">
+        <div>
+            <label style="font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase; display: block; margin-bottom: 6px;">
+                Geschäftsmodell 
+                <span class="info-icon" title="Art der Erlösgenerierung - beeinflusst Cashflow-Profil" style="cursor: help;">ⓘ</span>
+            </label>
+            <select id="geschaeftsmodell" onchange="handleBusinessModelChange(this)"
+                    style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; background: white;">
+                <option value="einmalverkauf">Einmalverkauf</option>
+                <option value="subscription">Subscription</option>
+                <option value="pay-per-use">Pay-per-Use</option>
+                <option value="lizenz">Lizenz</option>
+                <option value="wartungsvertrag">Wartungsvertrag</option>
+                <option value="andere">Andere...</option>
+            </select>
+            <input type="text" id="geschaeftsmodell-andere" placeholder="Geschäftsmodell eingeben..." 
+                   style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; background: white; margin-top: 8px; display: none;"
+                   onblur="validateCustomBusinessModel(this)">
+        </div>
+        
+        <div>
+            <label style="font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase; display: block; margin-bottom: 6px;">
+                Zielmarkt 
+                <span class="info-icon" title="Kundensegment - bestimmt Vertriebsweg und Margen" style="cursor: help;">ⓘ</span>
+            </label>
+            <select id="zielmarkt" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; background: white;">
+                <option value="b2b">B2B</option>
+                <option value="b2c">B2C</option>
+                <option value="b2b2c">B2B2C</option>
+            </select>
+        </div>
+    </div>
+    
+    <!-- Dritte Zeile -->
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 16px;">
+        <div>
+            <label style="font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase; display: block; margin-bottom: 6px;">
+                Effekt-Typ 
+                <span class="info-icon" title="Auswirkung auf bestehendes Portfolio" style="cursor: help;">ⓘ</span>
+            </label>
+            <select id="effekt-typ" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; background: white;">
+                <option value="neu" ${artikelData.type === 'neu' ? 'selected' : ''}>Neu-Produkt</option>
+                <option value="cross" ${artikelData.type === 'cross' ? 'selected' : ''}>Cross-Selling</option>
+                <option value="substitution">Substitution</option>
+                <option value="kannibalisierung">Kannibalisierung</option>
+            </select>
+        </div>
+        
+        <div>
+            <label style="font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase; display: block; margin-bottom: 6px;">
+                Strategische Einordnung 
+                <span class="info-icon" title="Core = Kerngeschäft, Adjacent = Angrenzende Märkte, Transformational = Neue Geschäftsfelder" style="cursor: help;">ⓘ</span>
+            </label>
+            <select id="strategie" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; background: white;">
+                <option value="core">Core Business</option>
+                <option value="adjacent">Adjacent Business</option>
+                <option value="transformational">Transformational</option>
+            </select>
+        </div>
+    </div>
+    
+    <!-- Vierte Zeile -->
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 16px;">
+        <div>
+            <label style="font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase; display: block; margin-bottom: 6px;">
+                Investitionstyp 
+                <span class="info-icon" title="CAPEX = Einmalig aktiviert, OPEX = Laufend GuV-wirksam" style="cursor: help;">ⓘ</span>
+            </label>
+            <select id="investitionstyp" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; background: white;">
+                <option value="capex">CAPEX</option>
+                <option value="opex">OPEX</option>
+                <option value="mixed">Mixed (CAPEX & OPEX)</option>
+            </select>
+        </div>
+        
+        <div>
+            <label style="font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase; display: block; margin-bottom: 6px;">
+                Release-Datum 
+                <span class="info-icon" title="Geplanter Marktstart - Basis für Zeitschiene" style="cursor: help;">ⓘ</span>
+            </label>
+            <input type="month" id="release-datum" value="${artikelData.release || '2024-12'}" 
+                   style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; background: white;">
+        </div>
+    </div>
+    
+    <!-- Annahmen -->
+    <div style="margin-top: 16px;">
+        <label style="font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase; display: block; margin-bottom: 6px;">
+            Annahmen & Basis für Abschätzung 
+            <span class="info-icon" title="Dokumentation aller Prämissen für spätere Validierung" style="cursor: help;">ⓘ</span>
+        </label>
+        <textarea id="annahmen" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; background: white; min-height: 60px; resize: vertical;">
+${artikelData.annahmen || 'Innovation durch neue Linie'}
+        </textarea>
+    </div>
+    
+    <!-- KI Validierungs-Feedback -->
+    <div id="ki-validation-feedback" style="margin-top: 12px; padding: 8px; background: #fef3c7; border-left: 3px solid var(--warning); border-radius: 4px; font-size: 11px; display: none;">
+        <strong>KI-Validierung:</strong> <span id="ki-feedback-text"></span>
+    </div>
+</div>
                         
                         <!-- Finanz-Parameter -->
                         <div style="background: var(--gray-light); padding: 16px; border-radius: 8px; margin-bottom: 24px;">
@@ -3628,6 +3713,95 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }, 45000); // Every 45 seconds
 });
+// KI-Validierungs-Funktionen für flexible Eingaben
+function handleCategoryChange(select) {
+    const andereInput = document.getElementById('kategorie-andere');
+    if (select.value === 'andere') {
+        andereInput.style.display = 'block';
+        andereInput.focus();
+    } else {
+        andereInput.style.display = 'none';
+    }
+}
+
+function handleBusinessModelChange(select) {
+    const andereInput = document.getElementById('geschaeftsmodell-andere');
+    if (select.value === 'andere') {
+        andereInput.style.display = 'block';
+        andereInput.focus();
+    } else {
+        andereInput.style.display = 'none';
+    }
+}
+
+function validateCustomCategory(input) {
+    const value = input.value.trim().toLowerCase();
+    const validCategories = ['hardware', 'software', 'service', 'sensor', 'plattform', 'system', 'tool', 'gerät', 'modul', 'komponente'];
+    
+    const feedbackDiv = document.getElementById('ki-validation-feedback');
+    const feedbackText = document.getElementById('ki-feedback-text');
+    
+    if (value === '') return;
+    
+    // Einfache KI-Validierung
+    if (value.length < 3 || value === 'wetter' || value === 'test') {
+        feedbackDiv.style.display = 'block';
+        feedbackDiv.style.borderLeftColor = 'var(--danger)';
+        feedbackDiv.style.background = '#fef2f2';
+        feedbackText.textContent = `"${value}" ist keine gültige Produktkategorie. Bitte beschreiben Sie die Art des Produkts (z.B. "IoT-Sensor", "Cloud-Platform").`;
+        
+        cfoDashboard.aiController.addAIMessage({
+            level: 'warning',
+            title: '⚠️ Ungültige Produktkategorie',
+            text: `Die eingegebene Kategorie "${value}" konnte nicht validiert werden.`,
+            recommendation: 'Verwenden Sie eine der Standard-Kategorien oder beschreiben Sie das Produkt genauer.',
+            timestamp: new Date().toLocaleTimeString('de-DE', {hour: '2-digit', minute: '2-digit'})
+        });
+    } else {
+        // Positive Validierung
+        let erkannteKategorie = 'Service'; // Default
+        if (value.includes('sensor') || value.includes('gerät') || value.includes('hardware')) {
+            erkannteKategorie = 'Hardware';
+        } else if (value.includes('software') || value.includes('app') || value.includes('platform')) {
+            erkannteKategorie = 'Software';
+        }
+        
+        feedbackDiv.style.display = 'block';
+        feedbackDiv.style.borderLeftColor = 'var(--success)';
+        feedbackDiv.style.background = '#f0fdf4';
+        feedbackText.textContent = `✓ "${value}" erkannt als ${erkannteKategorie}-basiertes Produkt.`;
+        
+        cfoDashboard.aiController.addAIMessage({
+            level: 'success',
+            title: '✅ Kategorie validiert',
+            text: `"${value}" wurde als valide Produktkategorie erkannt und klassifiziert.`,
+            timestamp: new Date().toLocaleTimeString('de-DE', {hour: '2-digit', minute: '2-digit'})
+        });
+    }
+}
+
+function validateCustomBusinessModel(input) {
+    const value = input.value.trim().toLowerCase();
+    
+    const feedbackDiv = document.getElementById('ki-validation-feedback');
+    const feedbackText = document.getElementById('ki-feedback-text');
+    
+    if (value === '') return;
+    
+    // Business Model Validierung
+    const validModels = ['saas', 'paas', 'iaas', 'freemium', 'marketplace', 'platform', 'rental', 'leasing'];
+    
+    if (value.length < 3) {
+        feedbackDiv.style.display = 'block';
+        feedbackDiv.style.borderLeftColor = 'var(--danger)';
+        feedbackText.textContent = `"${value}" ist kein valides Geschäftsmodell.`;
+    } else if (validModels.some(model => value.includes(model))) {
+        feedbackDiv.style.display = 'block';
+        feedbackDiv.style.borderLeftColor = 'var(--success)';
+        feedbackDiv.style.background = '#f0fdf4';
+        feedbackText.textContent = `✓ "${value}" als Service-basiertes Geschäftsmodell erkannt.`;
+    }
+}
     </script>
 </body>
 </html>
