@@ -2426,17 +2426,17 @@ ${artikelData.annahmen || 'Innovation durch neue Linie'}
         </div>
         <table id="vorschau-tabelle" style="width: 100%; border-collapse: collapse; font-size: 12px;">
             <thead>
-                <tr style="background: #f8fafc;">
-                    <th style="padding: 10px; text-align: left; font-weight: 600; border-bottom: 2px solid var(--border);">Parameter</th>
-                    <th class="jahr-col jahr-1" style="padding: 10px; text-align: center; font-weight: 600; border-bottom: 2px solid var(--border);">2026</th>
-                    <th class="jahr-col jahr-2" style="padding: 10px; text-align: center; font-weight: 600; border-bottom: 2px solid var(--border);">2027</th>
-                    <th class="jahr-col jahr-3" style="padding: 10px; text-align: center; font-weight: 600; border-bottom: 2px solid var(--border);">2028</th>
-                    <th class="jahr-col jahr-4" style="padding: 10px; text-align: center; font-weight: 600; border-bottom: 2px solid var(--border);">2029</th>
-                    <th class="jahr-col jahr-5" style="padding: 10px; text-align: center; font-weight: 600; border-bottom: 2px solid var(--border);">2030</th>
-                    <th class="jahr-col jahr-6" style="padding: 10px; text-align: center; font-weight: 600; border-bottom: 2px solid var(--border); display: none;">2031</th>
-                    <th class="jahr-col jahr-7" style="padding: 10px; text-align: center; font-weight: 600; border-bottom: 2px solid var(--border); display: none;">2032</th>
-                </tr>
-            </thead>
+    <tr style="background: #f8fafc;">
+        <th style="padding: 10px; text-align: left; font-weight: 600; border-bottom: 2px solid var(--border);">Parameter</th>
+        <th class="jahr-col jahr-1" style="padding: 10px; text-align: center; font-weight: 600; border-bottom: 2px solid var(--border);">Jahr 1</th>
+        <th class="jahr-col jahr-2" style="padding: 10px; text-align: center; font-weight: 600; border-bottom: 2px solid var(--border);">Jahr 2</th>
+        <th class="jahr-col jahr-3" style="padding: 10px; text-align: center; font-weight: 600; border-bottom: 2px solid var(--border);">Jahr 3</th>
+        <th class="jahr-col jahr-4" style="padding: 10px; text-align: center; font-weight: 600; border-bottom: 2px solid var(--border);">Jahr 4</th>
+        <th class="jahr-col jahr-5" style="padding: 10px; text-align: center; font-weight: 600; border-bottom: 2px solid var(--border);">Jahr 5</th>
+        <th class="jahr-col jahr-6" style="padding: 10px; text-align: center; font-weight: 600; border-bottom: 2px solid var(--border); display: none;">Jahr 6</th>
+        <th class="jahr-col jahr-7" style="padding: 10px; text-align: center; font-weight: 600; border-bottom: 2px solid var(--border); display: none;">Jahr 7</th>
+    </tr>
+</thead>
             <tbody>
                 <tr>
                     <td style="padding: 10px; font-weight: 600; background: #f8fafc;">Menge (Stk)</td>
@@ -4135,15 +4135,31 @@ function updateTabellenSpalten() {
     
     const startYear = parseInt(startDate.split('-')[0]);
     
-    // Update alle Jahr-Header in der Tabelle
-    for(let i = 1; i <= 7; i++) {
-        const headers = document.querySelectorAll(`.jahr-col.jahr-${i}`);
-        headers.forEach(col => {
-            if(col.tagName === 'TH') {
-                // Setze das korrekte Jahr als Header
-                col.textContent = startYear + i - 1;
+    // Aktualisiere ALLE Headers in der Ergebnis-Vorschau Tabelle
+    const tableHeaders = document.querySelectorAll('#vorschau-tabelle thead th');
+    let headerIndex = 0;
+    
+    tableHeaders.forEach(th => {
+        if (th.classList.contains('jahr-col')) {
+            const jahrNummer = Array.from(th.classList).find(c => c.match(/jahr-\d/))?.split('-')[1];
+            if (jahrNummer) {
+                const yearToShow = startYear + parseInt(jahrNummer) - 1;
+                th.textContent = yearToShow;
+                
+                // Zeige/verstecke basierend auf Horizont
+                if (parseInt(jahrNummer) <= currentHorizont) {
+                    th.style.display = '';
+                } else {
+                    th.style.display = 'none';
+                }
             }
-            // Zeige/Verstecke basierend auf Zeithorizont
+        }
+    });
+    
+    // Aktualisiere auch die Datenzellen-Spalten
+    for(let i = 1; i <= 7; i++) {
+        const columns = document.querySelectorAll(`.jahr-col.jahr-${i}`);
+        columns.forEach(col => {
             if(i <= currentHorizont) {
                 col.style.display = '';
             } else {
@@ -4152,6 +4168,14 @@ function updateTabellenSpalten() {
         });
     }
 }
+
+// Rufe die Funktion auch beim Laden auf
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialisiere beim ersten Laden
+    if (document.getElementById('release-datum')) {
+        updateTabellenSpalten();
+    }
+});
 
 function updateZeithorizont() {
     updateTabellenSpalten();
