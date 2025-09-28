@@ -1902,100 +1902,117 @@ function openArtikelDetail(id) {
             hk: id === 'crimp' ? 3.00 : id === 'komax' ? 670.00 : 192.00
         };
         
-        // Komplett neuen Container-Inhalt erstellen
-        const detailHTML = `
-            <div class="assumptions-section" id="artikel-detail-temporary">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid var(--primary);">
-                    <div style="font-size: 20px; font-weight: 600; color: var(--primary);">
-                        ${artikelData.name}
+        // Verstecke die Artikel-Übersicht
+        const artikelOverview = document.getElementById('artikel-overview');
+        if (artikelOverview) {
+            artikelOverview.style.display = 'none';
+        }
+        
+        // Prüfe ob Detail-View schon existiert
+        let detailView = document.getElementById('artikel-detail-temporary');
+        
+        if (!detailView) {
+            // Erstelle neue Detail-View
+            detailView = document.createElement('div');
+            detailView.className = 'assumptions-section';
+            detailView.id = 'artikel-detail-temporary';
+            
+            // Füge nach artikel-overview ein
+            const container = document.querySelector('.assumptions-container');
+            if (container) {
+                container.appendChild(detailView);
+            }
+        }
+        
+        // Update Detail-View Inhalt
+        detailView.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid var(--primary);">
+                <div style="font-size: 20px; font-weight: 600; color: var(--primary);">
+                    ${artikelData.name}
+                </div>
+                <button onclick="backToArtikelOverview()" style="padding: 8px 16px; border: 1px solid var(--border); background: var(--white); color: var(--gray); border-radius: 6px; font-size: 12px; cursor: pointer;">
+                    ← Zurück zur Artikel-Übersicht
+                </button>
+            </div>
+            
+            <div style="padding: 20px; background: white; border-radius: 8px;">
+                <h3 style="font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 20px;">
+                    📋 Basis-Informationen
+                </h3>
+                
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 30px;">
+                    <div>
+                        <label style="font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase; display: block; margin-bottom: 6px;">
+                            Artikel-Bezeichnung
+                        </label>
+                        <input type="text" value="${artikelData.name}" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px;">
                     </div>
-                    <button onclick="backToArtikelOverview()" style="padding: 8px 16px; border: 1px solid var(--border); background: var(--white); color: var(--gray); border-radius: 6px; font-size: 12px; cursor: pointer;">
-                        ← Zurück zur Artikel-Übersicht
-                    </button>
+                    
+                    <div>
+                        <label style="font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase; display: block; margin-bottom: 6px;">
+                            Effekt-Typ
+                        </label>
+                        <select style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px;">
+                            <option value="neu" ${artikelData.type === 'neu' ? 'selected' : ''}>Neu-Produkt</option>
+                            <option value="cross" ${artikelData.type === 'cross' ? 'selected' : ''}>Cross-Selling</option>
+                        </select>
+                    </div>
                 </div>
                 
-                <div style="padding: 20px; background: white; border-radius: 8px;">
-                    <h3 style="font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 20px;">
-                        📋 Basis-Informationen
-                    </h3>
-                    
-                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 30px;">
-                        <div>
-                            <label style="font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase; display: block; margin-bottom: 6px;">
-                                Artikel-Bezeichnung
-                            </label>
-                            <input type="text" value="${artikelData.name}" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px;">
-                        </div>
-                        
-                        <div>
-                            <label style="font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase; display: block; margin-bottom: 6px;">
-                                Effekt-Typ
-                            </label>
-                            <select style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px;">
-                                <option value="neu" ${artikelData.type === 'neu' ? 'selected' : ''}>Neu-Produkt</option>
-                                <option value="cross" ${artikelData.type === 'cross' ? 'selected' : ''}>Cross-Selling</option>
-                            </select>
-                        </div>
+                <h3 style="font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 20px;">
+                    💰 Finanz-Parameter
+                </h3>
+                
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+                    <div>
+                        <label style="font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase; display: block; margin-bottom: 6px;">
+                            Start-Preis (€)
+                        </label>
+                        <input type="text" value="${artikelData.price.toFixed(2).replace('.', ',')}" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px;">
                     </div>
                     
-                    <h3 style="font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 20px;">
-                        💰 Finanz-Parameter
-                    </h3>
-                    
-                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
-                        <div>
-                            <label style="font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase; display: block; margin-bottom: 6px;">
-                                Start-Preis (€)
-                            </label>
-                            <input type="text" value="${artikelData.price.toFixed(2).replace('.', ',')}" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px;">
-                        </div>
-                        
-                        <div>
-                            <label style="font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase; display: block; margin-bottom: 6px;">
-                                Start-Menge
-                            </label>
-                            <input type="text" value="${artikelData.volume}" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px;">
-                        </div>
-                        
-                        <div>
-                            <label style="font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase; display: block; margin-bottom: 6px;">
-                                HK/Stück (€)
-                            </label>
-                            <input type="text" value="${artikelData.hk.toFixed(2).replace('.', ',')}" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px;">
-                        </div>
+                    <div>
+                        <label style="font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase; display: block; margin-bottom: 6px;">
+                            Start-Menge
+                        </label>
+                        <input type="text" value="${artikelData.volume}" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px;">
                     </div>
                     
-                    <div style="margin-top: 30px; padding: 20px; background: var(--gray-light); border-radius: 8px;">
-                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; text-align: center;">
-                            <div>
-                                <div style="font-size: 24px; font-weight: bold; color: var(--primary);">
-                                    ${((artikelData.price * artikelData.volume) / 1000).toFixed(1)}k€
-                                </div>
-                                <div style="font-size: 11px; color: var(--gray); text-transform: uppercase;">Jahres-Umsatz</div>
+                    <div>
+                        <label style="font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase; display: block; margin-bottom: 6px;">
+                            HK/Stück (€)
+                        </label>
+                        <input type="text" value="${artikelData.hk.toFixed(2).replace('.', ',')}" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px;">
+                    </div>
+                </div>
+                
+                <div style="margin-top: 30px; padding: 20px; background: var(--gray-light); border-radius: 8px;">
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; text-align: center;">
+                        <div>
+                            <div style="font-size: 24px; font-weight: bold; color: var(--primary);">
+                                ${((artikelData.price * artikelData.volume) / 1000).toFixed(1)}k€
                             </div>
-                            <div>
-                                <div style="font-size: 24px; font-weight: bold; color: var(--success);">
-                                    ${(((artikelData.price - artikelData.hk) / artikelData.price) * 100).toFixed(1)}%
-                                </div>
-                                <div style="font-size: 11px; color: var(--gray); text-transform: uppercase;">DB2-Marge</div>
+                            <div style="font-size: 11px; color: var(--gray); text-transform: uppercase;">Jahres-Umsatz</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 24px; font-weight: bold; color: var(--success);">
+                                ${(((artikelData.price - artikelData.hk) / artikelData.price) * 100).toFixed(1)}%
                             </div>
-                            <div>
-                                <div style="font-size: 24px; font-weight: bold; color: var(--warning);">
-                                    ${(((artikelData.price - artikelData.hk) * artikelData.volume) / 1000).toFixed(1)}k€
-                                </div>
-                                <div style="font-size: 11px; color: var(--gray); text-transform: uppercase;">DB2 Absolut</div>
+                            <div style="font-size: 11px; color: var(--gray); text-transform: uppercase;">DB2-Marge</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 24px; font-weight: bold; color: var(--warning);">
+                                ${(((artikelData.price - artikelData.hk) * artikelData.volume) / 1000).toFixed(1)}k€
                             </div>
+                            <div style="font-size: 11px; color: var(--gray); text-transform: uppercase;">DB2 Absolut</div>
                         </div>
                     </div>
                 </div>
             </div>
         `;
         
-        // Container komplett ersetzen
-        const container = document.querySelector('.assumptions-container');
-        if (container) {
-            container.innerHTML = detailHTML;
-        }
+        // Zeige Detail-View
+        detailView.style.display = 'block';
         
     } catch (error) {
         console.error('Fehler:', error);
