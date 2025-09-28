@@ -2231,210 +2231,287 @@ ${artikelData.annahmen || 'Innovation durch neue Linie'}
 <!-- Finanz-Parameter NEUE VERSION -->
 <div style="background: var(--gray-light); padding: 16px; border-radius: 8px; margin-bottom: 24px;">
     <h3 style="font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 16px;">
-        💰 Finanz-Parameter
+        💰 Finanz-Parameter & Entwicklungsmodelle
     </h3>
     
     <!-- Planungshorizont -->
-    <div style="background: white; padding: 16px; border-radius: 6px; margin-bottom: 16px;">
-        <div style="display: flex; align-items: center; margin-bottom: 12px;">
-            <span style="font-size: 12px; font-weight: 600; color: var(--text);">
-                📅 Planungshorizont
-                <span class="info-icon" title="Zeitraum für die Business Case Berechnung. Release-Datum wird automatisch übernommen."></span>
-            </span>
-        </div>
-        
-        <div style="font-size: 12px; color: var(--gray); margin-bottom: 12px;">
-            Release: <strong>${new Date(artikelData.release).toLocaleDateString('de-DE', { month: 'long', year: 'numeric' })}</strong>
-        </div>
-        
-        <div class="horizon-buttons">
-            <button class="horizon-btn" onclick="setHorizon(3, '${artikelData.release}')">+3 Jahre</button>
-            <button class="horizon-btn active" onclick="setHorizon(5, '${artikelData.release}')">+5 Jahre</button>
-            <button class="horizon-btn" onclick="setHorizon(7, '${artikelData.release}')">+7 Jahre</button>
-            <button class="horizon-btn" onclick="setHorizon(10, '${artikelData.release}')">+10 Jahre</button>
-            <button class="horizon-btn" onclick="customHorizon()">Eigener Zeitraum ▼</button>
+    <div style="background: white; padding: 12px; border-radius: 6px; margin-bottom: 16px;">
+        <div style="display: grid; grid-template-columns: 250px 1fr; gap: 20px; align-items: center;">
+            <div>
+                <label style="font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase; display: block; margin-bottom: 6px;">
+                    📅 Release / Startdatum
+                </label>
+                <input type="month" id="release-datum" value="${artikelData.release || '2025-01'}" 
+                       onchange="updateZeithorizont()"
+                       style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px;">
+            </div>
+            
+            <div>
+                <label style="font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase; display: block; margin-bottom: 6px;">
+                    Zeithorizont
+                </label>
+                <div style="display: flex; gap: 8px;">
+                    <button onclick="setzeZeithorizont(3)" class="zeitraum-btn" 
+                            style="padding: 8px 20px; border: 1px solid var(--border); background: white; border-radius: 4px; font-size: 12px; cursor: pointer; transition: all 0.2s;">
+                        3 Jahre
+                    </button>
+                    <button onclick="setzeZeithorizont(5)" class="zeitraum-btn active"
+                            style="padding: 8px 20px; border: 2px solid var(--primary); background: var(--primary); color: white; border-radius: 4px; font-size: 12px; cursor: pointer; font-weight: 600;">
+                        5 Jahre
+                    </button>
+                    <button onclick="setzeZeithorizont(7)" class="zeitraum-btn"
+                            style="padding: 8px 20px; border: 1px solid var(--border); background: white; border-radius: 4px; font-size: 12px; cursor: pointer; transition: all 0.2s;">
+                        7 Jahre
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
     
     <!-- Startwerte -->
-    <div style="background: white; padding: 16px; border-radius: 6px; margin-bottom: 16px;">
-        <div style="display: flex; align-items: center; margin-bottom: 12px;">
-            <span style="font-size: 12px; font-weight: 600; color: var(--text);">
-                📊 Startwerte (für ${new Date(artikelData.release).getFullYear()})
-                <span class="info-icon" title="Basis-Parameter für das erste Jahr. Alle weiteren Jahre werden hieraus abgeleitet."></span>
-            </span>
+    <div style="background: white; padding: 12px; border-radius: 6px; margin-bottom: 16px;">
+        <div style="font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 12px;">
+            📊 Startwerte (Jahr 1)
         </div>
-        
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 16px;">
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
             <div>
-                <label style="font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase; display: block; margin-bottom: 6px;">
-                    Menge (Stück)
-                    <span class="info-icon" title="Geplante Absatzmenge für das Release-Jahr"></span>
-                </label>
-                <input type="text" id="start-menge" value="100"
-                       style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px;"
-                       onchange="calculateStartValues()">
+                <label style="font-size: 10px; color: var(--gray); display: block; margin-bottom: 4px;">MENGE (Stück)</label>
+                <input type="text" id="start-menge" value="${formatThousands(artikelData.volumes?.[2025] || 100)}"
+                       onchange="updateErsteZeile(); formatNumberInput(this);" onblur="formatNumberInput(this)"
+                       style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; text-align: center; font-weight: 600;">
             </div>
-            
             <div>
-                <label style="font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase; display: block; margin-bottom: 6px;">
-                    Preis (€/Stück)
-                    <span class="info-icon" title="Verkaufspreis pro Einheit ohne MwSt."></span>
-                </label>
-                <input type="text" id="start-preis" value="100,00"
-                       style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px;"
-                       onchange="calculateStartValues()">
+                <label style="font-size: 10px; color: var(--gray); display: block; margin-bottom: 4px;">PREIS (€/Stück)</label>
+                <input type="text" id="start-preis" value="${formatDecimal(artikelData.price || 100)}"
+                       onchange="updateErsteZeile(); formatDecimalInput(this);" onblur="formatDecimalInput(this)"
+                       style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; text-align: center; font-weight: 600;">
             </div>
-            
             <div>
-                <label style="font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase; display: block; margin-bottom: 6px;">
-                    HK pro Stück (€)
-                    <span class="info-icon" title="Variable Herstellkosten inkl. Material und Fertigung"></span>
-                </label>
-                <input type="text" id="start-hk" value="60,00"
-                       style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px;"
-                       onchange="calculateStartValues()">
-            </div>
-        </div>
-        
-        <!-- Auto-berechnete Werte -->
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 12px; background: var(--gray-light); border-radius: 4px;">
-            <div style="text-align: center;">
-                <div style="font-size: 16px; font-weight: 600; color: var(--primary);" id="start-umsatz">10,0k€</div>
-                <div style="font-size: 10px; color: var(--gray); text-transform: uppercase;">Umsatz</div>
-            </div>
-            <div style="text-align: center;">
-                <div style="font-size: 16px; font-weight: 600; color: var(--danger);" id="start-hk-gesamt">6,0k€</div>
-                <div style="font-size: 10px; color: var(--gray); text-transform: uppercase;">HK Gesamt</div>
-            </div>
-            <div style="text-align: center;">
-                <div style="font-size: 16px; font-weight: 600; color: var(--success);" id="start-db2">40,0%</div>
-                <div style="font-size: 10px; color: var(--gray); text-transform: uppercase;">DB2-Marge</div>
+                <label style="font-size: 10px; color: var(--gray); display: block; margin-bottom: 4px;">HK (€/Stück)</label>
+                <input type="text" id="start-hk" value="${formatDecimal(artikelData.hk || 60)}"
+                       onchange="updateErsteZeile(); formatDecimalInput(this);" onblur="formatDecimalInput(this)"
+                       style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; text-align: center; font-weight: 600;">
             </div>
         </div>
     </div>
     
-    <!-- Entwicklungsmethode -->
-    <div style="background: white; padding: 16px; border-radius: 6px; margin-bottom: 16px;">
-        <div style="display: flex; align-items: center; margin-bottom: 12px;">
-            <span style="font-size: 12px; font-weight: 600; color: var(--text);">
-                📈 Entwicklungsmethode
-                <span class="info-icon" title="Wählen Sie, wie Mengen- und Preisentwicklung geplant werden soll"></span>
+    <!-- Entwicklungsmodelle -->
+    <div style="margin-bottom: 16px;">
+        <div style="border-top: 2px solid var(--border); margin: 20px 0; position: relative;">
+            <span style="position: absolute; top: -10px; left: 20px; background: var(--gray-light); padding: 0 10px; font-size: 11px; font-weight: 600; color: var(--gray);">
+                📈 ENTWICKLUNGSMODELLE
             </span>
         </div>
         
-        <div class="development-method-tabs">
-            <button class="method-tab active" onclick="switchMethod('template')">Template</button>
-            <button class="method-tab" onclick="switchMethod('parameter')">Parameter</button>
-            <button class="method-tab" onclick="switchMethod('meilenstein')">Meilenstein</button>
-            <button class="method-tab" onclick="switchMethod('manuell')">Manuell</button>
-        </div>
-        
-        <!-- Template Method Content -->
-        <div id="method-template" style="display: block;">
-            <div style="display: flex; gap: 16px; align-items: center; margin-bottom: 12px;">
-                <select id="growth-template" style="padding: 6px 12px; border: 1px solid var(--border); border-radius: 4px; font-size: 12px;">
-                    <option value="s-curve">S-Kurve (Marktreife)</option>
-                    <option value="linear">Linear (Konstant)</option>
-                    <option value="exponential">Exponentiell (Viral)</option>
-                    <option value="hockey-stick">Hockey-Stick (Breakout)</option>
-                    <option value="plateau">Plateau (Sättigung)</option>
-                </select>
-                
-                <div style="display: flex; gap: 8px;">
-                    <button onclick="adjustTemplate(-20)" style="padding: 4px 8px; border: 1px solid var(--border); background: white; border-radius: 4px; font-size: 11px; cursor: pointer;">-20%</button>
-                    <button onclick="adjustTemplate(0)" style="padding: 4px 8px; border: 1px solid var(--border); background: white; border-radius: 4px; font-size: 11px; cursor: pointer;">Standard</button>
-                    <button onclick="adjustTemplate(20)" style="padding: 4px 8px; border: 1px solid var(--border); background: white; border-radius: 4px; font-size: 11px; cursor: pointer;">+20%</button>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+            <!-- Mengenentwicklung -->
+            <div style="background: white; border: 1px solid var(--border); border-radius: 6px; padding: 12px;">
+                <div style="font-size: 11px; font-weight: 600; color: var(--text); margin-bottom: 12px; text-transform: uppercase;">
+                    Mengenentwicklung
+                </div>
+                <div style="font-size: 11px;">
+                    <label style="display: block; padding: 6px 0; cursor: pointer;">
+                        <input type="radio" name="mengen-modell" value="konservativ" onchange="applyModell('menge', 'konservativ')">
+                        <span style="margin-left: 6px;">Konservativ <span style="color: var(--gray);">(+15% p.a.)</span></span>
+                    </label>
+                    <label style="display: block; padding: 6px 0; cursor: pointer;">
+                        <input type="radio" name="mengen-modell" value="realistisch" checked onchange="applyModell('menge', 'realistisch')">
+                        <span style="margin-left: 6px; font-weight: 600;">Realistisch <span style="color: var(--gray); font-weight: normal;">(S-Kurve)</span></span>
+                    </label>
+                    <label style="display: block; padding: 6px 0; cursor: pointer;">
+                        <input type="radio" name="mengen-modell" value="optimistisch" onchange="applyModell('menge', 'optimistisch')">
+                        <span style="margin-left: 6px;">Optimistisch <span style="color: var(--gray);">(Hockey-Stick)</span></span>
+                    </label>
+                    
+                    <div style="border-top: 1px solid var(--border); margin: 8px 0; padding-top: 8px;">
+                        <details>
+                            <summary style="cursor: pointer; font-size: 10px; color: var(--primary);">Erweiterte Modelle ▼</summary>
+                            <div style="padding: 8px 0;">
+                                <label style="display: block; padding: 4px 0; cursor: pointer; font-size: 10px;">
+                                    <input type="radio" name="mengen-modell" value="rogers" onchange="applyModell('menge', 'rogers')">
+                                    <span style="margin-left: 6px;">Market Penetration (Rogers)</span>
+                                </label>
+                                <label style="display: block; padding: 4px 0; cursor: pointer; font-size: 10px;">
+                                    <input type="radio" name="mengen-modell" value="bass" onchange="applyModell('menge', 'bass')">
+                                    <span style="margin-left: 6px;">Bass Diffusion</span>
+                                </label>
+                                <label style="display: block; padding: 4px 0; cursor: pointer; font-size: 10px;">
+                                    <input type="radio" name="mengen-modell" value="experience" onchange="applyModell('menge', 'experience')">
+                                    <span style="margin-left: 6px;">Experience Curve</span>
+                                </label>
+                            </div>
+                        </details>
+                    </div>
+                    
+                    <label style="display: block; padding: 6px 0; cursor: pointer;">
+                        <input type="radio" name="mengen-modell" value="manuell" onchange="applyModell('menge', 'manuell')">
+                        <span style="margin-left: 6px; color: var(--gray);">Manuell</span>
+                    </label>
                 </div>
             </div>
             
-            <button onclick="applyTemplate()" style="padding: 8px 16px; background: var(--primary); color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">
-                Template anwenden
-            </button>
+            <!-- Preisentwicklung -->
+            <div style="background: white; border: 1px solid var(--border); border-radius: 6px; padding: 12px;">
+                <div style="font-size: 11px; font-weight: 600; color: var(--text); margin-bottom: 12px; text-transform: uppercase;">
+                    Preisentwicklung
+                </div>
+                <div style="font-size: 11px;">
+                    <label style="display: block; padding: 6px 0; cursor: pointer;">
+                        <input type="radio" name="preis-modell" value="konstant" checked onchange="applyModell('preis', 'konstant')">
+                        <span style="margin-left: 6px; font-weight: 600;">Konstant <span style="color: var(--gray); font-weight: normal;">(0% p.a.)</span></span>
+                    </label>
+                    <label style="display: block; padding: 6px 0; cursor: pointer;">
+                        <input type="radio" name="preis-modell" value="inflation" onchange="applyModell('preis', 'inflation')">
+                        <span style="margin-left: 6px;">Inflation <span style="color: var(--gray);">(+2% p.a.)</span></span>
+                    </label>
+                    <label style="display: block; padding: 6px 0; cursor: pointer;">
+                        <input type="radio" name="preis-modell" value="premium" onchange="applyModell('preis', 'premium')">
+                        <span style="margin-left: 6px;">Premium <span style="color: var(--gray);">(+5% p.a.)</span></span>
+                    </label>
+                    <label style="display: block; padding: 6px 0; cursor: pointer;">
+                        <input type="radio" name="preis-modell" value="skimming" onchange="applyModell('preis', 'skimming')">
+                        <span style="margin-left: 6px;">Skimming <span style="color: var(--gray);">(-3% p.a.)</span></span>
+                    </label>
+                    <label style="display: block; padding: 6px 0; cursor: pointer;">
+                        <input type="radio" name="preis-modell" value="manuell" onchange="applyModell('preis', 'manuell')">
+                        <span style="margin-left: 6px; color: var(--gray);">Manuell</span>
+                    </label>
+                </div>
+            </div>
+            
+            <!-- Kostenentwicklung -->
+            <div style="background: white; border: 1px solid var(--border); border-radius: 6px; padding: 12px;">
+                <div style="font-size: 11px; font-weight: 600; color: var(--text); margin-bottom: 12px; text-transform: uppercase;">
+                    Kostenentwicklung
+                </div>
+                <div style="font-size: 11px;">
+                    <label style="display: block; padding: 6px 0; cursor: pointer;">
+                        <input type="radio" name="kosten-modell" value="konstant" onchange="applyModell('kosten', 'konstant')">
+                        <span style="margin-left: 6px;">Konstant <span style="color: var(--gray);">(0% p.a.)</span></span>
+                    </label>
+                    <label style="display: block; padding: 6px 0; cursor: pointer;">
+                        <input type="radio" name="kosten-modell" value="lernkurve" checked onchange="applyModell('kosten', 'lernkurve')">
+                        <span style="margin-left: 6px; font-weight: 600;">Lernkurve <span style="color: var(--gray); font-weight: normal;">(-5% bei 2x)</span></span>
+                    </label>
+                    <label style="display: block; padding: 6px 0; cursor: pointer;">
+                        <input type="radio" name="kosten-modell" value="inflation" onchange="applyModell('kosten', 'inflation')">
+                        <span style="margin-left: 6px;">Inflation <span style="color: var(--gray);">(+3% p.a.)</span></span>
+                    </label>
+                    <label style="display: block; padding: 6px 0; cursor: pointer;">
+                        <input type="radio" name="kosten-modell" value="skaleneffekte" onchange="applyModell('kosten', 'skaleneffekte')">
+                        <span style="margin-left: 6px;">Skaleneffekte <span style="color: var(--gray);">(Stufen)</span></span>
+                    </label>
+                    <label style="display: block; padding: 6px 0; cursor: pointer;">
+                        <input type="radio" name="kosten-modell" value="manuell" onchange="applyModell('kosten', 'manuell')">
+                        <span style="margin-left: 6px; color: var(--gray);">Manuell</span>
+                    </label>
+                </div>
+            </div>
         </div>
         
-        <!-- Parameter Method Content -->
-        <div id="method-parameter" style="display: none;">
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 12px;">
-                <div>
-                    <label style="font-size: 10px; color: var(--gray); display: block; margin-bottom: 4px;">Mengenwachstum (CAGR)</label>
-                    <input type="text" id="param-cagr" value="45" style="width: 100%; padding: 6px; border: 1px solid var(--border); border-radius: 4px; font-size: 12px;">
-                </div>
-                <div>
-                    <label style="font-size: 10px; color: var(--gray); display: block; margin-bottom: 4px;">Preissteigerung p.a.</label>
-                    <input type="text" id="param-price" value="3" style="width: 100%; padding: 6px; border: 1px solid var(--border); border-radius: 4px; font-size: 12px;">
-                </div>
-                <div>
-                    <label style="font-size: 10px; color: var(--gray); display: block; margin-bottom: 4px;">Kostensteigerung p.a.</label>
-                    <input type="text" id="param-cost" value="2" style="width: 100%; padding: 6px; border: 1px solid var(--border); border-radius: 4px; font-size: 12px;">
-                </div>
-            </div>
-            
-            <div style="margin-bottom: 12px;">
-                <label style="display: flex; align-items: center; font-size: 11px; cursor: pointer;">
-                    <input type="checkbox" id="param-degression" style="margin-right: 6px;">
-                    Degressionseffekte berücksichtigen (-5% HK bei Volumenverdopplung)
-                </label>
-            </div>
-            
-            <button onclick="calculateParameters()" style="padding: 8px 16px; background: var(--primary); color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">
-                Berechnen
+        <div style="text-align: center; margin-top: 16px;">
+            <button onclick="berechneModelle()" style="padding: 10px 30px; background: var(--primary); color: white; border: none; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer;">
+                Berechnen & Vorschau aktualisieren
             </button>
-        </div>
-        
-        <!-- Meilenstein Method Content -->
-        <div id="method-meilenstein" style="display: none;">
-            <div id="milestones-container" style="margin-bottom: 12px;">
-                <!-- Meilensteine werden hier dynamisch eingefügt -->
-            </div>
-            
-            <button onclick="addMilestone()" style="padding: 6px 12px; border: 1px solid var(--primary); background: white; color: var(--primary); border-radius: 4px; font-size: 11px; cursor: pointer; margin-right: 8px;">
-                + Meilenstein hinzufügen
+            <button onclick="resetModelle()" style="padding: 10px 30px; background: white; color: var(--gray); border: 1px solid var(--border); border-radius: 6px; font-size: 13px; cursor: pointer; margin-left: 12px;">
+                Zurücksetzen
             </button>
-            
-            <button onclick="applyMilestones()" style="padding: 8px 16px; background: var(--primary); color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">
-                Meilensteine anwenden
-            </button>
-        </div>
-        
-        <!-- Manuell Method Content -->
-        <div id="method-manuell" style="display: none;">
-            <div style="padding: 12px; background: #f0f9ff; border: 1px solid var(--primary-light); border-radius: 4px; font-size: 11px; color: var(--primary);">
-                ℹ️ Sie können die Werte direkt in der Tabelle unten bearbeiten. Klicken Sie auf ein Feld und geben Sie den gewünschten Wert ein.
-            </div>
         </div>
     </div>
     
-    <!-- Jahres-Tabelle -->
-    <div style="background: white; padding: 16px; border-radius: 6px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            <span style="font-size: 12px; font-weight: 600; color: var(--text);">
-                📊 Jahresentwicklung
-            </span>
-            <button onclick="toggleChartView()" style="padding: 4px 8px; border: 1px solid var(--border); background: white; border-radius: 4px; font-size: 11px; cursor: pointer;">
-                📈 Grafik anzeigen
-            </button>
+    <!-- Ergebnis-Vorschau Tabelle -->
+    <div style="background: white; border-radius: 6px; overflow-x: auto;">
+        <div style="padding: 12px; background: var(--gray-light); border-bottom: 1px solid var(--border);">
+            <div style="font-size: 12px; font-weight: 600; color: var(--text);">📊 ERGEBNIS-VORSCHAU</div>
         </div>
-        
-        <div style="overflow-x: auto;">
-            <table id="development-table" style="width: 100%; border-collapse: collapse; font-size: 12px;">
-                <thead>
-                    <tr style="background: var(--gray-light);">
-                        <th style="padding: 8px; text-align: left; font-weight: 600; color: var(--gray);">Jahr</th>
-                        <th style="padding: 8px; text-align: right; font-weight: 600; color: var(--gray);">Menge</th>
-                        <th style="padding: 8px; text-align: center; font-weight: 600; color: var(--gray);">Δ YoY</th>
-                        <th style="padding: 8px; text-align: right; font-weight: 600; color: var(--gray);">Preis</th>
-                        <th style="padding: 8px; text-align: right; font-weight: 600; color: var(--gray);">HK/Stück</th>
-                        <th style="padding: 8px; text-align: right; font-weight: 600; color: var(--gray);">Umsatz</th>
-                        <th style="padding: 8px; text-align: right; font-weight: 600; color: var(--gray);">DB2</th>
-                        <th style="padding: 8px; text-align: center; font-weight: 600; color: var(--gray);">DB2%</th>
-                    </tr>
-                </thead>
-                <tbody id="development-tbody">
-                    <!-- Zeilen werden dynamisch generiert -->
-                </tbody>
-            </table>
-        </div>
+        <table id="vorschau-tabelle" style="width: 100%; border-collapse: collapse; font-size: 12px;">
+            <thead>
+                <tr style="background: #f8fafc;">
+                    <th style="padding: 10px; text-align: left; font-weight: 600; border-bottom: 2px solid var(--border);">Parameter</th>
+                    <th class="jahr-col jahr-1" style="padding: 10px; text-align: center; font-weight: 600; border-bottom: 2px solid var(--border);">2025</th>
+                    <th class="jahr-col jahr-2" style="padding: 10px; text-align: center; font-weight: 600; border-bottom: 2px solid var(--border);">2026</th>
+                    <th class="jahr-col jahr-3" style="padding: 10px; text-align: center; font-weight: 600; border-bottom: 2px solid var(--border);">2027</th>
+                    <th class="jahr-col jahr-4" style="padding: 10px; text-align: center; font-weight: 600; border-bottom: 2px solid var(--border);">2028</th>
+                    <th class="jahr-col jahr-5" style="padding: 10px; text-align: center; font-weight: 600; border-bottom: 2px solid var(--border);">2029</th>
+                    <th class="jahr-col jahr-6" style="padding: 10px; text-align: center; font-weight: 600; border-bottom: 2px solid var(--border); display: none;">2030</th>
+                    <th class="jahr-col jahr-7" style="padding: 10px; text-align: center; font-weight: 600; border-bottom: 2px solid var(--border); display: none;">2031</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="padding: 10px; font-weight: 600; background: #f8fafc;">Menge (Stk)</td>
+                    <td class="jahr-col jahr-1" style="padding: 10px; text-align: center;">
+                        <input type="text" id="menge-jahr-1" style="width: 70px; padding: 4px; border: 1px solid var(--border); border-radius: 3px; text-align: center;">
+                    </td>
+                    <td class="jahr-col jahr-2" style="padding: 10px; text-align: center;">
+                        <input type="text" id="menge-jahr-2" style="width: 70px; padding: 4px; border: 1px solid var(--border); border-radius: 3px; text-align: center;">
+                    </td>
+                    <td class="jahr-col jahr-3" style="padding: 10px; text-align: center;">
+                        <input type="text" id="menge-jahr-3" style="width: 70px; padding: 4px; border: 1px solid var(--border); border-radius: 3px; text-align: center;">
+                    </td>
+                    <td class="jahr-col jahr-4" style="padding: 10px; text-align: center;">
+                        <input type="text" id="menge-jahr-4" style="width: 70px; padding: 4px; border: 1px solid var(--border); border-radius: 3px; text-align: center;">
+                    </td>
+                    <td class="jahr-col jahr-5" style="padding: 10px; text-align: center;">
+                        <input type="text" id="menge-jahr-5" style="width: 70px; padding: 4px; border: 1px solid var(--border); border-radius: 3px; text-align: center;">
+                    </td>
+                    <td class="jahr-col jahr-6" style="padding: 10px; text-align: center; display: none;">
+                        <input type="text" id="menge-jahr-6" style="width: 70px; padding: 4px; border: 1px solid var(--border); border-radius: 3px; text-align: center;">
+                    </td>
+                    <td class="jahr-col jahr-7" style="padding: 10px; text-align: center; display: none;">
+                        <input type="text" id="menge-jahr-7" style="width: 70px; padding: 4px; border: 1px solid var(--border); border-radius: 3px; text-align: center;">
+                    </td>
+                </tr>
+                <tr style="background: #f8fafc;">
+                    <td style="padding: 10px; font-weight: 600;">Preis (€)</td>
+                    <td class="jahr-col jahr-1" style="padding: 10px; text-align: center;">
+                        <input type="text" id="preis-jahr-1" style="width: 70px; padding: 4px; border: 1px solid var(--border); border-radius: 3px; text-align: center;">
+                    </td>
+                    <td class="jahr-col jahr-2" style="padding: 10px; text-align: center;">
+                        <input type="text" id="preis-jahr-2" style="width: 70px; padding: 4px; border: 1px solid var(--border); border-radius: 3px; text-align: center;">
+                    </td>
+                    <td class="jahr-col jahr-3" style="padding: 10px; text-align: center;">
+                        <input type="text" id="preis-jahr-3" style="width: 70px; padding: 4px; border: 1px solid var(--border); border-radius: 3px; text-align: center;">
+                    </td>
+                    <td class="jahr-col jahr-4" style="padding: 10px; text-align: center;">
+                        <input type="text" id="preis-jahr-4" style="width: 70px; padding: 4px; border: 1px solid var(--border); border-radius: 3px; text-align: center;">
+                    </td>
+                    <td class="jahr-col jahr-5" style="padding: 10px; text-align: center;">
+                        <input type="text" id="preis-jahr-5" style="width: 70px; padding: 4px; border: 1px solid var(--border); border-radius: 3px; text-align: center;">
+                    </td>
+                    <td class="jahr-col jahr-6" style="padding: 10px; text-align: center; display: none;">
+                        <input type="text" id="preis-jahr-6" style="width: 70px; padding: 4px; border: 1px solid var(--border); border-radius: 3px; text-align: center;">
+                    </td>
+                    <td class="jahr-col jahr-7" style="padding: 10px; text-align: center; display: none;">
+                        <input type="text" id="preis-jahr-7" style="width: 70px; padding: 4px; border: 1px solid var(--border); border-radius: 3px; text-align: center;">
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; font-weight: 600; background: #f8fafc;">HK (€)</td>
+                    <td class="jahr-col jahr-1" style="padding: 10px; text-align: center;">
+                        <input type="text" id="hk-jahr-1" style="width: 70px; padding: 4px; border: 1px solid var(--border); border-radius: 3px; text-align: center;">
+                    </td>
+                    <td class="jahr-col jahr-2" style="padding: 10px; text-align: center;">
+                        <input type="text" id="hk-jahr-2" style="width: 70px; padding: 4px; border: 1px solid var(--border); border-radius: 3px; text-align: center;">
+                    </td>
+                    <td class="jahr-col jahr-3" style="padding: 10px; text-align: center;">
+                        <input type="text" id="hk-jahr-3" style="width: 70px; padding: 4px; border: 1px solid var(--border); border-radius: 3px; text-align: center;">
+                    </td>
+                    <td class="jahr-col jahr-4" style="padding: 10px; text-align: center;">
+                        <input type="text" id="hk-jahr-4" style="width: 70px; padding: 4px; border: 1px solid var(--border); border-radius: 3px; text-align: center;">
+                    </td>
+                    <td class="jahr-col jahr-5" style="padding: 10px; text-align: center;">
+                        <input type="text" id="hk-jahr-5" style="width: 70px; padding: 4px; border: 1px solid var(--border); border-radius: 3px; text-align: center;">
+                    </td>
+                    <td class="jahr-col jahr-6" style="padding: 10px; text-align: center; display: none;">
+                        <input type="text" id="hk-jahr-6" style="width: 70px; padding: 4px; border: 1px solid var(--border); border-radius: 3px; text-align: center;">
+                    </td>
+                    <td class="jahr-col jahr-7" style="padding: 10px; text-align: center; display: none;">
+                        <input type="text" id="hk-jahr-7" style="width: 70px; padding: 4px; border: 1px solid var(--border); border-radius: 3px; text-align: center;">
+                    </td>
+                </tr>
+            </tbody>
+        </table>
     </div>
 </div>
                         
@@ -4008,70 +4085,273 @@ function validateCustomBusinessModel(input) {
     }
 }
 // ============================================
-// Neue Funktionen für den erweiterten Workflow
+// Neue Funktionen für Entwicklungsmodelle
 // ============================================
 
-function setHorizon(years, releaseDate) {
-    // Alle Buttons deaktivieren
-    document.querySelectorAll('.horizon-btn').forEach(btn => {
-        btn.classList.remove('active');
+let currentHorizont = 5; // Default 5 Jahre
+let selectedModels = {
+    menge: 'realistisch',
+    preis: 'konstant',
+    kosten: 'lernkurve'
+};
+
+function setzeZeithorizont(jahre) {
+    currentHorizont = jahre;
+    
+    // Buttons updaten
+    document.querySelectorAll('.zeitraum-btn').forEach(btn => {
+        btn.style.border = '1px solid var(--border)';
+        btn.style.background = 'white';
+        btn.style.color = 'var(--text)';
+        btn.style.fontWeight = 'normal';
     });
-    event.target.classList.add('active');
+    event.target.style.border = '2px solid var(--primary)';
+    event.target.style.background = 'var(--primary)';
+    event.target.style.color = 'white';
+    event.target.style.fontWeight = '600';
     
-    const releaseYear = new Date(releaseDate).getFullYear();
-    const tbody = document.getElementById('development-tbody');
-    tbody.innerHTML = '';
+    // Tabellenspalten anpassen
+    updateTabellenSpalten();
     
-    // Tabelle mit Jahren füllen
-    for(let i = 0; i < years; i++) {
-        const year = releaseYear + i;
-        tbody.innerHTML += `
-            <tr>
-                <td>${year}</td>
-                <td><input type="text" id="vol-${year}" onchange="calculateRow(${year})"></td>
-                <td><input type="text" id="price-${year}" onchange="calculateRow(${year})"></td>
-                <td id="revenue-${year}">0€</td>
-                <td><input type="text" id="hk-${year}" onchange="calculateRow(${year})"></td>
-                <td id="db2-abs-${year}">0€</td>
-                <td id="db2-perc-${year}">0%</td>
-            </tr>
-        `;
+    // Erste Zeile mit Startwerten füllen
+    updateErsteZeile();
+    
+    // Modelle neu berechnen
+    berechneModelle();
+}
+
+function updateTabellenSpalten() {
+    const startDate = document.getElementById('release-datum').value;
+    const startYear = parseInt(startDate.split('-')[0]);
+    
+    for(let i = 1; i <= 7; i++) {
+        const columns = document.querySelectorAll(`.jahr-col.jahr-${i}`);
+        columns.forEach(col => {
+            if(i <= currentHorizont) {
+                col.style.display = '';
+                // Update Jahr im Header
+                if(col.tagName === 'TH') {
+                    col.textContent = startYear + i - 1;
+                }
+            } else {
+                col.style.display = 'none';
+            }
+        });
     }
 }
 
-function calculateRow(year) {
-    const vol = parseFloat(document.getElementById(`vol-${year}`).value) || 0;
-    const price = parseFloat(document.getElementById(`price-${year}`).value) || 0;
-    const hk = parseFloat(document.getElementById(`hk-${year}`).value) || 0;
-    
-    const revenue = vol * price;
-    const db2Abs = revenue - (vol * hk);
-    const db2Perc = revenue > 0 ? (db2Abs / revenue * 100) : 0;
-    
-    document.getElementById(`revenue-${year}`).textContent = formatRevenue(revenue);
-    document.getElementById(`db2-abs-${year}`).textContent = formatRevenue(db2Abs);
-    document.getElementById(`db2-perc-${year}`).textContent = db2Perc.toFixed(1) + '%';
-    
-    updateSummaryMetrics();
+function updateZeithorizont() {
+    updateTabellenSpalten();
 }
 
-function updateSummaryMetrics() {
-    // Berechne Gesamt-KPIs über alle Jahre
-    let totalRevenue = 0;
-    let totalDB2 = 0;
-    let peakVolume = 0;
+function updateErsteZeile() {
+    const startMenge = document.getElementById('start-menge').value;
+    const startPreis = document.getElementById('start-preis').value;
+    const startHK = document.getElementById('start-hk').value;
     
-    document.querySelectorAll('[id^="vol-"]').forEach(input => {
-        const vol = parseFloat(input.value) || 0;
-        peakVolume = Math.max(peakVolume, vol);
-    });
+    const mengeInput = document.getElementById('menge-jahr-1');
+    const preisInput = document.getElementById('preis-jahr-1');
+    const hkInput = document.getElementById('hk-jahr-1');
     
-    // Update Summary Displays
-    const summaryRevenue = document.getElementById('summary-revenue');
-    if (summaryRevenue) {
-        summaryRevenue.textContent = formatRevenue(totalRevenue);
+    if(mengeInput) mengeInput.value = startMenge;
+    if(preisInput) preisInput.value = startPreis;
+    if(hkInput) hkInput.value = startHK;
+}
+
+function applyModell(typ, modell) {
+    selectedModels[typ] = modell;
+}
+
+function berechneModelle() {
+    const startMenge = parseFormattedNumber(document.getElementById('start-menge').value);
+    const startPreis = parseFormattedNumber(document.getElementById('start-preis').value);
+    const startHK = parseFormattedNumber(document.getElementById('start-hk').value);
+    
+    // Mengen berechnen
+    const mengen = berechneMengen(startMenge, selectedModels.menge);
+    
+    // Preise berechnen
+    const preise = berechnePreise(startPreis, selectedModels.preis);
+    
+    // Kosten berechnen
+    const kosten = berechneKosten(startHK, selectedModels.kosten, mengen);
+    
+    // In Tabelle eintragen
+    for(let i = 1; i <= currentHorizont; i++) {
+        document.getElementById(`menge-jahr-${i}`).value = formatThousands(Math.round(mengen[i-1]));
+        document.getElementById(`preis-jahr-${i}`).value = formatDecimal(preise[i-1]);
+        document.getElementById(`hk-jahr-${i}`).value = formatDecimal(kosten[i-1]);
     }
 }
+
+function berechneMengen(start, modell) {
+    const result = [];
+    
+    switch(modell) {
+        case 'konservativ': // Linear +15% p.a.
+            for(let i = 0; i < currentHorizont; i++) {
+                result.push(start * Math.pow(1.15, i));
+            }
+            break;
+            
+        case 'realistisch': // S-Kurve
+            const max = start * 30; // Sättigung bei 30x Startwert
+            for(let i = 0; i < currentHorizont; i++) {
+                const t = i / (currentHorizont - 1);
+                result.push(max / (1 + Math.exp(-10 * (t - 0.5))));
+            }
+            break;
+            
+        case 'optimistisch': // Hockey-Stick
+            for(let i = 0; i < currentHorizont; i++) {
+                if(i < 2) {
+                    result.push(start * (1 + i * 0.2));
+                } else {
+                    result.push(start * Math.pow(2, i-1));
+                }
+            }
+            break;
+            
+        case 'rogers': // Market Penetration
+            const adopters = [0.025, 0.135, 0.34, 0.34, 0.16];
+            const totalMarket = start * 50;
+            let cumulative = 0;
+            for(let i = 0; i < currentHorizont; i++) {
+                if(i < adopters.length) {
+                    cumulative += adopters[i] * totalMarket;
+                    result.push(cumulative);
+                } else {
+                    result.push(cumulative);
+                }
+            }
+            break;
+            
+        case 'bass': // Bass Diffusion
+            const m = start * 40; // Market potential
+            const p = 0.03; // Innovation coefficient
+            const q = 0.38; // Imitation coefficient
+            let N = 0; // Cumulative adopters
+            for(let i = 0; i < currentHorizont; i++) {
+                const n = (p + q * N / m) * (m - N);
+                N += n;
+                result.push(N);
+            }
+            break;
+            
+        default: // Manuell
+            for(let i = 0; i < currentHorizont; i++) {
+                result.push(start);
+            }
+    }
+    
+    return result;
+}
+
+function berechnePreise(start, modell) {
+    const result = [];
+    
+    switch(modell) {
+        case 'konstant':
+            for(let i = 0; i < currentHorizont; i++) {
+                result.push(start);
+            }
+            break;
+            
+        case 'inflation': // +2% p.a.
+            for(let i = 0; i < currentHorizont; i++) {
+                result.push(start * Math.pow(1.02, i));
+            }
+            break;
+            
+        case 'premium': // +5% p.a.
+            for(let i = 0; i < currentHorizont; i++) {
+                result.push(start * Math.pow(1.05, i));
+            }
+            break;
+            
+        case 'skimming': // -3% p.a.
+            for(let i = 0; i < currentHorizont; i++) {
+                result.push(start * Math.pow(0.97, i));
+            }
+            break;
+            
+        default: // Manuell
+            for(let i = 0; i < currentHorizont; i++) {
+                result.push(start);
+            }
+    }
+    
+    return result;
+}
+
+function berechneKosten(start, modell, mengen) {
+    const result = [];
+    
+    switch(modell) {
+        case 'konstant':
+            for(let i = 0; i < currentHorizont; i++) {
+                result.push(start);
+            }
+            break;
+            
+        case 'lernkurve': // -5% bei Mengenverdopplung
+            let cumVolume = 0;
+            for(let i = 0; i < currentHorizont; i++) {
+                cumVolume += mengen[i];
+                const doublings = Math.log2(cumVolume / mengen[0]);
+                result.push(start * Math.pow(0.95, doublings));
+            }
+            break;
+            
+        case 'inflation': // +3% p.a.
+            for(let i = 0; i < currentHorizont; i++) {
+                result.push(start * Math.pow(1.03, i));
+            }
+            break;
+            
+        case 'skaleneffekte': // Stufenweise
+            for(let i = 0; i < currentHorizont; i++) {
+                if(mengen[i] < 1000) {
+                    result.push(start);
+                } else if(mengen[i] < 5000) {
+                    result.push(start * 0.9);
+                } else {
+                    result.push(start * 0.8);
+                }
+            }
+            break;
+            
+        default: // Manuell
+            for(let i = 0; i < currentHorizont; i++) {
+                result.push(start);
+            }
+    }
+    
+    return result;
+}
+
+function resetModelle() {
+    // Reset auf Defaults
+    document.querySelector('input[name="mengen-modell"][value="realistisch"]').checked = true;
+    document.querySelector('input[name="preis-modell"][value="konstant"]').checked = true;
+    document.querySelector('input[name="kosten-modell"][value="lernkurve"]').checked = true;
+    
+    selectedModels = {
+        menge: 'realistisch',
+        preis: 'konstant',
+        kosten: 'lernkurve'
+    };
+    
+    berechneModelle();
+}
+
+// Initial beim Laden
+document.addEventListener('DOMContentLoaded', function() {
+    if(document.getElementById('release-datum')) {
+        updateErsteZeile();
+        berechneModelle();
+    }
+});
     </script>
 </body>
 </html>
