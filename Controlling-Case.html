@@ -2004,16 +2004,9 @@ function openArtikelDetail(id) {
 }
 
 function backToArtikelOverview() {
-    // Container wiederherstellen
-    const container = document.querySelector('.assumptions-container');
-    if (container) {
-        // Original HTML wiederherstellen
-        container.innerHTML = `
-            <div class="assumptions-section" id="artikel-overview">
-                <!-- Der komplette HTML-Code für artikel-overview -->
-            </div>
-        `;
-    }
+    // Nur Tab neu laden
+    switchTab('assumptions');
+}  // ← NUR EINE schließende Klammer hier!
     
     // Alternativ: Tab neu laden
     switchTab('assumptions');
