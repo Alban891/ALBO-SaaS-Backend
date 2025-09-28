@@ -2091,21 +2091,21 @@ ${artikelData.annahmen}
                                     <label style="font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase; display: block; margin-bottom: 6px;">
                                         Menge (Stück)
                                     </label>
-                                    <input type="text" value="${artikelData.volume.toLocaleString('de-DE')}" 
+                                    <input type="text" value="${formatThousands(artikelData.volume || 0)}"
                                            style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; background: white;">
                                 </div>
                                 <div>
                                     <label style="font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase; display: block; margin-bottom: 6px;">
                                         Preis (€/Stück)
                                     </label>
-                                    <input type="text" value="${artikelData.price.toFixed(2).replace('.', ',')}" 
+                                    <input type="text" value="${formatDecimal(artikelData.price || 0)}" 
                                            style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; background: white;">
                                 </div>
                                 <div>
                                     <label style="font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase; display: block; margin-bottom: 6px;">
                                         HK pro Stück (€)
                                     </label>
-                                    <input type="text" value="${artikelData.hk.toFixed(2).replace('.', ',')}" 
+                                    <input type="text" value="${formatDecimal(artikelData.hk || 0)}"
                                            style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; background: white;">
                                 </div>
                             </div>
