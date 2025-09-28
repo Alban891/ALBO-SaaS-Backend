@@ -2686,13 +2686,21 @@ ${artikelData.annahmen || 'Innovation durch neue Linie'}
             </div>
         `;
         
-        // Zeige Detail-View
-        detailView.style.display = 'block';
-        
-    } catch (error) {
-        console.error('Fehler:', error);
-        alert('Fehler beim Öffnen: ' + error.message);
+ // Zeige Detail-View
+detailView.style.display = 'block';
+
+// NEU: Initialisiere die Modelle nach kurzer Verzögerung
+setTimeout(() => {
+    if(document.getElementById('release-datum')) {
+        updateTabellenSpalten();
+        updateErsteZeile();
+        berechneModelle();
     }
+}, 100);
+
+} catch (error) {
+    console.error('Fehler:', error);
+    alert('Fehler beim Öffnen: ' + error.message);
 }
 
 function backToArtikelOverview() {
@@ -4146,7 +4154,7 @@ function updateZeithorizont() {
 
 function updateErsteZeile() {
     const startMenge = document.getElementById('start-menge').value;
-    const startPreis = document.getElementById('start-preis').value;
+    const startPreis = document.getElementById('start-preis').value;  
     const startHK = document.getElementById('start-hk').value;
     
     const mengeInput = document.getElementById('menge-jahr-1');
@@ -4156,10 +4164,15 @@ function updateErsteZeile() {
     if(mengeInput) mengeInput.value = startMenge;
     if(preisInput) preisInput.value = startPreis;
     if(hkInput) hkInput.value = startHK;
+    
+    // AUTOMATISCH Modelle neu berechnen
+    berechneModelle();
 }
 
 function applyModell(typ, modell) {
     selectedModels[typ] = modell;
+    // AUTOMATISCH berechnen bei Modell-Änderung
+    berechneModelle();
 }
 
 function berechneModelle() {
@@ -4345,11 +4358,15 @@ function resetModelle() {
     berechneModelle();
 }
 
-// Initial beim Laden
+// Initial beim Laden - KORREKTUR
 document.addEventListener('DOMContentLoaded', function() {
+    // Nur ausführen wenn wir auf der richtigen Seite sind
     if(document.getElementById('release-datum')) {
-        updateErsteZeile();
-        berechneModelle();
+        setTimeout(() => {
+            updateTabellenSpalten();
+            updateErsteZeile();
+            berechneModelle();
+        }, 100);
     }
 });
     </script>
