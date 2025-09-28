@@ -1884,78 +1884,69 @@ function formatRevenue(revenue) {
 }
 
 function openArtikelDetail(id) {
-    console.log('Opening artikel detail:', id);
-    
-    // Store current artikel ID
-    cfoDashboard.currentArtikel = id;
-    
-    // Get artikel data (mit Fallback für Standard-Artikel)
-    const artikelData = cfoDashboard.artikelData[id] || {
-        name: id === 'crimp' ? 'Crimpautomat' : 
-              id === 'komax' ? 'Mini-Komax ohne CORE' : 
-              id === 'digital' ? 'Digital Shopfloor Backend' : 'Unbekannt',
-        type: id === 'digital' ? 'cross' : 'neu',
-        release: id === 'digital' ? '2025-06' : '2024-12',
-        price: id === 'crimp' ? 5.00 : id === 'komax' ? 1000.00 : 480.00,
-        volume: id === 'crimp' ? 5000 : id === 'komax' ? 115 : 250,
-        hk: id === 'crimp' ? 3.00 : id === 'komax' ? 670.00 : 192.00
-    };
-    
-    // Prüfe ob Detail-View existiert, wenn nicht erstelle sie
-    let detailView = document.getElementById('artikel-detail-view');
-    
-    if (!detailView) {
-        // Erstelle die komplette Detail-View Struktur
-        const detailHTML = `
-            <div class="artikel-detail-view" id="artikel-detail-view" style="background: var(--white); border-radius: 12px; padding: 24px; box-shadow: var(--shadow); display: none;">
-                <div class="detail-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid var(--primary);">
-                    <div class="detail-title" style="font-size: 20px; font-weight: 600; color: var(--primary);">
-                        <span id="current-artikel-name">${artikelData.name}</span>
-                    </div>
-                    <button class="back-btn" onclick="backToArtikelOverview()" style="padding: 8px 16px; border: 1px solid var(--border); background: var(--white); color: var(--gray); border-radius: 6px; font-size: 12px; cursor: pointer;">
-                        ← Zurück zur Artikel-Übersicht
-                    </button>
-                </div>
-                
-                <div class="sub-tab-navigation" style="background: var(--gray-light); border-radius: 8px; padding: 4px; display: flex; margin-bottom: 24px;">
-                    <button class="sub-tab-btn active" onclick="switchSubTab('artikel')" style="flex: 1; padding: 12px 16px; border: none; background: var(--white); color: var(--primary); font-size: 14px; font-weight: 500; cursor: pointer; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                        📦 Artikel
-                    </button>
-                    <button class="sub-tab-btn" onclick="switchSubTab('projekte')" style="flex: 1; padding: 12px 16px; border: none; background: none; color: var(--gray); font-size: 14px; font-weight: 500; cursor: pointer; border-radius: 6px;">
-                        🏗️ Projekte
-                    </button>
-                    <button class="sub-tab-btn" onclick="switchSubTab('wirtschaftlichkeit')" style="flex: 1; padding: 12px 16px; border: none; background: none; color: var(--gray); font-size: 14px; font-weight: 500; cursor: pointer; border-radius: 6px;">
-                        💰 Wirtschaftlichkeit
-                    </button>
-                </div>
-                
-                <div id="sub-tab-content-container">
-                    ${getArtikelTabContent(artikelData)}
-                </div>
-            </div>
-        `;
+    try {
+        console.log('Opening artikel detail for ID:', id);
         
-        // Füge Detail-View nach artikel-overview ein
+        // Store current artikel ID
+        cfoDashboard.currentArtikel = id;
+        
+        // Get artikel data
+        const artikelData = cfoDashboard.artikelData[id] || {
+            name: id === 'crimp' ? 'Crimpautomat' : 
+                  id === 'komax' ? 'Mini-Komax ohne CORE' : 
+                  id === 'digital' ? 'Digital Shopfloor Backend' : 'Unbekannt',
+            type: id === 'digital' ? 'cross' : 'neu',
+            release: id === 'digital' ? '2025-06' : '2024-12',
+            price: id === 'crimp' ? 5.00 : id === 'komax' ? 1000.00 : 480.00,
+            volume: id === 'crimp' ? 5000 : id === 'komax' ? 115 : 250,
+            hk: id === 'crimp' ? 3.00 : id === 'komax' ? 670.00 : 192.00
+        };
+        
+        // Verstecke die Übersicht
         const artikelOverview = document.getElementById('artikel-overview');
-        artikelOverview.insertAdjacentHTML('afterend', detailHTML);
-        detailView = document.getElementById('artikel-detail-view');
-    } else {
-        // Aktualisiere bestehende Detail-View
-        document.getElementById('current-artikel-name').textContent = artikelData.name;
-        document.getElementById('sub-tab-content-container').innerHTML = getArtikelTabContent(artikelData);
+        if (artikelOverview) {
+            artikelOverview.style.display = 'none';
+        }
+        
+        // Prüfe ob Detail-View bereits existiert
+        let detailView = document.getElementById('artikel-detail-view');
+        
+        // Wenn nicht, erstelle sie
+        if (!detailView) {
+            const detailHTML = `
+                <div class="assumptions-section" id="artikel-detail-view" style="display: block;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                        <div style="font-size: 20px; font-weight: 600; color: var(--primary);">
+                            <span id="current-artikel-name">${artikelData.name}</span>
+                        </div>
+                        <button onclick="backToArtikelOverview()" style="padding: 8px 16px; border: 1px solid var(--border); background: var(--white); color: var(--gray); border-radius: 6px; font-size: 12px; cursor: pointer;">
+                            ← Zurück zur Artikel-Übersicht
+                        </button>
+                    </div>
+                    
+                    <div id="sub-tab-content-container">
+                        ${getArtikelTabContent(artikelData)}
+                    </div>
+                </div>
+            `;
+            
+            // Füge nach artikel-overview ein
+            artikelOverview.insertAdjacentHTML('afterend', detailHTML);
+        } else {
+            // Update existing view
+            const nameElement = document.getElementById('current-artikel-name');
+            if (nameElement) nameElement.textContent = artikelData.name;
+            
+            const container = document.getElementById('sub-tab-content-container');
+            if (container) container.innerHTML = getArtikelTabContent(artikelData);
+            
+            detailView.style.display = 'block';
+        }
+        
+    } catch (error) {
+        console.error('Fehler in openArtikelDetail:', error);
+        alert('Fehler beim Öffnen der Details. Siehe Konsole.');
     }
-    
-    // Verstecke Übersicht und zeige Detail-View
-    document.getElementById('artikel-overview').style.display = 'none';
-    detailView.style.display = 'block';
-    
-    // KI Feedback
-    cfoDashboard.aiController.addAIMessage({
-        level: 'info',
-        title: '📦 Artikel-Details geladen',
-        text: `Bearbeitung von "${artikelData.name}" geöffnet. DB2-Marge: ${calculateDB2(artikelData)}%`,
-        timestamp: 'Detail-View'
-    });
 }
 
 function backToArtikelOverview() {
