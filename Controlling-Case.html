@@ -2426,17 +2426,17 @@ ${artikelData.annahmen || 'Innovation durch neue Linie'}
         </div>
         <table id="vorschau-tabelle" style="width: 100%; border-collapse: collapse; font-size: 12px;">
             <thead>
-    <tr style="background: #f8fafc;">
-        <th style="padding: 10px; text-align: left; font-weight: 600; border-bottom: 2px solid var(--border);">Parameter</th>
-        <th class="jahr-col jahr-1" style="padding: 10px; text-align: center; font-weight: 600; border-bottom: 2px solid var(--border);">Jahr 1</th>
-        <th class="jahr-col jahr-2" style="padding: 10px; text-align: center; font-weight: 600; border-bottom: 2px solid var(--border);">Jahr 2</th>
-        <th class="jahr-col jahr-3" style="padding: 10px; text-align: center; font-weight: 600; border-bottom: 2px solid var(--border);">Jahr 3</th>
-        <th class="jahr-col jahr-4" style="padding: 10px; text-align: center; font-weight: 600; border-bottom: 2px solid var(--border);">Jahr 4</th>
-        <th class="jahr-col jahr-5" style="padding: 10px; text-align: center; font-weight: 600; border-bottom: 2px solid var(--border);">Jahr 5</th>
-        <th class="jahr-col jahr-6" style="padding: 10px; text-align: center; font-weight: 600; border-bottom: 2px solid var(--border); display: none;">Jahr 6</th>
-        <th class="jahr-col jahr-7" style="padding: 10px; text-align: center; font-weight: 600; border-bottom: 2px solid var(--border); display: none;">Jahr 7</th>
-    </tr>
-</thead>
+                <tr style="background: #f8fafc;">
+                    <th style="padding: 10px; text-align: left; font-weight: 600; border-bottom: 2px solid var(--border);">Parameter</th>
+                    <th class="jahr-col jahr-1" style="padding: 10px; text-align: center; font-weight: 600; border-bottom: 2px solid var(--border);">2026</th>
+                    <th class="jahr-col jahr-2" style="padding: 10px; text-align: center; font-weight: 600; border-bottom: 2px solid var(--border);">2027</th>
+                    <th class="jahr-col jahr-3" style="padding: 10px; text-align: center; font-weight: 600; border-bottom: 2px solid var(--border);">2028</th>
+                    <th class="jahr-col jahr-4" style="padding: 10px; text-align: center; font-weight: 600; border-bottom: 2px solid var(--border);">2029</th>
+                    <th class="jahr-col jahr-5" style="padding: 10px; text-align: center; font-weight: 600; border-bottom: 2px solid var(--border);">2030</th>
+                    <th class="jahr-col jahr-6" style="padding: 10px; text-align: center; font-weight: 600; border-bottom: 2px solid var(--border); display: none;">2031</th>
+                    <th class="jahr-col jahr-7" style="padding: 10px; text-align: center; font-weight: 600; border-bottom: 2px solid var(--border); display: none;">2032</th>
+                </tr>
+            </thead>
             <tbody>
                 <tr>
                     <td style="padding: 10px; font-weight: 600; background: #f8fafc;">Menge (Stk)</td>
@@ -4135,21 +4135,15 @@ function updateTabellenSpalten() {
     
     const startYear = parseInt(startDate.split('-')[0]);
     
-    // Headers in der Vorschau-Tabelle aktualisieren
-    const headers = document.querySelectorAll('#vorschau-tabelle th.jahr-col');
-    headers.forEach((header, index) => {
-        if (index > 0 && index <= currentHorizont) {
-            header.textContent = startYear + index - 1;
-            header.style.display = '';
-        } else if (index > currentHorizont) {
-            header.style.display = 'none';
-        }
-    });
-    
-    // Spalten ein/ausblenden basierend auf Zeithorizont
+    // Update alle Jahr-Header in der Tabelle
     for(let i = 1; i <= 7; i++) {
-        const columns = document.querySelectorAll(`.jahr-col.jahr-${i}`);
-        columns.forEach(col => {
+        const headers = document.querySelectorAll(`.jahr-col.jahr-${i}`);
+        headers.forEach(col => {
+            if(col.tagName === 'TH') {
+                // Setze das korrekte Jahr als Header
+                col.textContent = startYear + i - 1;
+            }
+            // Zeige/Verstecke basierend auf Zeithorizont
             if(i <= currentHorizont) {
                 col.style.display = '';
             } else {
