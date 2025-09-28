@@ -1919,37 +1919,46 @@ function openArtikelDetail(id) {
         cfoDashboard.currentArtikel = id;
         
         // Get artikel data with expanded properties
-        const artikelData = cfoDashboard.artikelData[id] || {
-            name: id === 'crimp' ? 'Crimpautomat' : 
-                  id === 'komax' ? 'Mini-Komax ohne CORE' : 
-                  id === 'digital' ? 'Digital Shopfloor Backend' : 'Unbekannt',
-            type: id === 'digital' ? 'cross' : 'neu',
-            release: id === 'digital' ? '2025-06' : '2024-12',
-            price: id === 'crimp' ? 5.00 : id === 'komax' ? 1000.00 : 480.00,
-            volume: id === 'crimp' ? 5000 : id === 'komax' ? 115 : 250,
-            hk: id === 'crimp' ? 3.00 : id === 'komax' ? 670.00 : 192.00,
-            releaseDate: 'Dezember 2024',
-            umsatzerhaltung: id === 'neu' ? 'Nein' : 'Ja',
-            annahmen: 'Innovation durch neue Linie',
-            jahr: 2027,
-            priceGrowth: id === 'crimp' ? '5,30' : id === 'komax' ? '5,15' : '0,00',
-            volumes: {
-                2025: id === 'crimp' ? 200 : id === 'komax' ? 10 : 50,
-                2026: id === 'crimp' ? 1000 : id === 'komax' ? 25 : 125,
-                2027: id === 'crimp' ? 2500 : id === 'komax' ? 50 : 200,
-                2028: id === 'crimp' ? 5000 : id === 'komax' ? 95 : 250,
-                2029: id === 'crimp' ? 5000 : id === 'komax' ? 110 : 250,
-                2030: id === 'crimp' ? 5000 : id === 'komax' ? 115 : 250
-            },
-            prices: {
-                2025: id === 'crimp' ? 5.00 : id === 'komax' ? 1000.00 : 480.00,
-                2026: id === 'crimp' ? 5.15 : id === 'komax' ? 1020.00 : 480.00,
-                2027: id === 'crimp' ? 5.30 : id === 'komax' ? 1040.40 : 480.00,
-                2028: id === 'crimp' ? 5.46 : id === 'komax' ? 1061.21 : 480.00,
-                2029: id === 'crimp' ? 5.62 : id === 'komax' ? 1082.43 : 480.00,
-                2030: id === 'crimp' ? 5.79 : id === 'komax' ? 1104.08 : 480.00
-            }
-        };
+        // Get artikel data - use existing data or create defaults
+let artikelData = cfoDashboard.artikelData[id];
+
+// If no data exists yet, create complete default structure
+if (!artikelData) {
+    artikelData = {
+        id: id,
+        name: id === 'crimp' ? 'Crimpautomat' : 
+              id === 'komax' ? 'Mini-Komax ohne CORE' : 
+              id === 'digital' ? 'Digital Shopfloor Backend' : 'Unbekannt',
+        type: id === 'digital' ? 'cross' : 'neu',
+        release: id === 'digital' ? '2025-06' : '2024-12',
+        price: id === 'crimp' ? 5.00 : id === 'komax' ? 1000.00 : 480.00,
+        volume: id === 'crimp' ? 5000 : id === 'komax' ? 115 : 250,
+        hk: id === 'crimp' ? 3.00 : id === 'komax' ? 670.00 : 192.00,
+        volumes: {
+            2025: id === 'crimp' ? 200 : id === 'komax' ? 10 : 50,
+            2026: id === 'crimp' ? 1000 : id === 'komax' ? 25 : 125,
+            2027: id === 'crimp' ? 2500 : id === 'komax' ? 50 : 200,
+            2028: id === 'crimp' ? 5000 : id === 'komax' ? 95 : 250,
+            2029: id === 'crimp' ? 5000 : id === 'komax' ? 110 : 250,
+            2030: id === 'crimp' ? 5000 : id === 'komax' ? 115 : 250
+        },
+        prices: {
+            2025: id === 'crimp' ? 5.00 : id === 'komax' ? 1000.00 : 480.00,
+            2026: id === 'crimp' ? 5.15 : id === 'komax' ? 1020.00 : 480.00,
+            2027: id === 'crimp' ? 5.30 : id === 'komax' ? 1040.40 : 480.00,
+            2028: id === 'crimp' ? 5.46 : id === 'komax' ? 1061.21 : 480.00,
+            2029: id === 'crimp' ? 5.62 : id === 'komax' ? 1082.43 : 480.00,
+            2030: id === 'crimp' ? 5.79 : id === 'komax' ? 1104.08 : 480.00
+        }
+    };
+    
+    // Store in cfoDashboard for future use
+    cfoDashboard.artikelData[id] = artikelData;
+}
+
+// Ensure all properties exist with defaults
+artikelData.volumes = artikelData.volumes || {};
+artikelData.prices = artikelData.prices || {};
         
         // Calculate metrics
         const revenue = artikelData.price * artikelData.volume;
