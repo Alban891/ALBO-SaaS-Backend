@@ -831,6 +831,33 @@
                 max-height: 300px;
             }
         }
+
+        .info-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    background: var(--primary);
+    color: white;
+    border-radius: 50%;
+    font-size: 10px;
+    font-weight: bold;
+    margin-left: 4px;
+    cursor: help;
+    transition: all 0.2s;
+    vertical-align: middle;
+}
+
+.info-icon:hover {
+    background: var(--primary-light);
+    transform: scale(1.1);
+}
+
+.info-icon::before {
+    content: "i";
+    font-style: normal;
+}
     </style>
 </head>
 <body>
@@ -2035,7 +2062,7 @@ artikelData.prices = artikelData.prices || {};
         <div>
             <label style="font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase; display: block; margin-bottom: 6px;">
                 Artikel-Bezeichnung 
-                <span class="info-icon" title="Eindeutige Produktbezeichnung gemäß Artikelstamm" style="cursor: help;">ⓘ</span>
+                <span class="info-icon" title="Eindeutige Produktbezeichnung gemäß Artikelstamm"></span>
             </label>
             <input type="text" id="artikel-name" value="${artikelData.name}" 
                    style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; background: white;">
@@ -2044,7 +2071,7 @@ artikelData.prices = artikelData.prices || {};
         <div>
             <label style="font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase; display: block; margin-bottom: 6px;">
                 Produktkategorie 
-                <span class="info-icon" title="Hauptkategorie des Produkts für Risikobewertung" style="cursor: help;">ⓘ</span>
+                <span class="info-icon" title="Hauptkategorie des Produkts für Risikobewertung"></span>
             </label>
             <select id="produkt-kategorie" onchange="handleCategoryChange(this)" 
                     style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; background: white;">
@@ -2065,7 +2092,7 @@ artikelData.prices = artikelData.prices || {};
         <div>
             <label style="font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase; display: block; margin-bottom: 6px;">
                 Geschäftsmodell 
-                <span class="info-icon" title="Art der Erlösgenerierung - beeinflusst Cashflow-Profil" style="cursor: help;">ⓘ</span>
+                <span class="info-icon" title="Art der Erlösgenerierung - beeinflusst Cashflow-Profil"></span>
             </label>
             <select id="geschaeftsmodell" onchange="handleBusinessModelChange(this)"
                     style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; background: white;">
@@ -2084,7 +2111,7 @@ artikelData.prices = artikelData.prices || {};
         <div>
             <label style="font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase; display: block; margin-bottom: 6px;">
                 Zielmarkt 
-                <span class="info-icon" title="Kundensegment - bestimmt Vertriebsweg und Margen" style="cursor: help;">ⓘ</span>
+                <span class="info-icon" title="Kundensegment - bestimmt Vertriebsweg und Margen"></span>
             </label>
             <select id="zielmarkt" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; background: white;">
                 <option value="b2b">B2B</option>
@@ -2099,7 +2126,7 @@ artikelData.prices = artikelData.prices || {};
         <div>
             <label style="font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase; display: block; margin-bottom: 6px;">
                 Effekt-Typ 
-                <span class="info-icon" title="Auswirkung auf bestehendes Portfolio" style="cursor: help;">ⓘ</span>
+                <span class="info-icon" title="Auswirkung auf bestehendes Portfolio"></span>
             </label>
             <select id="effekt-typ" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; background: white;">
                 <option value="neu" ${artikelData.type === 'neu' ? 'selected' : ''}>Neu-Produkt</option>
@@ -2112,7 +2139,7 @@ artikelData.prices = artikelData.prices || {};
         <div>
             <label style="font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase; display: block; margin-bottom: 6px;">
                 Strategische Einordnung 
-                <span class="info-icon" title="Core = Kerngeschäft, Adjacent = Angrenzende Märkte, Transformational = Neue Geschäftsfelder" style="cursor: help;">ⓘ</span>
+                <span class="info-icon" title="Core = Kerngeschäft, Adjacent = Angrenzende Märkte, Transformational = Neue Geschäftsfelder"></span>
             </label>
             <select id="strategie" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; background: white;">
                 <option value="core">Core Business</option>
@@ -2127,7 +2154,7 @@ artikelData.prices = artikelData.prices || {};
         <div>
             <label style="font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase; display: block; margin-bottom: 6px;">
                 Investitionstyp 
-                <span class="info-icon" title="CAPEX = Einmalig aktiviert, OPEX = Laufend GuV-wirksam" style="cursor: help;">ⓘ</span>
+                <span class="info-icon" title="CAPEX = Einmalig aktiviert, OPEX = Laufend GuV-wirksam"></span>
             </label>
             <select id="investitionstyp" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; background: white;">
                 <option value="capex">CAPEX</option>
@@ -2139,7 +2166,7 @@ artikelData.prices = artikelData.prices || {};
         <div>
             <label style="font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase; display: block; margin-bottom: 6px;">
                 Release-Datum 
-                <span class="info-icon" title="Geplanter Marktstart - Basis für Zeitschiene" style="cursor: help;">ⓘ</span>
+                <span class="info-icon" title="Geplanter Marktstart - Basis für Zeitschiene"></span>
             </label>
             <input type="month" id="release-datum" value="${artikelData.release || '2024-12'}" 
                    style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; background: white;">
@@ -2150,7 +2177,7 @@ artikelData.prices = artikelData.prices || {};
     <div style="margin-top: 16px;">
         <label style="font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase; display: block; margin-bottom: 6px;">
             Annahmen & Basis für Abschätzung 
-            <span class="info-icon" title="Dokumentation aller Prämissen für spätere Validierung" style="cursor: help;">ⓘ</span>
+            <span class="info-icon" title="Dokumentation aller Prämissen für spätere Validierung"></span>
         </label>
         <textarea id="annahmen" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; background: white; min-height: 60px; resize: vertical;">
 ${artikelData.annahmen || 'Innovation durch neue Linie'}
