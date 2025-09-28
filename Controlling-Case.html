@@ -1635,12 +1635,11 @@ function switchTab(tabName) {
 
 // Alle anderen bestehenden Funktionen bleiben unverändert
 function addNewArtikel() {
-    // Create new artikel dialog/modal
     const modalHTML = `
         <div id="new-artikel-modal" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); z-index: 9999; display: flex; align-items: center; justify-content: center;">
-            <div style="background: white; border-radius: 12px; padding: 30px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);">
+            <div style="background: white; border-radius: 12px; padding: 30px; max-width: 500px; width: 90%; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);">
                 <h2 style="margin: 0 0 24px 0; color: var(--primary); font-size: 24px; font-weight: 600;">
-                    ➕ Neuen Artikel anlegen
+                    ➕ Neuen Artikel anlegen - Quick Create
                 </h2>
                 
                 <div style="margin-bottom: 20px;">
@@ -1651,55 +1650,24 @@ function addNewArtikel() {
                            style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;">
                 </div>
                 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
-                    <div>
-                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text);">
-                            Effekt-Typ <span style="color: var(--danger);">*</span>
-                        </label>
-                        <select id="new-artikel-type" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;">
-                            <option value="neu">Neu-Produkt</option>
-                            <option value="cross">Cross-Selling</option>
-                            <option value="kannibalisierung">Kannibalisierung</option>
-                            <option value="substitution">Substitution</option>
-                        </select>
-                    </div>
-                    
-                    <div>
-                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text);">
-                            Release-Datum <span style="color: var(--danger);">*</span>
-                        </label>
-                        <input type="month" id="new-artikel-release" value="2025-01"
-                               style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;">
-                    </div>
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text);">
+                        Effekt-Typ <span style="color: var(--danger);">*</span>
+                    </label>
+                    <select id="new-artikel-type" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;">
+                        <option value="neu">Neu-Produkt</option>
+                        <option value="cross">Cross-Selling</option>
+                        <option value="kannibalisierung">Kannibalisierung</option>
+                        <option value="substitution">Substitution</option>
+                    </select>
                 </div>
                 
-                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 20px;">
-                    <div>
-                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text);">
-                            Start-Preis (€) <span style="color: var(--danger);">*</span>
-                        </label>
-                        <input type="text" id="new-artikel-price" placeholder="100,00" 
-                               style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;"
-                               onblur="formatDecimalInput(this)">
-                    </div>
-                    
-                    <div>
-                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text);">
-                            Start-Menge <span style="color: var(--danger);">*</span>
-                        </label>
-                        <input type="text" id="new-artikel-volume" placeholder="1.000"
-                               style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;"
-                               onblur="formatNumberInput(this)">
-                    </div>
-                    
-                    <div>
-                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text);">
-                            HK/Stück (€) <span style="color: var(--danger);">*</span>
-                        </label>
-                        <input type="text" id="new-artikel-hk" placeholder="60,00"
-                               style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;"
-                               onblur="formatDecimalInput(this)">
-                    </div>
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text);">
+                        Release-Datum <span style="color: var(--danger);">*</span>
+                    </label>
+                    <input type="month" id="new-artikel-release" value="2025-01"
+                           style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;">
                 </div>
                 
                 <div style="display: flex; gap: 12px; justify-content: flex-end;">
@@ -1707,7 +1675,7 @@ function addNewArtikel() {
                             style="padding: 10px 20px; border: 1px solid var(--border); background: white; color: var(--gray); border-radius: 6px; cursor: pointer;">
                         Abbrechen
                     </button>
-                    <button onclick="saveNewArtikel()" 
+                    <button onclick="saveQuickArtikel()" 
                             style="padding: 10px 20px; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500;">
                         💾 Artikel anlegen
                     </button>
@@ -1716,13 +1684,81 @@ function addNewArtikel() {
         </div>
     `;
     
-    // Insert modal into page
     document.body.insertAdjacentHTML('beforeend', modalHTML);
-    
-    // Focus first input
     document.getElementById('new-artikel-name').focus();
 }
 
+function saveQuickArtikel() {
+    const name = document.getElementById('new-artikel-name').value.trim();
+    const type = document.getElementById('new-artikel-type').value;
+    const release = document.getElementById('new-artikel-release').value;
+    
+    if (!name || !release) {
+        alert('Bitte alle Pflichtfelder ausfüllen!');
+        return;
+    }
+    
+    const artikelId = 'artikel-' + Date.now();
+    
+    // Minimale Daten speichern
+    cfoDashboard.artikelData[artikelId] = {
+        id: artikelId,
+        name: name,
+        type: type,
+        release: release,
+        status: 'entwurf',
+        volumes: {},
+        prices: {},
+        hk: 0
+    };
+    
+    // In Liste einfügen
+    const tbody = document.getElementById('artikel-list-tbody');
+    if (tbody) {
+        const newRow = document.createElement('tr');
+        newRow.onclick = function() { openArtikelDetail(artikelId); };
+        newRow.style.cursor = 'pointer';
+        newRow.style.transition = 'background 0.2s';
+        newRow.onmouseover = function() { this.style.background = 'var(--gray-light)'; };
+        newRow.onmouseout = function() { this.style.background = 'transparent'; };
+        
+        newRow.innerHTML = `
+            <td style="padding: 12px; font-weight: 500; color: var(--text); font-size: 13px;">
+                ${name} <span style="font-size: 10px; color: var(--warning); background: #fef3c7; padding: 2px 6px; border-radius: 4px; margin-left: 8px;">ENTWURF</span>
+            </td>
+            <td style="padding: 12px;">
+                <span style="padding: 2px 8px; background: ${type === 'neu' ? '#dbeafe' : '#dcfce7'}; 
+                      color: ${type === 'neu' ? 'var(--primary)' : 'var(--success)'}; 
+                      border-radius: 12px; font-size: 11px; font-weight: 500;">
+                    ${type === 'neu' ? 'Neu-Produkt' : 'Cross-Selling'}
+                </span>
+            </td>
+            <td style="padding: 12px; text-align: center; font-size: 12px; color: var(--gray);">${release}</td>
+            <td style="padding: 12px; text-align: right; font-size: 13px;">-</td>
+            <td style="padding: 12px; text-align: right; font-size: 13px;">-</td>
+            <td style="padding: 12px; text-align: right; font-size: 13px;">-</td>
+            <td style="padding: 12px; text-align: right; font-size: 13px;">-</td>
+            <td style="padding: 12px; text-align: center;">
+                <button onclick="event.stopPropagation(); openArtikelDetail('${artikelId}')" 
+                        style="padding: 4px 8px; border: 1px solid var(--primary); background: var(--primary); color: white;
+                               border-radius: 4px; font-size: 11px; cursor: pointer; transition: all 0.2s;">
+                    Vervollständigen
+                </button>
+            </td>
+        `;
+        
+        tbody.appendChild(newRow);
+    }
+    
+    closeNewArtikelModal();
+    
+    cfoDashboard.aiController.addAIMessage({
+        level: 'info',
+        title: '📋 Artikel angelegt',
+        text: `"${name}" wurde als Entwurf angelegt. Klicken Sie auf "Vervollständigen" um die Details zu ergänzen.`,
+        timestamp: 'Quick Create'
+    });
+}
 function closeNewArtikelModal() {
     const modal = document.getElementById('new-artikel-modal');
     if (modal) {
@@ -2190,75 +2226,217 @@ ${artikelData.annahmen || 'Innovation durch neue Linie'}
     </div>
 </div>
                         
-                        <!-- Finanz-Parameter -->
-                        <div style="background: var(--gray-light); padding: 16px; border-radius: 8px; margin-bottom: 24px;">
-                            <h3 style="font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 16px;">
-                                💰 Finanz-Parameter
-                            </h3>
-                            
-                            <div style="margin-bottom: 16px;">
-                                <label style="font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase; display: block; margin-bottom: 6px;">
-                                    Jahr auswählen
-                                </label>
-                                <select style="width: 200px; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; background: white;">
-                                    <option>2027</option>
-                                    <option>2028</option>
-                                    <option>2029</option>
-                                </select>
-                            </div>
-                            
-                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px;">
-                                <div>
-                                    <label style="font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase; display: block; margin-bottom: 6px;">
-                                        Menge (Stück)
-                                    </label>
-                                    <input type="text" value="${formatThousands(artikelData.volume || 0)}"
-                                           style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; background: white;">
-                                </div>
-                                <div>
-                                    <label style="font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase; display: block; margin-bottom: 6px;">
-                                        Preis (€/Stück)
-                                    </label>
-                                    <input type="text" value="${formatDecimal(artikelData.price || 0)}" 
-                                           style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; background: white;">
-                                </div>
-                                <div>
-                                    <label style="font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase; display: block; margin-bottom: 6px;">
-                                        HK pro Stück (€)
-                                    </label>
-                                    <input type="text" value="${formatDecimal(artikelData.hk || 0)}"
-                                           style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; background: white;">
-                                </div>
-                            </div>
-                            
-                            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 20px;">
-                                <div>
-                                    <label style="font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase; display: block; margin-bottom: 6px;">
-                                        Umsatz (€)
-                                    </label>
-                                    <div style="padding: 12px; background: white; border: 1px solid var(--primary); border-radius: 4px; font-size: 16px; font-weight: 600; color: var(--primary);">
-                                        ${(revenue / 1000).toFixed(1).replace('.', ',')}k€
-                                    </div>
-                                </div>
-                                <div>
-                                    <label style="font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase; display: block; margin-bottom: 6px;">
-                                        HK Gesamt (€)
-                                    </label>
-                                    <div style="padding: 12px; background: white; border: 1px solid var(--danger); border-radius: 4px; font-size: 16px; font-weight: 600; color: var(--danger);">
-                                        ${((artikelData.hk * artikelData.volume) / 1000).toFixed(1).replace('.', ',')}k€
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div>
-                                <label style="font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase; display: block; margin-bottom: 6px;">
-                                    DB2 (%)
-                                </label>
-                                <div style="padding: 12px; background: white; border: 1px solid var(--success); border-radius: 4px; font-size: 16px; font-weight: 600; color: var(--success);">
-                                    ${db2Margin}%
-                                </div>
-                            </div>
-                        </div>
+                        // In der openArtikelDetail Funktion, ersetze den Finanz-Parameter Block mit:
+
+<!-- Finanz-Parameter NEUE VERSION -->
+<div style="background: var(--gray-light); padding: 16px; border-radius: 8px; margin-bottom: 24px;">
+    <h3 style="font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 16px;">
+        💰 Finanz-Parameter
+    </h3>
+    
+    <!-- Planungshorizont -->
+    <div style="background: white; padding: 16px; border-radius: 6px; margin-bottom: 16px;">
+        <div style="display: flex; align-items: center; margin-bottom: 12px;">
+            <span style="font-size: 12px; font-weight: 600; color: var(--text);">
+                📅 Planungshorizont
+                <span class="info-icon" title="Zeitraum für die Business Case Berechnung. Release-Datum wird automatisch übernommen."></span>
+            </span>
+        </div>
+        
+        <div style="font-size: 12px; color: var(--gray); margin-bottom: 12px;">
+            Release: <strong>${new Date(artikelData.release).toLocaleDateString('de-DE', { month: 'long', year: 'numeric' })}</strong>
+        </div>
+        
+        <div class="horizon-buttons">
+            <button class="horizon-btn" onclick="setHorizon(3, '${artikelData.release}')">+3 Jahre</button>
+            <button class="horizon-btn active" onclick="setHorizon(5, '${artikelData.release}')">+5 Jahre</button>
+            <button class="horizon-btn" onclick="setHorizon(7, '${artikelData.release}')">+7 Jahre</button>
+            <button class="horizon-btn" onclick="setHorizon(10, '${artikelData.release}')">+10 Jahre</button>
+            <button class="horizon-btn" onclick="customHorizon()">Eigener Zeitraum ▼</button>
+        </div>
+    </div>
+    
+    <!-- Startwerte -->
+    <div style="background: white; padding: 16px; border-radius: 6px; margin-bottom: 16px;">
+        <div style="display: flex; align-items: center; margin-bottom: 12px;">
+            <span style="font-size: 12px; font-weight: 600; color: var(--text);">
+                📊 Startwerte (für ${new Date(artikelData.release).getFullYear()})
+                <span class="info-icon" title="Basis-Parameter für das erste Jahr. Alle weiteren Jahre werden hieraus abgeleitet."></span>
+            </span>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 16px;">
+            <div>
+                <label style="font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase; display: block; margin-bottom: 6px;">
+                    Menge (Stück)
+                    <span class="info-icon" title="Geplante Absatzmenge für das Release-Jahr"></span>
+                </label>
+                <input type="text" id="start-menge" value="100"
+                       style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px;"
+                       onchange="calculateStartValues()">
+            </div>
+            
+            <div>
+                <label style="font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase; display: block; margin-bottom: 6px;">
+                    Preis (€/Stück)
+                    <span class="info-icon" title="Verkaufspreis pro Einheit ohne MwSt."></span>
+                </label>
+                <input type="text" id="start-preis" value="100,00"
+                       style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px;"
+                       onchange="calculateStartValues()">
+            </div>
+            
+            <div>
+                <label style="font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase; display: block; margin-bottom: 6px;">
+                    HK pro Stück (€)
+                    <span class="info-icon" title="Variable Herstellkosten inkl. Material und Fertigung"></span>
+                </label>
+                <input type="text" id="start-hk" value="60,00"
+                       style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px;"
+                       onchange="calculateStartValues()">
+            </div>
+        </div>
+        
+        <!-- Auto-berechnete Werte -->
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 12px; background: var(--gray-light); border-radius: 4px;">
+            <div style="text-align: center;">
+                <div style="font-size: 16px; font-weight: 600; color: var(--primary);" id="start-umsatz">10,0k€</div>
+                <div style="font-size: 10px; color: var(--gray); text-transform: uppercase;">Umsatz</div>
+            </div>
+            <div style="text-align: center;">
+                <div style="font-size: 16px; font-weight: 600; color: var(--danger);" id="start-hk-gesamt">6,0k€</div>
+                <div style="font-size: 10px; color: var(--gray); text-transform: uppercase;">HK Gesamt</div>
+            </div>
+            <div style="text-align: center;">
+                <div style="font-size: 16px; font-weight: 600; color: var(--success);" id="start-db2">40,0%</div>
+                <div style="font-size: 10px; color: var(--gray); text-transform: uppercase;">DB2-Marge</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Entwicklungsmethode -->
+    <div style="background: white; padding: 16px; border-radius: 6px; margin-bottom: 16px;">
+        <div style="display: flex; align-items: center; margin-bottom: 12px;">
+            <span style="font-size: 12px; font-weight: 600; color: var(--text);">
+                📈 Entwicklungsmethode
+                <span class="info-icon" title="Wählen Sie, wie Mengen- und Preisentwicklung geplant werden soll"></span>
+            </span>
+        </div>
+        
+        <div class="development-method-tabs">
+            <button class="method-tab active" onclick="switchMethod('template')">Template</button>
+            <button class="method-tab" onclick="switchMethod('parameter')">Parameter</button>
+            <button class="method-tab" onclick="switchMethod('meilenstein')">Meilenstein</button>
+            <button class="method-tab" onclick="switchMethod('manuell')">Manuell</button>
+        </div>
+        
+        <!-- Template Method Content -->
+        <div id="method-template" style="display: block;">
+            <div style="display: flex; gap: 16px; align-items: center; margin-bottom: 12px;">
+                <select id="growth-template" style="padding: 6px 12px; border: 1px solid var(--border); border-radius: 4px; font-size: 12px;">
+                    <option value="s-curve">S-Kurve (Marktreife)</option>
+                    <option value="linear">Linear (Konstant)</option>
+                    <option value="exponential">Exponentiell (Viral)</option>
+                    <option value="hockey-stick">Hockey-Stick (Breakout)</option>
+                    <option value="plateau">Plateau (Sättigung)</option>
+                </select>
+                
+                <div style="display: flex; gap: 8px;">
+                    <button onclick="adjustTemplate(-20)" style="padding: 4px 8px; border: 1px solid var(--border); background: white; border-radius: 4px; font-size: 11px; cursor: pointer;">-20%</button>
+                    <button onclick="adjustTemplate(0)" style="padding: 4px 8px; border: 1px solid var(--border); background: white; border-radius: 4px; font-size: 11px; cursor: pointer;">Standard</button>
+                    <button onclick="adjustTemplate(20)" style="padding: 4px 8px; border: 1px solid var(--border); background: white; border-radius: 4px; font-size: 11px; cursor: pointer;">+20%</button>
+                </div>
+            </div>
+            
+            <button onclick="applyTemplate()" style="padding: 8px 16px; background: var(--primary); color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">
+                Template anwenden
+            </button>
+        </div>
+        
+        <!-- Parameter Method Content -->
+        <div id="method-parameter" style="display: none;">
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 12px;">
+                <div>
+                    <label style="font-size: 10px; color: var(--gray); display: block; margin-bottom: 4px;">Mengenwachstum (CAGR)</label>
+                    <input type="text" id="param-cagr" value="45" style="width: 100%; padding: 6px; border: 1px solid var(--border); border-radius: 4px; font-size: 12px;">
+                </div>
+                <div>
+                    <label style="font-size: 10px; color: var(--gray); display: block; margin-bottom: 4px;">Preissteigerung p.a.</label>
+                    <input type="text" id="param-price" value="3" style="width: 100%; padding: 6px; border: 1px solid var(--border); border-radius: 4px; font-size: 12px;">
+                </div>
+                <div>
+                    <label style="font-size: 10px; color: var(--gray); display: block; margin-bottom: 4px;">Kostensteigerung p.a.</label>
+                    <input type="text" id="param-cost" value="2" style="width: 100%; padding: 6px; border: 1px solid var(--border); border-radius: 4px; font-size: 12px;">
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 12px;">
+                <label style="display: flex; align-items: center; font-size: 11px; cursor: pointer;">
+                    <input type="checkbox" id="param-degression" style="margin-right: 6px;">
+                    Degressionseffekte berücksichtigen (-5% HK bei Volumenverdopplung)
+                </label>
+            </div>
+            
+            <button onclick="calculateParameters()" style="padding: 8px 16px; background: var(--primary); color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">
+                Berechnen
+            </button>
+        </div>
+        
+        <!-- Meilenstein Method Content -->
+        <div id="method-meilenstein" style="display: none;">
+            <div id="milestones-container" style="margin-bottom: 12px;">
+                <!-- Meilensteine werden hier dynamisch eingefügt -->
+            </div>
+            
+            <button onclick="addMilestone()" style="padding: 6px 12px; border: 1px solid var(--primary); background: white; color: var(--primary); border-radius: 4px; font-size: 11px; cursor: pointer; margin-right: 8px;">
+                + Meilenstein hinzufügen
+            </button>
+            
+            <button onclick="applyMilestones()" style="padding: 8px 16px; background: var(--primary); color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">
+                Meilensteine anwenden
+            </button>
+        </div>
+        
+        <!-- Manuell Method Content -->
+        <div id="method-manuell" style="display: none;">
+            <div style="padding: 12px; background: #f0f9ff; border: 1px solid var(--primary-light); border-radius: 4px; font-size: 11px; color: var(--primary);">
+                ℹ️ Sie können die Werte direkt in der Tabelle unten bearbeiten. Klicken Sie auf ein Feld und geben Sie den gewünschten Wert ein.
+            </div>
+        </div>
+    </div>
+    
+    <!-- Jahres-Tabelle -->
+    <div style="background: white; padding: 16px; border-radius: 6px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <span style="font-size: 12px; font-weight: 600; color: var(--text);">
+                📊 Jahresentwicklung
+            </span>
+            <button onclick="toggleChartView()" style="padding: 4px 8px; border: 1px solid var(--border); background: white; border-radius: 4px; font-size: 11px; cursor: pointer;">
+                📈 Grafik anzeigen
+            </button>
+        </div>
+        
+        <div style="overflow-x: auto;">
+            <table id="development-table" style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                <thead>
+                    <tr style="background: var(--gray-light);">
+                        <th style="padding: 8px; text-align: left; font-weight: 600; color: var(--gray);">Jahr</th>
+                        <th style="padding: 8px; text-align: right; font-weight: 600; color: var(--gray);">Menge</th>
+                        <th style="padding: 8px; text-align: center; font-weight: 600; color: var(--gray);">Δ YoY</th>
+                        <th style="padding: 8px; text-align: right; font-weight: 600; color: var(--gray);">Preis</th>
+                        <th style="padding: 8px; text-align: right; font-weight: 600; color: var(--gray);">HK/Stück</th>
+                        <th style="padding: 8px; text-align: right; font-weight: 600; color: var(--gray);">Umsatz</th>
+                        <th style="padding: 8px; text-align: right; font-weight: 600; color: var(--gray);">DB2</th>
+                        <th style="padding: 8px; text-align: center; font-weight: 600; color: var(--gray);">DB2%</th>
+                    </tr>
+                </thead>
+                <tbody id="development-tbody">
+                    <!-- Zeilen werden dynamisch generiert -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
                         
                         <!-- KPI Summary -->
                         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px;">
@@ -3827,6 +4005,71 @@ function validateCustomBusinessModel(input) {
         feedbackDiv.style.borderLeftColor = 'var(--success)';
         feedbackDiv.style.background = '#f0fdf4';
         feedbackText.textContent = `✓ "${value}" als Service-basiertes Geschäftsmodell erkannt.`;
+    }
+}
+// ============================================
+// Neue Funktionen für den erweiterten Workflow
+// ============================================
+
+function setHorizon(years, releaseDate) {
+    // Alle Buttons deaktivieren
+    document.querySelectorAll('.horizon-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.target.classList.add('active');
+    
+    const releaseYear = new Date(releaseDate).getFullYear();
+    const tbody = document.getElementById('development-tbody');
+    tbody.innerHTML = '';
+    
+    // Tabelle mit Jahren füllen
+    for(let i = 0; i < years; i++) {
+        const year = releaseYear + i;
+        tbody.innerHTML += `
+            <tr>
+                <td>${year}</td>
+                <td><input type="text" id="vol-${year}" onchange="calculateRow(${year})"></td>
+                <td><input type="text" id="price-${year}" onchange="calculateRow(${year})"></td>
+                <td id="revenue-${year}">0€</td>
+                <td><input type="text" id="hk-${year}" onchange="calculateRow(${year})"></td>
+                <td id="db2-abs-${year}">0€</td>
+                <td id="db2-perc-${year}">0%</td>
+            </tr>
+        `;
+    }
+}
+
+function calculateRow(year) {
+    const vol = parseFloat(document.getElementById(`vol-${year}`).value) || 0;
+    const price = parseFloat(document.getElementById(`price-${year}`).value) || 0;
+    const hk = parseFloat(document.getElementById(`hk-${year}`).value) || 0;
+    
+    const revenue = vol * price;
+    const db2Abs = revenue - (vol * hk);
+    const db2Perc = revenue > 0 ? (db2Abs / revenue * 100) : 0;
+    
+    document.getElementById(`revenue-${year}`).textContent = formatRevenue(revenue);
+    document.getElementById(`db2-abs-${year}`).textContent = formatRevenue(db2Abs);
+    document.getElementById(`db2-perc-${year}`).textContent = db2Perc.toFixed(1) + '%';
+    
+    updateSummaryMetrics();
+}
+
+function updateSummaryMetrics() {
+    // Berechne Gesamt-KPIs über alle Jahre
+    let totalRevenue = 0;
+    let totalDB2 = 0;
+    let peakVolume = 0;
+    
+    document.querySelectorAll('[id^="vol-"]').forEach(input => {
+        const vol = parseFloat(input.value) || 0;
+        peakVolume = Math.max(peakVolume, vol);
+    });
+    
+    // Update Summary Displays
+    const summaryRevenue = document.getElementById('summary-revenue');
+    if (summaryRevenue) {
+        summaryRevenue.textContent = formatRevenue(totalRevenue);
     }
 }
     </script>
