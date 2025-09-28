@@ -2004,16 +2004,33 @@ function openArtikelDetail(id) {
 }
 
 function backToArtikelOverview() {
-    // Nur Tab neu laden
-    switchTab('assumptions');
-}
+    // Verstecke Detail-View
+    const detailView = document.getElementById('artikel-detail-temporary');
+    if (detailView) {
+        detailView.style.display = 'none';
+    }
     
+    // Zeige wieder die Artikel-Übersicht
+    const artikelOverview = document.getElementById('artikel-overview');
+    if (artikelOverview) {
+        artikelOverview.style.display = 'block';
+    }
+    
+    // Falls der Container komplett ersetzt wurde, stelle ihn wieder her
+    const container = document.querySelector('.assumptions-container');
+    if (container && !container.querySelector('#artikel-overview')) {
+        // Lade den Tab neu um den Original-Zustand wiederherzustellen
+        switchTab('assumptions');
+    }
+    
+    // KI-Feedback
     cfoDashboard.aiController.addAIMessage({
         level: 'info',
         title: '📋 Zurück zur Übersicht',
         text: 'Portfolio-Ansicht aktiviert. Alle Änderungen wurden gespeichert.',
         timestamp: 'Navigation'
     });
+}
 
 function switchSubTab(subTabName) {
     // Update button states
