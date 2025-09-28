@@ -2004,8 +2004,19 @@ function openArtikelDetail(id) {
 }
 
 function backToArtikelOverview() {
-    // Seite neu laden für sauberen Reset
-    location.reload();
+    // Container wiederherstellen
+    const container = document.querySelector('.assumptions-container');
+    if (container) {
+        // Original HTML wiederherstellen
+        container.innerHTML = `
+            <div class="assumptions-section" id="artikel-overview">
+                <!-- Der komplette HTML-Code für artikel-overview -->
+            </div>
+        `;
+    }
+    
+    // Alternativ: Tab neu laden
+    switchTab('assumptions');
 }
     
     cfoDashboard.aiController.addAIMessage({
