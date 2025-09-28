@@ -2695,6 +2695,18 @@ setTimeout(() => {
         updateTabellenSpalten();
         updateErsteZeile();
         berechneModelle();
+        
+        // NEU: Korrigiere die Tabellen-Header
+        const startDate = document.getElementById('release-datum').value;
+        const startYear = parseInt(startDate.split('-')[0]);
+        for(let i = 1; i <= 7; i++) {
+            const headers = document.querySelectorAll(`.jahr-col.jahr-${i}`);
+            headers.forEach(th => {
+                if(th.tagName === 'TH') {
+                    th.textContent = startYear + i - 1;
+                }
+            });
+        }
     }
 }, 100);
 
