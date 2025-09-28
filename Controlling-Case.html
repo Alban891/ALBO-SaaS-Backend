@@ -1437,7 +1437,35 @@
 // Enhanced Global dashboard data with KI intelligence
 let cfoDashboard = {
     currentArtikel: null,
-    artikelData: {},  // Store for all artikel data
+    artikelData: {
+    crimp: {
+        id: 'crimp',
+        name: 'Crimpautomat',
+        type: 'neu',
+        volumes: { 2024: 0, 2025: 200, 2026: 1000, 2027: 2500, 2028: 5000, 2029: 5000, 2030: 5000 },
+        prices: { 2024: 0, 2025: 5.00, 2026: 5.15, 2027: 5.30, 2028: 5.46, 2029: 5.62, 2030: 5.79 },
+        hk: 3.00,
+        active: true
+    },
+    komax: {
+        id: 'komax',
+        name: 'Mini-Komax ohne CORE',
+        type: 'neu',
+        volumes: { 2024: 0, 2025: 10, 2026: 25, 2027: 50, 2028: 95, 2029: 110, 2030: 115 },
+        prices: { 2024: 0, 2025: 1000, 2026: 1020, 2027: 1040, 2028: 1061, 2029: 1082, 2030: 1104 },
+        hk: 670.00,
+        active: true
+    },
+    digital: {
+        id: 'digital',
+        name: 'Digital Shopfloor Backend',
+        type: 'cross',
+        volumes: { 2024: 0, 2025: 50, 2026: 125, 2027: 200, 2028: 250, 2029: 250, 2030: 250 },
+        prices: { 2024: 0, 2025: 480, 2026: 480, 2027: 480, 2028: 480, 2029: 480, 2030: 480 },
+        hk: 192.00,
+        active: true
+    }
+},
     currentValues: {
         marketVolume: 100,
         pricePremium: 100,
@@ -3446,6 +3474,115 @@ window.updateCalculations = function() {
 window.updateHKProStueck = function() {
     calculateFinancials();
 };
+
+// ============================================
+// DASHBOARD CALCULATION ENGINE - WICHTIG!
+// ============================================
+
+function calculateDashboardData() {
+    const years = [2024, 2025, 2026, 2027, 2028, 2029, 2030];
+    let dashboardData = {
+        umsatz: [],
+        absatz: [],
+        db2: [],
+        db2Percent: [],
+        projektkosten: [],
+        db3Jahr: [],
+        db3Kumuliert: []
+    };
+    
+    // Calculate for each year
+    years.forEach(year => {
+        let yearUmsatz = 0;
+        let yearAbsatz = 0;
+        let yearHK = 0;
+        
+        // Hier werden die tatsächlichen Artikel-Daten verwendet!
+        if (cfoDashboard.artikelData.crimp) {
+            const artikel = cfoDashboard.artikelData.crimp;
+            const volume = artikel.volumes?.[year] || 0;
+            const price = artikel.prices?.[year] || 0;
+            const hk = artikel.hk || 0;
+            
+            yearUmsatz += (volume * price) / 1000;
+            yearAbsatz += volume / 1000;
+            yearHK += (volume * hk) / 1000;
+        }
+        
+        // Apply market adjustments von den Slidern
+        const marketFactor = cfoDashboard.currentValues.marketVolume / 100;
+        const priceFactor = cfoDashboard.currentValues.pricePremium / 100;
+        
+        yearUmsatz = yearUmsatz * marketFactor * priceFactor;
+        yearAbsatz = yearAbsatz * marketFactor;
+        
+        const yearDB2 = yearUmsatz - yearHK;
+        const yearProjektkosten = 2.5; // Beispielwert
+        const yearDB3 = yearDB2 - yearProjektkosten;
+        
+        dashboardData.umsatz.push(parseFloat(yearUmsatz.toFixed(1)));
+        dashboardData.absatz.push(parseFloat(yearAbsatz.toFixed(1)));
+        dashboardData.db2.push(parseFloat(yearDB2.toFixed(1)));
+        dashboardData.db2Percent.push(yearUmsatz > 0 ? parseFloat((yearDB2 / yearUmsatz * 100).toFixed(1)) : 0);
+        dashboardData.projektkosten.push(yearProjektkosten);
+        dashboardData.db3Jahr.push(parseFloat(yearDB3.toFixed(1)));
+    });
+    
+    // Calculate cumulative DB3
+    let cumulative = 0;
+    dashboardData.db3Jahr.forEach(value => {
+        cumulative += value;
+        dashboardData.db3Kumuliert.push(parseFloat(cumulative.toFixed(1)));
+    });
+    
+    return dashboardData;
+}
+
+function updateAllCharts() {
+    const data = calculateDashboardData();
+    
+    // Get all chart contexts
+    const umsatzChart = Chart.getChart('umsatz-chart');
+    const absatzChart = Chart.getChart('absatz-chart');
+    const db2Chart = Chart.getChart('db2-chart');
+    const projektkostenChart = Chart.getChart('projektkosten-chart');
+    const db3JahrChart = Chart.getChart('db3-jahr-chart');
+    const db3KumuliertChart = Chart.getChart('db3-kumuliert-chart');
+    
+    // Update each chart with new data
+    if (umsatzChart) {
+        umsatzChart.data.datasets[0].data = data.umsatz;
+        umsatzChart.update();
+    }
+    
+    if (absatzChart) {
+        absatzChart.data.datasets[0].data = data.absatz;
+        absatzChart.update();
+    }
+    
+    if (db2Chart) {
+        db2Chart.data.datasets[0].data = data.db2;
+        if (db2Chart.data.datasets[1]) {
+            db2Chart.data.datasets[1].data = data.db2Percent;
+        }
+        db2Chart.update();
+    }
+    
+    if (projektkostenChart) {
+        projektkostenChart.data.datasets[0].data = data.projektkosten;
+        projektkostenChart.update();
+    }
+    
+    if (db3JahrChart) {
+        db3JahrChart.data.datasets[0].data = data.db3Jahr;
+        db3JahrChart.update();
+    }
+    
+    if (db3KumuliertChart) {
+        db3KumuliertChart.data.datasets[0].data = data.db3Kumuliert;
+        db3KumuliertChart.update();
+    }
+}
 
 // Initialize everything when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
