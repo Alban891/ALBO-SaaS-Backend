@@ -2164,7 +2164,7 @@ ${artikelData.annahmen}
                             </div>
                             <div style="text-align: center; padding: 20px; background: var(--gray-light); border-radius: 8px;">
                                 <div style="font-size: 24px; font-weight: bold; color: var(--warning);">
-                                    ${artikelData.volume.toLocaleString('de-DE')}
+                                    ${formatThousands(artikelData.volume || 0)}
                                 </div>
                                 <div style="font-size: 11px; color: var(--gray); text-transform: uppercase;">Peak Absatz</div>
                             </div>
