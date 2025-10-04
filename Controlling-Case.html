@@ -2524,28 +2524,6 @@ ${artikelData.annahmen || 'Innovation durch neue Linie'}
     </div>
 </div>
                         
-                        <!-- KPI Summary -->
-                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px;">
-                            <div style="text-align: center; padding: 20px; background: var(--gray-light); border-radius: 8px;">
-                                <div style="font-size: 24px; font-weight: bold; color: var(--primary);">
-                                    ${(totalRevenue / 1000000).toFixed(1)}M€
-                                </div>
-                                <div style="font-size: 11px; color: var(--gray); text-transform: uppercase;">Total Revenue (6 Jahre)</div>
-                            </div>
-                            <div style="text-align: center; padding: 20px; background: var(--gray-light); border-radius: 8px;">
-                                <div style="font-size: 24px; font-weight: bold; color: var(--success);">
-                                    ${db2Margin}%
-                                </div>
-                                <div style="font-size: 11px; color: var(--gray); text-transform: uppercase;">Ø DB2-Marge</div>
-                            </div>
-                            <div style="text-align: center; padding: 20px; background: var(--gray-light); border-radius: 8px;">
-                                <div style="font-size: 24px; font-weight: bold; color: var(--warning);">
-                                     ${Math.max(...Object.values(artikelData.volumes || {})).toLocaleString('de-DE')}
-                                </div>
-                                <div style="font-size: 11px; color: var(--gray); text-transform: uppercase;">Peak Absatz</div>
-                            </div>
-                        </div>
-                        
                         <!-- Action Buttons -->
                         <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px;">
                             <button onclick="backToArtikelOverview()" 
