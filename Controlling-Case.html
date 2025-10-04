@@ -2244,8 +2244,8 @@ ${artikelData.annahmen || 'Innovation durch neue Linie'}
                 <label style="font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase; display: block; margin-bottom: 6px;">
                     📅 Release / Startdatum
                 </label>
-                <input type="month" id="release-datum" value="${artikelData.release || '2025-01'}" 
-                       onchange="updateZeithorizont()"
+                <input type="month" id="release-datum" value="${artikelData.release || '2025-01'}"  
+                       onchange="updateZeithorizont(); updateTabellenSpalten(); berechneModelle();"
                        style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px;">
             </div>
             
@@ -2431,13 +2431,27 @@ ${artikelData.annahmen || 'Innovation durch neue Linie'}
             <thead>
     <tr style="background: #f8fafc;">
         <th style="padding: 10px; text-align: left; font-weight: 600; border-bottom: 2px solid var(--border);">Parameter</th>
-        <th class="jahr-col jahr-1" style="padding: 10px; text-align: center; font-weight: 600; border-bottom: 2px solid var(--border);">Jahr 1</th>
-        <th class="jahr-col jahr-2" style="padding: 10px; text-align: center; font-weight: 600; border-bottom: 2px solid var(--border);">Jahr 2</th>
-        <th class="jahr-col jahr-3" style="padding: 10px; text-align: center; font-weight: 600; border-bottom: 2px solid var(--border);">Jahr 3</th>
-        <th class="jahr-col jahr-4" style="padding: 10px; text-align: center; font-weight: 600; border-bottom: 2px solid var(--border);">Jahr 4</th>
-        <th class="jahr-col jahr-5" style="padding: 10px; text-align: center; font-weight: 600; border-bottom: 2px solid var(--border);">Jahr 5</th>
-        <th class="jahr-col jahr-6" style="padding: 10px; text-align: center; font-weight: 600; border-bottom: 2px solid var(--border); display: none;">Jahr 6</th>
-        <th class="jahr-col jahr-7" style="padding: 10px; text-align: center; font-weight: 600; border-bottom: 2px solid var(--border); display: none;">Jahr 7</th>
+        <th class="jahr-col jahr-1" style="padding: 10px; text-align: center; font-weight: 600; border-bottom: 2px solid var(--border);">
+            <span class="jahr-header-1">Jahr 1</span>
+        </th>   
+        <th class="jahr-col jahr-2" style="padding: 10px; text-align: center; font-weight: 600; border-bottom: 2px solid var(--border);">
+            <span class="jahr-header-2">Jahr 2</span>
+        </th>
+        <th class="jahr-col jahr-3" style="padding: 10px; text-align: center; font-weight: 600; border-bottom: 2px solid var(--border);">
+            <span class="jahr-header-3">Jahr 3</span>
+        </th>
+       <th class="jahr-col jahr-4" style="padding: 10px; text-align: center; font-weight: 600; border-bottom: 2px solid var(--border);">
+            <span class="jahr-header-4">Jahr 4</span>
+        </th>
+        <th class="jahr-col jahr-5" style="padding: 10px; text-align: center; font-weight: 600; border-bottom: 2px solid var(--border);">
+            <span class="jahr-header-5">Jahr 5</span>
+        </th>
+        <th class="jahr-col jahr-6" style="padding: 10px; text-align: center; font-weight: 600; border-bottom: 2px solid var(--border); display: none;">
+            <span class="jahr-header-6">Jahr 6</span>
+        </th>
+        <th class="jahr-col jahr-7" style="padding: 10px; text-align: center; font-weight: 600; border-bottom: 2px solid var(--border); display: none;">
+            <span class="jahr-header-7">Jahr 7</span>
+        </th>
     </tr>
 </thead>
             <tbody>
@@ -2709,18 +2723,6 @@ setTimeout(() => {
         updateTabellenSpalten();
         updateErsteZeile();
         berechneModelle();
-        
-        // NEU: Korrigiere die Tabellen-Header
-        const startDate = document.getElementById('release-datum').value;
-        const startYear = parseInt(startDate.split('-')[0]);
-        for(let i = 1; i <= 7; i++) {
-            const headers = document.querySelectorAll(`.jahr-col.jahr-${i}`);
-            headers.forEach(th => {
-                if(th.tagName === 'TH') {
-                    th.textContent = startYear + i - 1;
-                }
-            });
-        }
     }
 }, 100);
 
@@ -4208,15 +4210,39 @@ function updateTabellenSpalten() {
     const startDate = document.getElementById('release-datum')?.value;
     if (!startDate) return;
     
-    const startYear = parseInt(startDate.split('-')[0]);
+    const [startYear, startMonth] = startDate.split('-');
+    const yearInt = parseInt(startYear);
+    const monthInt = parseInt(startMonth);
     
-    // Aktualisiere die Jahr-Headers
+    // Bestimme das tatsächliche Startjahr basierend auf Release-Monat
+    // Wenn Release in Q4 (Okt-Dez), starte Tabelle im gleichen Jahr
+    // Sonst starte im nächsten Jahr
+    let tableStartYear = yearInt;
+    if (monthInt <= 9) { // Jan-Sep
+        tableStartYear = yearInt + 1;
+    }
+    
+    // Aktualisiere die Jahr-Headers und Spalten-Sichtbarkeit
     for(let i = 1; i <= 7; i++) {
-        const headers = document.querySelectorAll(`.jahr-col.jahr-${i}`);
-        headers.forEach(element => {
-            // Nur TH-Elemente (Table Headers) updaten
+        const actualYear = tableStartYear + i - 1;
+        
+        // Update Headers in der Tabelle
+        const headerSpan = document.querySelector(`.jahr-header-${i}`);
+        if (headerSpan) {
+            headerSpan.textContent = actualYear;
+        }
+        
+        // Update alle Jahr-Spalten
+        const columns = document.querySelectorAll(`.jahr-col.jahr-${i}`);
+        columns.forEach(element => {
+            // Für TH-Elemente setze das Jahr direkt
             if (element.tagName === 'TH') {
-                element.textContent = startYear + i - 1;
+                const span = element.querySelector('span');
+                if (span) {
+                    span.textContent = actualYear;
+                } else {
+                    element.textContent = actualYear;
+                }
             }
             
             // Zeige/Verstecke basierend auf Horizont
@@ -4227,6 +4253,13 @@ function updateTabellenSpalten() {
             }
         });
     }
+    
+    // Speichere das Startjahr für spätere Berechnungen
+    if (!cfoDashboard.currentArtikel) return;
+    if (!cfoDashboard.artikelData[cfoDashboard.currentArtikel]) {
+        cfoDashboard.artikelData[cfoDashboard.currentArtikel] = {};
+    }
+    cfoDashboard.artikelData[cfoDashboard.currentArtikel].tableStartYear = tableStartYear;
 }
 
 // Rufe die Funktion auch beim Laden auf
