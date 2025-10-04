@@ -2524,42 +2524,136 @@ ${artikelData.annahmen || 'Innovation durch neue Linie'}
     </div>
 </div>
                         
-                        <!-- KPI Summary -->
-                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px;">
-                            <div style="text-align: center; padding: 20px; background: var(--gray-light); border-radius: 8px;">
-                                <div style="font-size: 24px; font-weight: bold; color: var(--primary);">
-                                    ${(totalRevenue / 1000000).toFixed(1)}M€
-                                </div>
-                                <div style="font-size: 11px; color: var(--gray); text-transform: uppercase;">Total Revenue (6 Jahre)</div>
-                            </div>
-                            <div style="text-align: center; padding: 20px; background: var(--gray-light); border-radius: 8px;">
-                                <div style="font-size: 24px; font-weight: bold; color: var(--success);">
-                                    ${db2Margin}%
-                                </div>
-                                <div style="font-size: 11px; color: var(--gray); text-transform: uppercase;">Ø DB2-Marge</div>
-                            </div>
-                            <div style="text-align: center; padding: 20px; background: var(--gray-light); border-radius: 8px;">
-                                <div style="font-size: 24px; font-weight: bold; color: var(--warning);">
-                                     ${Math.max(...Object.values(artikelData.volumes || {})).toLocaleString('de-DE')}
-                                </div>
-                                <div style="font-size: 11px; color: var(--gray); text-transform: uppercase;">Peak Absatz</div>
-                            </div>
-                        </div>
-                        
-                        <!-- Action Buttons -->
-                        <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px;">
-                            <button onclick="backToArtikelOverview()" 
-                                    style="padding: 10px 20px; border: 1px solid var(--border); background: white; color: var(--gray); border-radius: 6px; cursor: pointer;">
-                                Abbrechen
-                            </button>
-                            <button onclick="saveArtikelChanges()" 
-                                    style="padding: 10px 20px; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500;">
-                                💾 Alle Änderungen speichern
-                            </button>
-                        </div>
-                    </div>
+                        // ============================================
+// KPI-DASHBOARD ERWEITERUNG - In openArtikelDetail() einfügen
+// ============================================
+
+// 1. ERSETZE den bestehenden KPI Summary Block (Zeilen ~1744-1764) mit diesem erweiterten Code:
+
+// In der openArtikelDetail Funktion, ersetze den KPI Summary Bereich mit:
+
+<!-- KPI Dashboard mit erweiterbaren Kennzahlen -->
+<div style="background: var(--gray-light); padding: 16px; border-radius: 8px; margin-bottom: 24px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h3 style="font-size: 14px; font-weight: 600; color: var(--text);">
+            📊 LIVE KPI-DASHBOARD
+        </h3>
+        <button onclick="toggleErweiterteKPIs()" id="kpi-toggle-btn" 
+                style="padding: 6px 12px; background: white; border: 1px solid var(--primary); color: var(--primary); 
+                       border-radius: 6px; font-size: 11px; cursor: pointer; transition: all 0.2s;">
+            ➕ Erweiterte KPIs anzeigen
+        </button>
+    </div>
+    
+    <!-- Basis KPIs (immer sichtbar) -->
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 16px;">
+        <div style="text-align: center; padding: 20px; background: white; border-radius: 8px; border-left: 4px solid var(--primary);">
+            <div id="kpi-total-revenue" style="font-size: 24px; font-weight: bold; color: var(--primary);">
+                0.0M€
+            </div>
+            <div style="font-size: 11px; color: var(--gray); text-transform: uppercase;">Total Revenue (${currentHorizont} Jahre)</div>
+        </div>
+        <div style="text-align: center; padding: 20px; background: white; border-radius: 8px; border-left: 4px solid var(--success);">
+            <div id="kpi-avg-margin" style="font-size: 24px; font-weight: bold; color: var(--success);">
+                0%
+            </div>
+            <div style="font-size: 11px; color: var(--gray); text-transform: uppercase;">Ø DB2-Marge</div>
+        </div>
+        <div style="text-align: center; padding: 20px; background: white; border-radius: 8px; border-left: 4px solid var(--warning);">
+            <div id="kpi-peak-volume" style="font-size: 24px; font-weight: bold; color: var(--warning);">
+                0
+            </div>
+            <div style="font-size: 11px; color: var(--gray); text-transform: uppercase;">Peak Absatz</div>
+        </div>
+    </div>
+    
+    <!-- Erweiterte KPIs (toggle) -->
+    <div id="erweiterte-kpis" style="display: none;">
+        <!-- Profitabilität -->
+        <div style="margin-bottom: 16px; padding: 12px; background: white; border-radius: 8px;">
+            <div style="font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 8px;">
+                💰 Profitabilität
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+                <div style="text-align: center; padding: 12px; background: var(--gray-light); border-radius: 6px;">
+                    <div id="kpi-total-db2" style="font-size: 18px; font-weight: bold; color: var(--primary);">0.0M€</div>
+                    <div style="font-size: 10px; color: var(--gray);">Total DB2 absolut</div>
+                </div>
+                <div style="text-align: center; padding: 12px; background: var(--gray-light); border-radius: 6px;">
+                    <div id="kpi-db2-per-unit" style="font-size: 18px; font-weight: bold; color: var(--success);">0€</div>
+                    <div style="font-size: 10px; color: var(--gray);">Ø DB2/Stück</div>
+                </div>
+                <div style="text-align: center; padding: 12px; background: var(--gray-light); border-radius: 6px;">
+                    <div id="kpi-margin-range" style="font-size: 18px; font-weight: bold; color: var(--warning);">0-0%</div>
+                    <div style="font-size: 10px; color: var(--gray);">Marge Min-Max</div>
                 </div>
             </div>
+        </div>
+        
+        <!-- Preis-Analyse -->
+        <div style="margin-bottom: 16px; padding: 12px; background: white; border-radius: 8px;">
+            <div style="font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 8px;">
+                📈 Preis-Analyse
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+                <div style="text-align: center; padding: 12px; background: var(--gray-light); border-radius: 6px;">
+                    <div id="kpi-asp" style="font-size: 18px; font-weight: bold; color: var(--primary);">0€</div>
+                    <div style="font-size: 10px; color: var(--gray);">Ø Verkaufspreis (ASP)</div>
+                </div>
+                <div style="text-align: center; padding: 12px; background: var(--gray-light); border-radius: 6px;">
+                    <div id="kpi-price-trend" style="font-size: 18px; font-weight: bold; color: var(--success);">0%</div>
+                    <div style="font-size: 10px; color: var(--gray);">Preis-Trend</div>
+                </div>
+                <div style="text-align: center; padding: 12px; background: var(--gray-light); border-radius: 6px;">
+                    <div id="kpi-price-volatility" style="font-size: 18px; font-weight: bold; color: var(--warning);">0%</div>
+                    <div style="font-size: 10px; color: var(--gray);">Preis-Volatilität</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mengen-Analyse -->
+        <div style="margin-bottom: 16px; padding: 12px; background: white; border-radius: 8px;">
+            <div style="font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 8px;">
+                📦 Mengen-Analyse
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+                <div style="text-align: center; padding: 12px; background: var(--gray-light); border-radius: 6px;">
+                    <div id="kpi-total-volume" style="font-size: 18px; font-weight: bold; color: var(--primary);">0</div>
+                    <div style="font-size: 10px; color: var(--gray);">Total Volumen</div>
+                </div>
+                <div style="text-align: center; padding: 12px; background: var(--gray-light); border-radius: 6px;">
+                    <div id="kpi-cagr-volume" style="font-size: 18px; font-weight: bold; color: var(--success);">0%</div>
+                    <div style="font-size: 10px; color: var(--gray);">CAGR Menge</div>
+                </div>
+                <div style="text-align: center; padding: 12px; background: var(--gray-light); border-radius: 6px;">
+                    <div id="kpi-rampup" style="font-size: 18px; font-weight: bold; color: var(--warning);">0J</div>
+                    <div style="font-size: 10px; color: var(--gray);">Ramp-up Zeit (80%)</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Kosten-Analyse -->
+        <div style="padding: 12px; background: white; border-radius: 8px;">
+            <div style="font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 8px;">
+                ⚙️ Kosten-Analyse
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+                <div style="text-align: center; padding: 12px; background: var(--gray-light); border-radius: 6px;">
+                    <div id="kpi-avg-hk" style="font-size: 18px; font-weight: bold; color: var(--primary);">0€</div>
+                    <div style="font-size: 10px; color: var(--gray);">Ø Herstellkosten</div>
+                </div>
+                <div style="text-align: center; padding: 12px; background: var(--gray-light); border-radius: 6px;">
+                    <div id="kpi-hk-degression" style="font-size: 18px; font-weight: bold; color: var(--success);">0%</div>
+                    <div style="font-size: 10px; color: var(--gray);">HK-Degression</div>
+                </div>
+                <div style="text-align: center; padding: 12px; background: var(--gray-light); border-radius: 6px;">
+                    <div id="kpi-learning-curve" style="font-size: 18px; font-weight: bold; color: var(--warning);">0%</div>
+                    <div style="font-size: 10px; color: var(--gray);">Learning Curve</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
         `;
 
 // Speichere den originalen Artikel-Tab-Content
@@ -3465,6 +3559,24 @@ function aiAction(action) {
     });
 }
 
+// Toggle-Funktion für erweiterte KPIs
+window.toggleErweiterteKPIs = function() {
+    const erweiterteKPIs = document.getElementById('erweiterte-kpis');
+    const toggleBtn = document.getElementById('kpi-toggle-btn');
+    
+    if (erweiterteKPIs.style.display === 'none') {
+        erweiterteKPIs.style.display = 'block';
+        toggleBtn.innerHTML = '➖ Erweiterte KPIs ausblenden';
+        toggleBtn.style.background = 'var(--primary)';
+        toggleBtn.style.color = 'white';
+    } else {
+        erweiterteKPIs.style.display = 'none';
+        toggleBtn.innerHTML = '➕ Erweiterte KPIs anzeigen';
+        toggleBtn.style.background = 'white';
+        toggleBtn.style.color = 'var(--primary)';
+    }
+};
+
 window.saveArtikelChanges = function() {
     if (!cfoDashboard.currentArtikel) return;
     
@@ -4156,6 +4268,11 @@ function updateErsteZeile() {
        selectedModels.kosten !== 'manuell') {
         berechneModelle();
     }
+
+    // KPIs nach Startwert-Update aktualisieren
+    setTimeout(() => {
+        berechneArtikelKPIs();
+    }, 100);
 }
 
 function applyModell(typ, modell) {
@@ -4370,7 +4487,6 @@ function resetModelle() {
     berechneModelle();
 }
 
-// KPI Berechnungsfunktion für Artikel-Details
 function berechneArtikelKPIs() {
     const tableData = [];
     
@@ -4387,57 +4503,127 @@ function berechneArtikelKPIs() {
             
             if (menge > 0 && preis > 0) {
                 tableData.push({
+                    jahr: i,
                     menge: menge,
                     preis: preis,
                     hk: hk,
                     umsatz: menge * preis,
                     db2: menge * (preis - hk),
+                    db2ProStueck: preis - hk,
                     marge: preis > 0 ? ((preis - hk) / preis * 100) : 0
                 });
             }
         }
     }
     
-    // Berechne KPIs
+    if (tableData.length === 0) return;
+    
+    // === BASIS KPIs ===
+    // 1. Total Revenue
     const totalRevenue = tableData.reduce((sum, year) => sum + year.umsatz, 0);
-    const avgMarge = tableData.length > 0 ? 
-        tableData.reduce((sum, year) => sum + year.marge, 0) / tableData.length : 0;
-    const peakAbsatz = tableData.length > 0 ? 
-        Math.max(...tableData.map(year => year.menge)) : 0;
+    updateKPIElement('kpi-total-revenue', formatRevenue(totalRevenue));
     
-    // Update die drei KPI-Boxen unten
-    // Total Revenue Box (erste Box mit "0.0M€")
-    const revenueBoxes = document.querySelectorAll('div');
-    revenueBoxes.forEach(box => {
-        if (box.textContent.includes('TOTAL REVENUE')) {
-            const valueDiv = box.previousElementSibling;
-            if (valueDiv && valueDiv.style.fontSize === '24px') {
-                valueDiv.textContent = formatRevenue(totalRevenue);
+    // 2. Ø DB2-Marge
+    const avgMarge = tableData.reduce((sum, year) => sum + year.marge, 0) / tableData.length;
+    updateKPIElement('kpi-avg-margin', avgMarge.toFixed(1) + '%');
+    
+    // 3. Peak Absatz
+    const peakAbsatz = Math.max(...tableData.map(year => year.menge));
+    updateKPIElement('kpi-peak-volume', formatThousands(peakAbsatz));
+    
+    // === ERWEITERTE KPIs ===
+    
+    // Profitabilität
+    const totalDB2 = tableData.reduce((sum, year) => sum + year.db2, 0);
+    updateKPIElement('kpi-total-db2', formatRevenue(totalDB2));
+    
+    const avgDB2PerUnit = tableData.reduce((sum, year) => sum + year.db2ProStueck, 0) / tableData.length;
+    updateKPIElement('kpi-db2-per-unit', formatDecimal(avgDB2PerUnit) + '€');
+    
+    const minMarge = Math.min(...tableData.map(year => year.marge));
+    const maxMarge = Math.max(...tableData.map(year => year.marge));
+    updateKPIElement('kpi-margin-range', minMarge.toFixed(0) + '-' + maxMarge.toFixed(0) + '%');
+    
+    // Preis-Analyse
+    const totalVolume = tableData.reduce((sum, year) => sum + year.menge, 0);
+    const asp = totalRevenue / totalVolume;
+    updateKPIElement('kpi-asp', formatDecimal(asp) + '€');
+    
+    const startPreis = tableData[0]?.preis || 0;
+    const endPreis = tableData[tableData.length - 1]?.preis || 0;
+    const preisTrend = startPreis > 0 ? ((endPreis - startPreis) / startPreis * 100) : 0;
+    updateKPIElement('kpi-price-trend', (preisTrend >= 0 ? '+' : '') + preisTrend.toFixed(1) + '%');
+    
+    const preisArray = tableData.map(y => y.preis);
+    const avgPreis = preisArray.reduce((a, b) => a + b, 0) / preisArray.length;
+    const preisStdDev = Math.sqrt(preisArray.reduce((sq, n) => sq + Math.pow(n - avgPreis, 2), 0) / preisArray.length);
+    const preisVolatility = avgPreis > 0 ? (preisStdDev / avgPreis * 100) : 0;
+    updateKPIElement('kpi-price-volatility', preisVolatility.toFixed(1) + '%');
+    
+    // Mengen-Analyse
+    updateKPIElement('kpi-total-volume', formatThousands(totalVolume));
+    
+    const startMenge = tableData[0]?.menge || 1;
+    const endMenge = tableData[tableData.length - 1]?.menge || 1;
+    const years = tableData.length;
+    const cagrVolume = years > 1 ? (Math.pow(endMenge / startMenge, 1/years) - 1) * 100 : 0;
+    updateKPIElement('kpi-cagr-volume', cagrVolume.toFixed(1) + '%');
+    
+    const targetVolume = peakAbsatz * 0.8;
+    let rampupYears = 0;
+    for (let i = 0; i < tableData.length; i++) {
+        if (tableData[i].menge >= targetVolume) {
+            rampupYears = i + 1;
+            break;
+        }
+    }
+    updateKPIElement('kpi-rampup', rampupYears > 0 ? rampupYears + 'J' : 'N/A');
+    
+    // Kosten-Analyse
+    const totalHKVolume = tableData.reduce((sum, year) => sum + (year.menge * year.hk), 0);
+    const avgHK = totalVolume > 0 ? totalHKVolume / totalVolume : 0;
+    updateKPIElement('kpi-avg-hk', formatDecimal(avgHK) + '€');
+    
+    const startHK = tableData[0]?.hk || 0;
+    const endHK = tableData[tableData.length - 1]?.hk || 0;
+    const hkDegression = startHK > 0 ? ((endHK - startHK) / startHK * 100) : 0;
+    updateKPIElement('kpi-hk-degression', (hkDegression >= 0 ? '+' : '') + hkDegression.toFixed(1) + '%');
+    
+    // Learning Curve berechnen (HK-Reduktion bei Mengenverdopplung)
+    let learningCurve = 0;
+    if (tableData.length > 1) {
+        let cumVolume1 = tableData[0].menge;
+        let cumVolume2 = 0;
+        let hk1 = tableData[0].hk;
+        let hk2 = 0;
+        
+        for (let i = 1; i < tableData.length; i++) {
+            cumVolume2 += tableData[i].menge;
+            if (cumVolume2 >= cumVolume1 * 2) {
+                hk2 = tableData[i].hk;
+                learningCurve = hk1 > 0 ? ((hk1 - hk2) / hk1 * 100) : 0;
+                break;
             }
         }
-    });
-    
-    // DB2-Marge Box (mittlere Box mit "NaN%")
-    revenueBoxes.forEach(box => {
-        if (box.textContent.includes('DB2-MARGE')) {
-            const valueDiv = box.previousElementSibling;
-            if (valueDiv && valueDiv.style.fontSize === '24px') {
-                valueDiv.textContent = avgMarge > 0 ? avgMarge.toFixed(1) + '%' : '0%';
-            }
-        }
-    });
-    
-    // Peak Absatz Box (rechte Box mit "-∞")
-    revenueBoxes.forEach(box => {
-        if (box.textContent.includes('PEAK ABSATZ')) {
-            const valueDiv = box.previousElementSibling;
-            if (valueDiv && valueDiv.style.fontSize === '24px') {
-                valueDiv.textContent = peakAbsatz > 0 ? formatThousands(peakAbsatz) : '0';
-            }
-        }
-    });
+    }
+    updateKPIElement('kpi-learning-curve', learningCurve.toFixed(1) + '%');
     
     return { totalRevenue, avgMarge, peakAbsatz };
+}
+
+// Helper-Funktion für sicheres Update der KPI-Elemente
+function updateKPIElement(elementId, value) {
+    const element = document.getElementById(elementId);
+    if (element) {
+        element.textContent = value;
+        
+        // Füge Animation hinzu für visuelles Feedback
+        element.style.transition = 'all 0.3s ease';
+        element.style.transform = 'scale(1.1)';
+        setTimeout(() => {
+            element.style.transform = 'scale(1)';
+        }, 300);
+    }
 }
 
 // Event Listener für Tabellen-Inputs
@@ -4449,15 +4635,29 @@ function aktiviereKPIUpdates() {
             const hkInput = document.getElementById(`hk-jahr-${i}`);
             
             if(mengeInput) {
+                // Entferne alte Listener
+                mengeInput.removeEventListener('input', berechneArtikelKPIs);
+                mengeInput.removeEventListener('change', berechneArtikelKPIs);
+                // Füge neue hinzu
                 mengeInput.addEventListener('input', berechneArtikelKPIs);
+                mengeInput.addEventListener('change', berechneArtikelKPIs);
             }
             if(preisInput) {
+                preisInput.removeEventListener('input', berechneArtikelKPIs);
+                preisInput.removeEventListener('change', berechneArtikelKPIs);
                 preisInput.addEventListener('input', berechneArtikelKPIs);
+                preisInput.addEventListener('change', berechneArtikelKPIs);
             }
             if(hkInput) {
+                hkInput.removeEventListener('input', berechneArtikelKPIs);
+                hkInput.removeEventListener('change', berechneArtikelKPIs);
                 hkInput.addEventListener('input', berechneArtikelKPIs);
+                hkInput.addEventListener('change', berechneArtikelKPIs);
             }
         }
+        
+        // Initiale Berechnung
+        berechneArtikelKPIs();
     }, 200);
 }
 
