@@ -3109,18 +3109,24 @@ function getProjekteTabContent() {
                     <div style="font-size: 11px; font-weight: 600; color: var(--primary); margin-bottom: 8px;">
                         ✨ KI-Empfehlung für ${empfehlung.regeln.titel}:
                     </div>
-                    <div id="empfohlene-kostenblöcke">
-                        ${empfehlung.regeln.empfohleneBlöcke.map(block => `
-                            <label style="display: inline-flex; align-items: center; margin: 4px; padding: 6px 10px; background: white; border: 1px solid var(--primary); border-radius: 4px; font-size: 11px; cursor: pointer;">
-                                <input type="checkbox" checked id="block-${block.id}"
-                                        onchange="updateKostenbloeckeAuswahl()"
-                                        data-block='${JSON.stringify(block)}' 
-                                        style="margin-right: 6px;">
-                                ${block.icon} ${block.name} (${block.anteil}%)
-                            </label>
-                        `).join('')}
-                    </div>
-                </div>
+                    <div id="empfohlene-kostenblöcke" style="display: flex; flex-wrap: wrap; gap: 8px;">
+    ${empfehlung.regeln.empfohleneBlöcke.map(block => `
+        <div class="kostenblock-item" id="container-${block.id}" style="display: inline-flex; align-items: center; padding: 6px 10px; background: white; border: 1px solid var(--primary); border-radius: 4px; position: relative;">
+            <input type="checkbox" checked id="block-${block.id}" 
+                   onchange="updateKostenbloeckeAuswahl()"
+                   data-block='${JSON.stringify(block)}' 
+                   style="margin-right: 6px;">
+            <label for="block-${block.id}" style="font-size: 11px; cursor: pointer; margin-right: 8px;">
+                ${block.icon} ${block.name} (${block.anteil}%)
+            </label>
+            <button onclick="entferneKostenblock('${block.id}')" 
+                    style="background: transparent; border: none; color: var(--danger); cursor: pointer; padding: 0 4px; font-size: 14px; line-height: 1;"
+                    title="Kostenblock entfernen">
+                ×
+            </button>
+        </div>
+    `).join('')}
+</div>
 
                 <button onclick="addCustomKostenblock()" style="padding: 8px 16px; background: var(--primary); color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">
                     + Eigenen Kostenblock hinzufügen
@@ -3353,6 +3359,100 @@ function setzeInitialeTimeline() {
     
     // Trigger Update
     updateProjektZeitraum();
+}
+
+// Kostenblock komplett entfernen
+function entferneKostenblock(blockId) {
+    // Entferne den Container aus der DOM
+    const container = document.getElementById(`container-${blockId}`);
+    if (container) {
+        container.remove();
+    }
+    
+    // Update die Tabelle
+    updateKostenbloeckeAuswahl();
+}
+
+// Kostenblock wieder hinzufügen
+function kostenblockWiederHinzufuegen() {
+    const modalHTML = `
+        <div id="block-restore-modal" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 9999; display: flex; align-items: center; justify-content: center;">
+            <div style="background: white; padding: 24px; border-radius: 8px; max-width: 500px; max-height: 80vh; overflow-y: auto;">
+                <h3 style="margin-bottom: 16px;">Kostenblock auswählen</h3>
+                <div style="font-size: 12px; color: var(--gray); margin-bottom: 16px;">
+                    Wählen Sie einen Standard-Kostenblock oder erstellen Sie einen eigenen:
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <h4 style="font-size: 13px; margin-bottom: 12px;">Software-Blöcke:</h4>
+                    <button onclick="addStandardBlock('personal', 'Personal', '👥')" style="margin: 4px; padding: 6px 12px; border: 1px solid var(--border); background: white; border-radius: 4px; font-size: 11px; cursor: pointer;">👥 Personal</button>
+                    <button onclick="addStandardBlock('cloud', 'Cloud & Infrastructure', '☁️')" style="margin: 4px; padding: 6px 12px; border: 1px solid var(--border); background: white; border-radius: 4px; font-size: 11px; cursor: pointer;">☁️ Cloud & Infrastructure</button>
+                    <button onclick="addStandardBlock('lizenzen', 'Software-Lizenzen', '💿')" style="margin: 4px; padding: 6px 12px; border: 1px solid var(--border); background: white; border-radius: 4px; font-size: 11px; cursor: pointer;">💿 Software-Lizenzen</button>
+                    <button onclick="addStandardBlock('testing', 'Testing & QA', '🧪')" style="margin: 4px; padding: 6px 12px; border: 1px solid var(--border); background: white; border-radius: 4px; font-size: 11px; cursor: pointer;">🧪 Testing & QA</button>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <h4 style="font-size: 13px; margin-bottom: 12px;">Hardware-Blöcke:</h4>
+                    <button onclick="addStandardBlock('material', 'Material & Prototypen', '🔧')" style="margin: 4px; padding: 6px 12px; border: 1px solid var(--border); background: white; border-radius: 4px; font-size: 11px; cursor: pointer;">🔧 Material & Prototypen</button>
+                    <button onclick="addStandardBlock('werkzeuge', 'Werkzeuge & Formen', '⚙️')" style="margin: 4px; padding: 6px 12px; border: 1px solid var(--border); background: white; border-radius: 4px; font-size: 11px; cursor: pointer;">⚙️ Werkzeuge & Formen</button>
+                    <button onclick="addStandardBlock('zertifizierung', 'Zertifizierung', '📋')" style="margin: 4px; padding: 6px 12px; border: 1px solid var(--border); background: white; border-radius: 4px; font-size: 11px; cursor: pointer;">📋 Zertifizierung</button>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <h4 style="font-size: 13px; margin-bottom: 12px;">Service-Blöcke:</h4>
+                    <button onclick="addStandardBlock('beratung', 'Beratung', '💼')" style="margin: 4px; padding: 6px 12px; border: 1px solid var(--border); background: white; border-radius: 4px; font-size: 11px; cursor: pointer;">💼 Beratung</button>
+                    <button onclick="addStandardBlock('schulung', 'Schulungen', '🎓')" style="margin: 4px; padding: 6px 12px; border: 1px solid var(--border); background: white; border-radius: 4px; font-size: 11px; cursor: pointer;">🎓 Schulungen</button>
+                    <button onclick="addStandardBlock('reise', 'Reisekosten', '✈️')" style="margin: 4px; padding: 6px 12px; border: 1px solid var(--border); background: white; border-radius: 4px; font-size: 11px; cursor: pointer;">✈️ Reisekosten</button>
+                </div>
+                
+                <div style="display: flex; gap: 12px; justify-content: flex-end; border-top: 1px solid var(--border); padding-top: 16px;">
+                    <button onclick="closeBlockRestoreModal()" style="padding: 8px 16px; border: 1px solid var(--border); background: white; border-radius: 4px;">Schließen</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+}
+
+function addStandardBlock(id, name, icon) {
+    const container = document.getElementById('empfohlene-kostenblöcke');
+    
+    // Prüfe ob Block schon existiert
+    if (document.getElementById(`container-${id}`)) {
+        alert('Dieser Kostenblock ist bereits vorhanden!');
+        return;
+    }
+    
+    // Füge neuen Block hinzu
+    const newBlock = document.createElement('div');
+    newBlock.className = 'kostenblock-item';
+    newBlock.id = `container-${id}`;
+    newBlock.style = 'display: inline-flex; align-items: center; padding: 6px 10px; background: white; border: 1px solid var(--primary); border-radius: 4px; position: relative;';
+    
+    newBlock.innerHTML = `
+        <input type="checkbox" checked id="block-${id}" 
+               onchange="updateKostenbloeckeAuswahl()"
+               data-block='{"id":"${id}","name":"${name}","icon":"${icon}","anteil":0}' 
+               style="margin-right: 6px;">
+        <label for="block-${id}" style="font-size: 11px; cursor: pointer; margin-right: 8px;">
+            ${icon} ${name}
+        </label>
+        <button onclick="entferneKostenblock('${id}')" 
+                style="background: transparent; border: none; color: var(--danger); cursor: pointer; padding: 0 4px; font-size: 14px; line-height: 1;"
+                title="Kostenblock entfernen">
+            ×
+        </button>
+    `;
+    
+    container.appendChild(newBlock);
+    closeBlockRestoreModal();
+    updateKostenbloeckeAuswahl();
+}
+
+function closeBlockRestoreModal() {
+    const modal = document.getElementById('block-restore-modal');
+    if (modal) modal.remove();
 }
 
 function getWirtschaftlichkeitTabContent() {
