@@ -4211,6 +4211,106 @@ function generateEditableRow(prefix) {
     return html;
 }
 
+// Helper-Funktionen für Wirtschaftlichkeit (nach Zeile 3950 einfügen)
+
+function generateCostRow(prefix, negative = false) {
+    const jahre = [2024, 2025, 2026, 2027, 2028, 2029, 2030];
+    let html = '';
+    
+    jahre.forEach(jahr => {
+        html += `<td style="padding: 6px; text-align: right; color: ${negative ? 'var(--danger)' : 'inherit'};">
+                    <span id="${prefix}-${jahr}">0</span>
+                 </td>`;
+    });
+    
+    html += `<td style="padding: 6px; text-align: right; background: #f1f5f9; color: ${negative ? 'var(--danger)' : 'inherit'};">
+                <span id="${prefix}-total">0</span>
+             </td>`;
+    
+    return html;
+}
+
+function generateResultRow(prefix, color = 'inherit') {
+    const jahre = [2024, 2025, 2026, 2027, 2028, 2029, 2030];
+    let html = '';
+    
+    jahre.forEach(jahr => {
+        html += `<td style="padding: 8px; text-align: right; font-weight: bold; color: ${color};">
+                    <span id="${prefix}-${jahr}">0</span>
+                 </td>`;
+    });
+    
+    html += `<td style="padding: 8px; text-align: right; font-weight: bold; background: #1e293b; color: white;">
+                <span id="${prefix}-total">0</span>
+             </td>`;
+    
+    return html;
+}
+
+function generatePercentageResultRow(prefix) {
+    const jahre = [2024, 2025, 2026, 2027, 2028, 2029, 2030];
+    let html = '';
+    
+    jahre.forEach(jahr => {
+        html += `<td style="padding: 4px 8px; text-align: right; font-size: 10px; color: var(--gray);">
+                    <span id="${prefix}-${jahr}">0%</span>
+                 </td>`;
+    });
+    
+    html += `<td style="padding: 4px 8px; text-align: right; background: #f1f5f9;">
+                <span id="${prefix}-avg">0%</span>
+             </td>`;
+    
+    return html;
+}
+
+function generateProjectCostRow(type) {
+    const jahre = [2024, 2025, 2026, 2027, 2028, 2029, 2030];
+    let html = '';
+    
+    jahre.forEach(jahr => {
+        html += `<td style="padding: 6px; text-align: right; color: var(--danger);">
+                    <span id="${type}-${jahr}">0</span>
+                 </td>`;
+    });
+    
+    html += `<td style="padding: 6px; text-align: right; background: #f1f5f9; color: var(--danger);">
+                <span id="${type}-total">0</span>
+             </td>`;
+    
+    return html;
+}
+
+function getRevenueForYear(jahr) {
+    // Später aus Artikel-Tab holen
+    const defaultRevenues = {
+        2024: 0,
+        2025: 2900,
+        2026: 10800,
+        2027: 24200,
+        2028: 42300,
+        2029: 47000,
+        2030: 48800
+    };
+    return defaultRevenues[jahr] || 0;
+}
+
+function formatNumber(value, decimals = 0) {
+    if (!value || isNaN(value)) return '0';
+    return value.toFixed(decimals).replace('.', ',');
+}
+
+function updateWirtschaftlichkeit() {
+    // Platzhalter - wird später implementiert
+    console.log('Wirtschaftlichkeit wird berechnet...');
+}
+
+function updateViewLevel() {
+    const level = document.getElementById('view-level').value;
+    // Zeige/Verstecke Zeilen je nach Level
+    console.log('View Level:', level);
+}
+
 function initializeAI() {
     // Initial welcome message
     cfoDashboard.aiController.addAIMessage({
