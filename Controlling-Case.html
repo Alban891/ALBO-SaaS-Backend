@@ -4085,10 +4085,7 @@ function updateTabellenSpalten() {
     // Wenn Release in Q4 (Okt-Dez), starte Tabelle im gleichen Jahr
     // Sonst starte im nächsten Jahr
     let tableStartYear = yearInt;
-    if (monthInt <= 9) { // Jan-Sep
-        tableStartYear = yearInt + 1;
-    }
-    
+   
     // Aktualisiere die Jahr-Headers und Spalten-Sichtbarkeit
     for(let i = 1; i <= 7; i++) {
         const actualYear = tableStartYear + i - 1;
