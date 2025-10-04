@@ -3914,10 +3914,7 @@ function switchArtikelDetailTab(tabName) {
             break;
             
         case 'projekte':
-            if (!cfoDashboard.artikelDetailTabs.projekte) {
-                cfoDashboard.artikelDetailTabs.projekte = getProjekteTabContent();
-            }
-            contentDiv.innerHTML = cfoDashboard.artikelDetailTabs.projekte;
+            contentDiv.innerHTML = getProjekteTabContent();
             break;
             
         case 'wirtschaft':
