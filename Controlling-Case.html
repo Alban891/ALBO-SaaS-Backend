@@ -3141,7 +3141,7 @@ function getProjekteTabContent() {
     `;
 }
 
-// Generiere Kostentabelle mit dynamischen Jahren und Blöcken
+// Generiere Kostentabelle mit dynamischen Jahren und löschbaren Zeilen
 function generateKostenTabelle(customStartYear = null, customEndYear = null) {
     const empfehlung = generiereKostenEmpfehlung();
     
@@ -3167,10 +3167,10 @@ function generateKostenTabelle(customStartYear = null, customEndYear = null) {
         }
     }
     
-    // Nur aktive Blöcke anzeigen - Checkboxen prüfen
+    // Nur aktive Blöcke anzeigen
     const aktiveBlöcke = empfehlung.regeln.empfohleneBlöcke.filter(block => {
         const checkbox = document.getElementById(`block-${block.id}`);
-        return !checkbox || checkbox.checked; // Wenn Checkbox nicht existiert oder checked ist
+        return !checkbox || checkbox.checked;
     });
     
     const artikelData = cfoDashboard.artikelData[cfoDashboard.currentArtikel] || {};
@@ -3190,11 +3190,12 @@ function generateKostenTabelle(customStartYear = null, customEndYear = null) {
                             </th>`;
                         }).join('')}
                         <th style="padding: 8px; text-align: center; font-weight: bold;">Gesamt</th>
+                        <th style="padding: 8px; text-align: center; width: 60px;">Aktion</th>
                     </tr>
                 </thead>
                 <tbody id="kosten-tbody">
                     ${aktiveBlöcke.map(block => `
-                        <tr data-block-id="${block.id}">
+                        <tr data-block-id="${block.id}" id="row-${block.id}">
                             <td style="padding: 8px; font-weight: 600;">
                                 ${block.icon} ${block.name}
                             </td>
@@ -3208,6 +3209,14 @@ function generateKostenTabelle(customStartYear = null, customEndYear = null) {
                                 </td>`;
                             }).join('')}
                             <td style="padding: 8px; font-weight: bold;" id="summe-${block.id}">0€</td>
+                            <td style="padding: 8px; text-align: center;">
+                                <button onclick="entferneTabellenzeile('${block.id}')" 
+                                        style="background: transparent; border: 1px solid var(--danger); color: var(--danger); 
+                                               padding: 2px 8px; border-radius: 3px; font-size: 10px; cursor: pointer;"
+                                        title="Zeile entfernen">
+                                    ✕
+                                </button>
+                            </td>
                         </tr>
                     `).join('')}
                 </tbody>
@@ -3216,6 +3225,7 @@ function generateKostenTabelle(customStartYear = null, customEndYear = null) {
                         <td style="padding: 10px;">GESAMT</td>
                         ${jahre.map(jahr => `<td style="padding: 10px; text-align: center;" id="gesamt-${jahr}">0€</td>`).join('')}
                         <td style="padding: 10px; text-align: center;" id="gesamt-total">0€</td>
+                        <td></td>
                     </tr>
                 </tfoot>
             </table>
@@ -3453,6 +3463,24 @@ function addStandardBlock(id, name, icon) {
 function closeBlockRestoreModal() {
     const modal = document.getElementById('block-restore-modal');
     if (modal) modal.remove();
+}
+
+// Entferne Tabellenzeile und deaktiviere entsprechende Checkbox
+function entferneTabellenzeile(blockId) {
+    // Entferne die Zeile aus der Tabelle
+    const row = document.getElementById(`row-${blockId}`);
+    if (row) {
+        row.remove();
+    }
+    
+    // Deaktiviere die entsprechende Checkbox oben
+    const checkbox = document.getElementById(`block-${blockId}`);
+    if (checkbox) {
+        checkbox.checked = false;
+    }
+    
+    // Update Summen
+    updateKostenSumme();
 }
 
 function getWirtschaftlichkeitTabContent() {
