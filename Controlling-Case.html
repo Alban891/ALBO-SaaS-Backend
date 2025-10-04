@@ -3203,8 +3203,9 @@ function generateKostenTabelle(customStartYear = null, customEndYear = null) {
                                 const isReleaseYear = releaseYear && parseInt(jahr) === releaseYear;
                                 return `<td style="padding: 8px; ${isReleaseYear ? 'background: #fffbeb;' : ''}">
                                     <input type="text" id="kosten-${block.id}-${jahr}" 
-                                           placeholder="0" 
-                                           onchange="updateKostenSumme()"
+                                           placeholder="0"
+                                           onchange="formatKostenInput(this); updateKostenSumme();"
+                                           onblur="formatKostenInput(this);"
                                            style="width: 60px; padding: 2px; border: 1px solid var(--border); border-radius: 2px; text-align: right;">
                                 </td>`;
                             }).join('')}
@@ -3479,7 +3480,112 @@ function entferneTabellenzeile(blockId) {
         checkbox.checked = false;
     }
     
-    // Update Summen
+// Update Kostensummen - Berechnet alle Summen automatisch
+function updateKostenSumme() {
+    const tbody = document.getElementById('kosten-tbody');
+    if (!tbody) return;
+    
+    // Sammle alle Jahre aus den Tabellen-Headers
+    const headerCells = document.querySelectorAll('thead th');
+    const jahre = [];
+    headerCells.forEach(cell => {
+        const cellText = cell.textContent.trim();
+        // Extrahiere Jahr (4-stellige Zahl)
+        if (/^\d{4}/.test(cellText)) {
+            jahre.push(cellText.substring(0, 4));
+        }
+    });
+    
+    // Initialisiere Jahres-Summen
+    const jahresSummen = {};
+    jahre.forEach(jahr => {
+        jahresSummen[jahr] = 0;
+    });
+    
+    let gesamtSummeAlle = 0;
+    
+    // Durchlaufe alle Zeilen
+    const rows = tbody.querySelectorAll('tr[data-block-id]');
+    rows.forEach(row => {
+        const blockId = row.dataset.blockId;
+        let zeilenSumme = 0;
+        
+        // Durchlaufe alle Jahre für diese Zeile
+        jahre.forEach(jahr => {
+            const input = document.getElementById(`kosten-${blockId}-${jahr}`);
+            if (input) {
+                // Parse den Wert (entferne Tausender-Trenner, ersetze Komma mit Punkt)
+                let value = input.value.trim();
+                value = value.replace(/\./g, '').replace(',', '.');
+                const numValue = parseFloat(value) || 0;
+                
+                // Addiere zur Zeilensumme und Jahressumme
+                zeilenSumme += numValue;
+                jahresSummen[jahr] += numValue;
+            }
+        });
+        
+        // Update Zeilensumme
+        const summeCell = document.getElementById(`summe-${blockId}`);
+        if (summeCell) {
+            summeCell.textContent = formatKostenAnzeige(zeilenSumme);
+        }
+        
+        gesamtSummeAlle += zeilenSumme;
+    });
+    
+    // Update Jahres-Summen in der Fußzeile
+    jahre.forEach(jahr => {
+        const gesamtCell = document.getElementById(`gesamt-${jahr}`);
+        if (gesamtCell) {
+            gesamtCell.textContent = formatKostenAnzeige(jahresSummen[jahr]);
+        }
+    });
+    
+    // Update Gesamt-Summe
+    const gesamtTotalCell = document.getElementById('gesamt-total');
+    if (gesamtTotalCell) {
+        gesamtTotalCell.textContent = formatKostenAnzeige(gesamtSummeAlle);
+    }
+}
+
+// Formatiere Kostenanzeige (mit k€ oder M€)
+function formatKostenAnzeige(value) {
+    if (value === 0) return '0€';
+    
+    // Wenn >= 1 Million
+    if (value >= 1000) {
+        return (value / 1000).toFixed(1).replace('.', ',') + 'M€';
+    }
+    
+    // Standard in k€
+    return value.toFixed(0) + '€';
+}
+
+// Erweiterte Input-Formatierung mit automatischer Berechnung
+function formatKostenInput(input) {
+    let value = input.value.trim();
+    
+    // Erlaube leeres Feld
+    if (value === '') {
+        updateKostenSumme();
+        return;
+    }
+    
+    // Entferne alle Nicht-Zahlen außer Komma und Punkt
+    value = value.replace(/[^\d,.-]/g, '');
+    
+    // Ersetze Komma mit Punkt für Berechnung
+    value = value.replace(',', '.');
+    
+    const numValue = parseFloat(value);
+    
+    if (!isNaN(numValue)) {
+        // Formatiere ohne Nachkommastellen für Kosten
+        input.value = Math.round(numValue).toString();
+    }
+    
+    // Trigger Berechnung
     updateKostenSumme();
 }
 
