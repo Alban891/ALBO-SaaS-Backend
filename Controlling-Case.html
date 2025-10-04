@@ -2943,7 +2943,7 @@ function getArtikelTabContent() {
 }
 
 // ============================================
-// PROJEKT-KOSTEN KI-REGEL ENGINE
+// PROJEKT-KOSTEN KI-REGEL ENGINE (ERWEITERT)
 // ============================================
 const projektKostenRegeln = {
     software: {
@@ -2977,23 +2977,68 @@ const projektKostenRegeln = {
         ],
         vorlaufzeit: 3,
         nachlaufzeit: 36
+    },
+    hybrid: {
+        titel: 'Hybrid-Lösung',
+        empfohleneBlöcke: [
+            { id: 'personal', name: 'Personal', icon: '👥', anteil: 50 },
+            { id: 'hardware', name: 'Hardware-Komponenten', icon: '🖥️', anteil: 20 },
+            { id: 'software', name: 'Software-Lizenzen', icon: '💿', anteil: 15 },
+            { id: 'beratung', name: 'Consulting & Setup', icon: '💼', anteil: 10 },
+            { id: 'schulung', name: 'Schulung & Support', icon: '🎓', anteil: 5 }
+        ],
+        vorlaufzeit: 12,
+        nachlaufzeit: 24
     }
 };
 
-// Hilfsfunktion: Projekt-Typ ermitteln
+// Erweiterte Funktion: Intelligente Projekt-Typ Ermittlung
 function ermittleProjektTyp() {
     const artikelData = cfoDashboard.artikelData[cfoDashboard.currentArtikel];
     if (!artikelData) return 'software'; // Default
     
-    // Aus den Basis-Informationen ableiten
+    // Hole Werte aus den Dropdowns
     const kategorie = document.getElementById('produkt-kategorie')?.value || 'software';
+    const geschaeftsmodell = document.getElementById('geschaeftsmodell')?.value || '';
+    
+    // Intelligente Erkennung von Hybrid-Modellen
+    if (kategorie === 'hybrid') {
+        return 'hybrid';
+    }
+    
+    // Cyber Security, IoT, etc. sind oft Hybrid
+    const hybridKeywords = ['cyber', 'security', 'iot', 'industrie 4.0', 'digital twin'];
+    const artikelName = (artikelData.name || '').toLowerCase();
+    
+    if (hybridKeywords.some(keyword => artikelName.includes(keyword))) {
+        return 'hybrid';
+    }
+    
+    // Standard-Mapping
     return kategorie.toLowerCase();
 }
 
-// Hilfsfunktion: KI-Empfehlungen generieren
+// Erweiterte KI-Empfehlung mit Multi-Select
 function generiereKostenEmpfehlung() {
     const projektTyp = ermittleProjektTyp();
-    const regeln = projektKostenRegeln[projektTyp] || projektKostenRegeln.software;
+    let regeln = projektKostenRegeln[projektTyp] || projektKostenRegeln.software;
+    
+    // Bei Hybrid: Kombiniere Blöcke aus verschiedenen Bereichen
+    if (projektTyp === 'hybrid') {
+        const geschaeftsmodell = document.getElementById('geschaeftsmodell')?.value;
+        
+        // Passe Empfehlung basierend auf Geschäftsmodell an
+        if (geschaeftsmodell === 'subscription') {
+            // Mehr Software-Fokus
+            regeln.empfohleneBlöcke = [
+                { id: 'personal', name: 'Personal (Dev & Support)', icon: '👥', anteil: 45 },
+                { id: 'cloud', name: 'Cloud Infrastructure', icon: '☁️', anteil: 20 },
+                { id: 'hardware', name: 'Hardware (Initial)', icon: '🖥️', anteil: 15 },
+                { id: 'beratung', name: 'Implementation Services', icon: '💼', anteil: 15 },
+                { id: 'support', name: 'Ongoing Support', icon: '🛠️', anteil: 5 }
+            ];
+        }
+    }
     
     return {
         typ: projektTyp,
@@ -3137,14 +3182,75 @@ function updateKostenSumme() {
     console.log('Updating Kostensummen...');
 }
 
-// Eigenen Kostenblock hinzufügen
-function addCustomKostenblock() {
-    alert('Funktion wird noch implementiert');
-}
-
 // Update Projekt-Zeitraum
 function updateProjektZeitraum() {
     console.log('Updating Zeitraum...');
+}
+
+// Dynamisches Hinzufügen von Kostenblöcken
+function addCustomKostenblock() {
+    const modalHTML = `
+        <div id="kostenblock-modal" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 9999; display: flex; align-items: center; justify-content: center;">
+            <div style="background: white; padding: 24px; border-radius: 8px; max-width: 400px;">
+                <h3 style="margin-bottom: 16px;">Kostenblock hinzufügen</h3>
+                <input type="text" id="block-name" placeholder="Name des Kostenblocks" style="width: 100%; padding: 8px; margin-bottom: 12px; border: 1px solid var(--border); border-radius: 4px;">
+                
+                <select id="block-type" style="width: 100%; padding: 8px; margin-bottom: 12px; border: 1px solid var(--border); border-radius: 4px;">
+                    <option value="">-- Kategorie wählen --</option>
+                    <option value="personal">Personal</option>
+                    <option value="material">Material</option>
+                    <option value="software">Software</option>
+                    <option value="hardware">Hardware</option>
+                    <option value="beratung">Beratung</option>
+                    <option value="sonstige">Sonstige</option>
+                </select>
+                
+                <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                    <button onclick="closeKostenblockModal()" style="padding: 8px 16px; border: 1px solid var(--border); background: white; border-radius: 4px;">Abbrechen</button>
+                    <button onclick="saveKostenblock()" style="padding: 8px 16px; background: var(--primary); color: white; border: none; border-radius: 4px;">Hinzufügen</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+}
+
+function closeKostenblockModal() {
+    const modal = document.getElementById('kostenblock-modal');
+    if (modal) modal.remove();
+}
+
+function saveKostenblock() {
+    const name = document.getElementById('block-name').value;
+    const type = document.getElementById('block-type').value;
+    
+    if (name && type) {
+        // Füge neue Zeile zur Tabelle hinzu
+        const tbody = document.getElementById('kosten-tbody');
+        if (tbody) {
+            const newRow = document.createElement('tr');
+            const blockId = 'custom-' + Date.now();
+            const jahre = ['2024', '2025', '2026', '2027', '2028'];
+            
+            newRow.innerHTML = `
+                <td style="padding: 8px; font-weight: 600;">
+                    ➕ ${name}
+                </td>
+                ${jahre.map(jahr => `
+                    <td style="padding: 8px;">
+                        <input type="text" placeholder="0" onchange="updateKostenSumme()"
+                               style="width: 60px; padding: 2px; border: 1px solid var(--border); border-radius: 2px; text-align: right;">
+                    </td>
+                `).join('')}
+                <td style="padding: 8px; font-weight: bold;">0€</td>
+            `;
+            
+            tbody.appendChild(newRow);
+        }
+        
+        closeKostenblockModal();
+    }
 }
 
 function getWirtschaftlichkeitTabContent() {
