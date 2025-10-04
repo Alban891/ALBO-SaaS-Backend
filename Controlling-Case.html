@@ -3929,114 +3929,497 @@ function applyPersonalTemplate(template) {
 }
 
 function getWirtschaftlichkeitTabContent() {
+    const artikelData = cfoDashboard.artikelData[cfoDashboard.currentArtikel] || {};
+    
     return `
         <div style="padding: 20px; background: var(--gray-light); border-radius: 8px;">
-            <h3 style="margin-bottom: 20px;">💰 Wirtschaftlichkeitsberechnung & Amortisation</h3>
+            <h3 style="margin-bottom: 20px;">🔧 Wirtschaftlichkeitsberechnung & Amortisation</h3>
             
-            <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; margin-bottom: 20px;">
-                <thead>
-                    <tr style="background: var(--primary); color: white;">
-                        <th style="padding: 12px; text-align: left;">Kennzahl</th>
-                        <th style="padding: 12px; text-align: center;">2024</th>
-                        <th style="padding: 12px; text-align: center;">2025</th>
-                        <th style="padding: 12px; text-align: center;">2026</th>
-                        <th style="padding: 12px; text-align: center;">2027</th>
-                        <th style="padding: 12px; text-align: center;">2028</th>
-                        <th style="padding: 12px; text-align: center;">2029</th>
-                        <th style="padding: 12px; text-align: center;">2030</th>
-                        <th style="padding: 12px; text-align: center;">Gesamt</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr style="background: #dbeafe;">
-                        <td style="padding: 12px;">📈 Umsatz (in T€)</td>
-                        <td style="padding: 12px; text-align: center;">0</td>
-                        <td style="padding: 12px; text-align: center;">2.900</td>
-                        <td style="padding: 12px; text-align: center;">10.800</td>
-                        <td style="padding: 12px; text-align: center;">24.200</td>
-                        <td style="padding: 12px; text-align: center;">42.300</td>
-                        <td style="padding: 12px; text-align: center;">47.000</td>
-                        <td style="padding: 12px; text-align: center;">48.800</td>
-                        <td style="padding: 12px; text-align: center; font-weight: bold;">176.000</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 12px;">⚙️ Herstellkosten (HK)</td>
-                        <td style="padding: 12px; text-align: center;">0</td>
-                        <td style="padding: 12px; text-align: center; color: var(--danger);">-1.900</td>
-                        <td style="padding: 12px; text-align: center; color: var(--danger);">-7.200</td>
-                        <td style="padding: 12px; text-align: center; color: var(--danger);">-15.800</td>
-                        <td style="padding: 12px; text-align: center; color: var(--danger);">-27.500</td>
-                        <td style="padding: 12px; text-align: center; color: var(--danger);">-30.600</td>
-                        <td style="padding: 12px; text-align: center; color: var(--danger);">-31.800</td>
-                        <td style="padding: 12px; text-align: center; font-weight: bold; color: var(--danger);">-114.800</td>
-                    </tr>
-                    <tr style="background: #f0f9ff; font-weight: 600;">
-                        <td style="padding: 12px;">= DB2 (nach variablen Kosten)</td>
-                        <td style="padding: 12px; text-align: center;">0</td>
-                        <td style="padding: 12px; text-align: center;">855</td>
-                        <td style="padding: 12px; text-align: center;">3.060</td>
-                        <td style="padding: 12px; text-align: center;">7.190</td>
-                        <td style="padding: 12px; text-align: center;">12.685</td>
-                        <td style="padding: 12px; text-align: center;">14.050</td>
-                        <td style="padding: 12px; text-align: center;">14.560</td>
-                        <td style="padding: 12px; text-align: center; color: var(--success);">52.400</td>
-                    </tr>
-                    <tr style="background: #fef3c7;">
-                        <td style="padding: 12px;">🏗️ Projektkosten</td>
-                        <td style="padding: 12px; text-align: center; color: var(--danger);">-1.570</td>
-                        <td style="padding: 12px; text-align: center; color: var(--danger);">-2.544</td>
-                        <td style="padding: 12px; text-align: center; color: var(--danger);">-3.200</td>
-                        <td style="padding: 12px; text-align: center; color: var(--danger);">-2.895</td>
-                        <td style="padding: 12px; text-align: center; color: var(--danger);">-2.943</td>
-                        <td style="padding: 12px; text-align: center; color: var(--danger);">-3.116</td>
-                        <td style="padding: 12px; text-align: center; color: var(--danger);">-3.294</td>
-                        <td style="padding: 12px; text-align: center; font-weight: bold; color: var(--danger);">-19.562</td>
-                    </tr>
-                    <tr style="background: var(--primary); color: white; font-weight: bold;">
-                        <td style="padding: 12px;">= DB3 (nach Projektkosten)</td>
-                        <td style="padding: 12px; text-align: center;">-1.570</td>
-                        <td style="padding: 12px; text-align: center;">-1.689</td>
-                        <td style="padding: 12px; text-align: center;">-140</td>
-                        <td style="padding: 12px; text-align: center;">4.295</td>
-                        <td style="padding: 12px; text-align: center;">9.742</td>
-                        <td style="padding: 12px; text-align: center;">10.934</td>
-                        <td style="padding: 12px; text-align: center;">11.266</td>
-                        <td style="padding: 12px; text-align: center;">32.838</td>
-                    </tr>
-                </tbody>
-            </table>
-            
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
-                <div style="background: white; padding: 16px; border-radius: 8px; text-align: center;">
-                    <div style="font-size: 28px; font-weight: bold; color: var(--success);">3.2 Jahre</div>
-                    <div style="font-size: 12px; color: var(--gray);">Payback-Zeit</div>
-                    <div style="font-size: 11px; color: var(--gray); margin-top: 4px;">Break-Even in Q2/2027</div>
+            <!-- Mengengerüst & Preise -->
+            <div style="background: white; padding: 16px; border-radius: 8px; margin-bottom: 20px; border: 1px solid var(--border);">
+                <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 16px; color: var(--primary);">
+                    📊 Absatz- und Preisplanung
+                </h4>
+                
+                <table id="mengengeruest-table" style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                    <thead>
+                        <tr style="background: #f8fafc; border-bottom: 2px solid var(--border);">
+                            <th style="padding: 10px; text-align: left;">Parameter</th>
+                            <th style="padding: 10px; text-align: center;">2024</th>
+                            <th style="padding: 10px; text-align: center;">2025</th>
+                            <th style="padding: 10px; text-align: center;">2026</th>
+                            <th style="padding: 10px; text-align: center;">2027</th>
+                            <th style="padding: 10px; text-align: center;">2028</th>
+                            <th style="padding: 10px; text-align: center;">2029</th>
+                            <th style="padding: 10px; text-align: center;">2030</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="padding: 8px; font-weight: 600;">📦 Absatzmenge (Stück)</td>
+                            ${generateInputRow('menge', [0, 100, 400, 800, 1300, 1600, 1800], 'updateWirtschaftlichkeit')}
+                        </tr>
+                        <tr style="background: #fafafa;">
+                            <td style="padding: 8px; font-weight: 600;">💰 Preis pro Einheit (€)</td>
+                            ${generateInputRow('preis', [0, 29, 27, 30.25, 32.5, 31.25, 30], 'updateWirtschaftlichkeit')}
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; font-weight: 600;">📈 Preisentwicklung (%)</td>
+                            ${generatePercentageRow('preis-change', [0, 0, -7, 12, 7.5, -3.8, -4])}
+                        </tr>
+                        <tr style="background: #e0e7ff;">
+                            <td style="padding: 8px; font-weight: bold;">📊 UMSATZ (T€)</td>
+                            ${generateResultRow('umsatz', 7)}
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Variable Kostenstruktur -->
+            <div style="background: white; padding: 16px; border-radius: 8px; margin-bottom: 20px; border: 1px solid var(--border);">
+                <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 16px; color: var(--danger);">
+                    💸 Variable Kostenstruktur
+                </h4>
+                
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 16px;">
+                    <div>
+                        <label style="font-size: 10px; color: var(--gray); text-transform: uppercase;">Materialkosten/Stück</label>
+                        <input type="number" id="material-stueck" value="12" step="0.5" 
+                               onchange="updateWirtschaftlichkeit()"
+                               style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px;">
+                    </div>
+                    <div>
+                        <label style="font-size: 10px; color: var(--gray); text-transform: uppercase;">Vertriebskosten (% vom Umsatz)</label>
+                        <input type="number" id="vertrieb-prozent" value="15" step="1" min="0" max="100"
+                               onchange="updateWirtschaftlichkeit()"
+                               style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px;">
+                    </div>
+                    <div>
+                        <label style="font-size: 10px; color: var(--gray); text-transform: uppercase;">Sonstige var. Kosten (%)</label>
+                        <input type="number" id="sonstige-var-prozent" value="3" step="0.5" min="0" max="100"
+                               onchange="updateWirtschaftlichkeit()"
+                               style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px;">
+                    </div>
                 </div>
                 
-                <div style="background: white; padding: 16px; border-radius: 8px; text-align: center;">
-                    <div style="font-size: 28px; font-weight: bold; color: var(--primary);">32.8M€</div>
-                    <div style="font-size: 12px; color: var(--gray);">NPV (7 Jahre)</div>
-                    <div style="font-size: 11px; color: var(--gray); margin-top: 4px;">ohne Diskontierung</div>
-                </div>
+                <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                    <tbody>
+                        <tr>
+                            <td style="padding: 8px; font-weight: 600;">🔧 Materialkosten</td>
+                            ${generateResultRow('material-kosten', 7)}
+                        </tr>
+                        <tr style="background: #fafafa;">
+                            <td style="padding: 8px; font-weight: 600;">📢 Vertriebskosten</td>
+                            ${generateResultRow('vertrieb-kosten', 7)}
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; font-weight: 600;">📎 Sonstige variable Kosten</td>
+                            ${generateResultRow('sonstige-var-kosten', 7)}
+                        </tr>
+                        <tr style="background: #fee2e2;">
+                            <td style="padding: 8px; font-weight: bold;">Σ Variable Kosten</td>
+                            ${generateResultRow('variable-kosten-gesamt', 7)}
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- DB-Berechnung -->
+            <div style="background: white; padding: 16px; border-radius: 8px; margin-bottom: 20px; border: 1px solid var(--border);">
+                <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 16px; color: var(--primary);">
+                    📈 Deckungsbeitragsrechnung
+                </h4>
                 
-                <div style="background: white; padding: 16px; border-radius: 8px; text-align: center;">
-                    <div style="font-size: 28px; font-weight: bold; color: var(--warning);">168%</div>
-                    <div style="font-size: 12px; color: var(--gray);">ROI</div>
-                    <div style="font-size: 11px; color: var(--gray); margin-top: 4px;">32.8M€ / 19.6M€</div>
+                <table id="db-table" style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                    <tbody>
+                        <tr style="background: #f0f9ff;">
+                            <td style="padding: 10px; font-weight: bold;">DB1 (Umsatz - Mat.kosten)</td>
+                            ${generateResultRow('db1', 7)}
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px; font-weight: 600;">DB1-Quote (%)</td>
+                            ${generateResultRow('db1-quote', 7, '%')}
+                        </tr>
+                        <tr style="background: #f0f9ff;">
+                            <td style="padding: 10px; font-weight: bold;">DB2 (nach Vertrieb)</td>
+                            ${generateResultRow('db2', 7)}
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px; font-weight: 600;">DB2-Quote (%)</td>
+                            ${generateResultRow('db2-quote', 7, '%')}
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Projektkosten Integration -->
+            <div style="background: white; padding: 16px; border-radius: 8px; margin-bottom: 20px; border: 1px solid var(--border);">
+                <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 16px; color: var(--warning);">
+                    🏗️ Projektkosten (aus Projekte-Tab)
+                </h4>
+                
+                <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                    <tbody>
+                        <tr>
+                            <td style="padding: 8px; font-weight: 600;">📁 Projektkosten (Fix)</td>
+                            ${generateProjektKostenRow()}
+                        </tr>
+                        <tr style="background: #fef3c7;">
+                            <td style="padding: 10px; font-weight: bold;">DB3 (nach Projektkosten)</td>
+                            ${generateResultRow('db3', 7)}
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Investitionsrechnung -->
+            <div style="background: white; padding: 16px; border-radius: 8px; margin-bottom: 20px; border: 1px solid var(--border);">
+                <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 16px; color: var(--success);">
+                    💎 Investitionsrechnung & KPIs
+                </h4>
+                
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+                    <div>
+                        <table style="width: 100%; font-size: 12px;">
+                            <tr>
+                                <td style="padding: 8px; font-weight: 600;">Kumulierter Cashflow</td>
+                                ${generateResultRow('kum-cashflow', 7)}
+                            </tr>
+                            <tr style="background: #fafafa;">
+                                <td style="padding: 8px; font-weight: 600;">Diskontierter CF (WACC: 8%)</td>
+                                ${generateResultRow('dcf', 7)}
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <div style="background: linear-gradient(135deg, #d1fae5, #dbeafe); padding: 16px; border-radius: 8px;">
+                        <h5 style="font-size: 13px; margin-bottom: 12px;">📊 Kennzahlen</h5>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+                            <div>
+                                <label style="font-size: 10px; color: var(--gray);">NPV (T€)</label>
+                                <div id="npv-result" style="font-size: 20px; font-weight: bold; color: var(--primary);">0</div>
+                            </div>
+                            <div>
+                                <label style="font-size: 10px; color: var(--gray);">IRR (%)</label>
+                                <div id="irr-result" style="font-size: 20px; font-weight: bold; color: var(--success);">0%</div>
+                            </div>
+                            <div>
+                                <label style="font-size: 10px; color: var(--gray);">Payback (Jahre)</label>
+                                <div id="payback-result" style="font-size: 20px; font-weight: bold; color: var(--warning);">0</div>
+                            </div>
+                            <div>
+                                <label style="font-size: 10px; color: var(--gray);">ROI (%)</label>
+                                <div id="roi-result" style="font-size: 20px; font-weight: bold; color: var(--info);">0%</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            
-            <div style="margin-top: 16px; padding: 16px; background: #f0fdf4; border-left: 4px solid var(--success); border-radius: 8px;">
-                <div style="font-weight: bold; color: var(--success); margin-bottom: 8px;">✅ BUSINESS CASE POSITIV</div>
-                <div style="font-size: 13px; color: var(--text);">
-                    <strong>Empfehlung:</strong> Freigabe empfohlen.<br>
-                    <strong>Kritisch:</strong> 3.4M€ Vorfinanzierung bis Break-Even.<br>
-                    <strong>Risiko:</strong> Marktpenetration muss planmäßig erfolgen.
-                </div>
+
+            <!-- Business Case Status -->
+            <div id="business-case-status" style="padding: 20px; border-radius: 8px; margin-top: 20px;">
+                <!-- Wird durch updateWirtschaftlichkeit() gefüllt -->
             </div>
         </div>
     `;
 }
+
+// Hilfsfunktionen für Tabellen-Generation
+function generateInputRow(prefix, defaultValues, onchangeFunc) {
+    const jahre = [2024, 2025, 2026, 2027, 2028, 2029, 2030];
+    return jahre.map((jahr, index) => `
+        <td style="padding: 8px;">
+            <input type="number" id="${prefix}-${jahr}" value="${defaultValues[index]}" 
+                   onchange="${onchangeFunc}()"
+                   style="width: 70px; padding: 4px; border: 1px solid var(--border); 
+                          border-radius: 3px; text-align: right;">
+        </td>
+    `).join('');
+}
+
+function generateResultRow(prefix, count, suffix = '€') {
+    const jahre = [2024, 2025, 2026, 2027, 2028, 2029, 2030];
+    return jahre.slice(0, count).map(jahr => `
+        <td style="padding: 8px; text-align: right; font-weight: bold;">
+            <span id="${prefix}-${jahr}">0</span>${suffix}
+        </td>
+    `).join('');
+}
+
+function generatePercentageRow(prefix, defaultValues) {
+    const jahre = [2024, 2025, 2026, 2027, 2028, 2029, 2030];
+    return jahre.map((jahr, index) => `
+        <td style="padding: 8px; text-align: right;">
+            <span style="color: ${defaultValues[index] < 0 ? 'var(--danger)' : 'var(--success)'};">
+                ${defaultValues[index] > 0 ? '+' : ''}${defaultValues[index]}%
+            </span>
+        </td>
+    `).join('');
+}
+
+function generateProjektKostenRow() {
+    const jahre = [2024, 2025, 2026, 2027, 2028, 2029, 2030];
+    return jahre.map(jahr => `
+        <td style="padding: 8px; text-align: right; color: var(--danger);">
+            <span id="projekt-kosten-${jahr}">0</span>€
+        </td>
+    `).join('');
+}
+
+// Hauptfunktion für Wirtschaftlichkeitsberechnung
+function updateWirtschaftlichkeit() {
+    const jahre = [2024, 2025, 2026, 2027, 2028, 2029, 2030];
+    
+    // Parameter holen
+    const materialProStueck = parseFloat(document.getElementById('material-stueck')?.value) || 12;
+    const vertriebProzent = parseFloat(document.getElementById('vertrieb-prozent')?.value) || 15;
+    const sonstigeVarProzent = parseFloat(document.getElementById('sonstige-var-prozent')?.value) || 3;
+    
+    let kumulierterCashflow = 0;
+    let npvSumme = 0;
+    const wacc = 0.08; // 8% Diskontierungssatz
+    const cashflows = [];
+    let paybackYear = null;
+    let totalInvestment = 0;
+    let totalReturn = 0;
+    
+    jahre.forEach((jahr, index) => {
+        // Mengen und Preise
+        const menge = parseFloat(document.getElementById(`menge-${jahr}`)?.value) || 0;
+        const preis = parseFloat(document.getElementById(`preis-${jahr}`)?.value) || 0;
+        
+        // Umsatz berechnen
+        const umsatz = (menge * preis) / 1000; // in T€
+        updateElement(`umsatz-${jahr}`, formatNumber(umsatz));
+        
+        // Variable Kosten berechnen
+        const materialKosten = (menge * materialProStueck) / 1000;
+        const vertriebKosten = (umsatz * vertriebProzent) / 100;
+        const sonstigeVarKosten = (umsatz * sonstigeVarProzent) / 100;
+        const variableKostenGesamt = materialKosten + vertriebKosten + sonstigeVarKosten;
+        
+        updateElement(`material-kosten-${jahr}`, formatNumber(materialKosten));
+        updateElement(`vertrieb-kosten-${jahr}`, formatNumber(vertriebKosten));
+        updateElement(`sonstige-var-kosten-${jahr}`, formatNumber(sonstigeVarKosten));
+        updateElement(`variable-kosten-gesamt-${jahr}`, formatNumber(variableKostenGesamt));
+        
+        // DB-Stufen berechnen
+        const db1 = umsatz - materialKosten;
+        const db1Quote = umsatz > 0 ? (db1 / umsatz) * 100 : 0;
+        const db2 = db1 - vertriebKosten - sonstigeVarKosten;
+        const db2Quote = umsatz > 0 ? (db2 / umsatz) * 100 : 0;
+        
+        updateElement(`db1-${jahr}`, formatNumber(db1));
+        updateElement(`db1-quote-${jahr}`, formatNumber(db1Quote, 1));
+        updateElement(`db2-${jahr}`, formatNumber(db2));
+        updateElement(`db2-quote-${jahr}`, formatNumber(db2Quote, 1));
+        
+        // Projektkosten aus Projekte-Tab holen
+        const projektKosten = getProjektKostenForYear(jahr);
+        updateElement(`projekt-kosten-${jahr}`, formatNumber(projektKosten));
+        
+        // DB3 berechnen
+        const db3 = db2 - projektKosten;
+        updateElement(`db3-${jahr}`, formatNumber(db3));
+        
+        // Cashflow-Berechnung
+        const cashflow = db3; // Vereinfacht: DB3 = Operating Cashflow
+        cashflows.push(cashflow);
+        
+        kumulierterCashflow += cashflow;
+        updateElement(`kum-cashflow-${jahr}`, formatNumber(kumulierterCashflow));
+        
+        // Diskontierter Cashflow
+        const dcf = cashflow / Math.pow(1 + wacc, index + 1);
+        updateElement(`dcf-${jahr}`, formatNumber(dcf));
+        npvSumme += dcf;
+        
+        // Payback berechnen
+        if (paybackYear === null && kumulierterCashflow > 0) {
+            paybackYear = index + 1;
+        }
+        
+        // Für ROI-Berechnung
+        if (cashflow < 0) {
+            totalInvestment += Math.abs(cashflow);
+        } else {
+            totalReturn += cashflow;
+        }
+    });
+    
+    // KPIs berechnen und anzeigen
+    updateElement('npv-result', formatNumber(npvSumme));
+    
+    // IRR berechnen (vereinfachte Newton-Raphson Methode)
+    const irr = calculateIRR(cashflows);
+    updateElement('irr-result', formatNumber(irr * 100, 1) + '%');
+    
+    // Payback
+    updateElement('payback-result', paybackYear ? paybackYear : '>7');
+    
+    // ROI
+    const roi = totalInvestment > 0 ? ((totalReturn - totalInvestment) / totalInvestment) * 100 : 0;
+    updateElement('roi-result', formatNumber(roi, 1) + '%');
+    
+    // Business Case Status aktualisieren
+    updateBusinessCaseStatus(npvSumme, irr, paybackYear, roi);
+    
+    // Dashboard-Daten aktualisieren
+    updateDashboardFromWirtschaftlichkeit({
+        npv: npvSumme,
+        irr: irr,
+        payback: paybackYear,
+        roi: roi,
+        db2: cashflows[cashflows.length - 1] || 0
+    });
+}
+
+// IRR-Berechnung (Newton-Raphson Methode)
+function calculateIRR(cashflows) {
+    let rate = 0.1; // Startwert 10%
+    let tolerance = 0.00001;
+    let maxIterations = 100;
+    
+    for (let i = 0; i < maxIterations; i++) {
+        let npv = 0;
+        let dnpv = 0;
+        
+        for (let j = 0; j < cashflows.length; j++) {
+            npv += cashflows[j] / Math.pow(1 + rate, j + 1);
+            dnpv -= (j + 1) * cashflows[j] / Math.pow(1 + rate, j + 2);
+        }
+        
+        let newRate = rate - npv / dnpv;
+        
+        if (Math.abs(newRate - rate) < tolerance) {
+            return newRate;
+        }
+        
+        rate = newRate;
+    }
+    
+    return rate;
+}
+
+// Projektkosten aus Projekte-Tab holen
+function getProjektKostenForYear(jahr) {
+    // Versuche Werte aus dem Projekte-Tab zu holen
+    const personalKosten = parseFloat(document.getElementById(`kosten-personal-${jahr}`)?.value) || 0;
+    const cloudKosten = parseFloat(document.getElementById(`kosten-cloud-${jahr}`)?.value) || 0;
+    const lizenzKosten = parseFloat(document.getElementById(`kosten-lizenzen-${jahr}`)?.value) || 0;
+    const testingKosten = parseFloat(document.getElementById(`kosten-testing-${jahr}`)?.value) || 0;
+    
+    // Weitere Kostenblöcke falls vorhanden
+    let sonstigeKosten = 0;
+    const tbody = document.getElementById('kosten-tbody');
+    if (tbody) {
+        tbody.querySelectorAll('tr[data-block-id]').forEach(row => {
+            const blockId = row.dataset.blockId;
+            if (!['personal', 'cloud', 'lizenzen', 'testing'].includes(blockId)) {
+                const wert = parseFloat(document.getElementById(`kosten-${blockId}-${jahr}`)?.value) || 0;
+                sonstigeKosten += wert;
+            }
+        });
+    }
+    
+    return personalKosten + cloudKosten + lizenzKosten + testingKosten + sonstigeKosten;
+}
+
+// Business Case Status Bewertung
+function updateBusinessCaseStatus(npv, irr, payback, roi) {
+    const statusDiv = document.getElementById('business-case-status');
+    if (!statusDiv) return;
+    
+    let status = '';
+    let statusColor = '';
+    let empfehlung = '';
+    let risiken = [];
+    
+    // Bewertungslogik
+    if (npv > 1000 && irr > 0.15 && payback <= 3) {
+        status = '✅ BUSINESS CASE POSITIV';
+        statusColor = '#10b981';
+        empfehlung = 'Projekt zeigt starke Wirtschaftlichkeit. Freigabe empfohlen.';
+    } else if (npv > 0 && irr > 0.08) {
+        status = '⚠️ BUSINESS CASE BEDINGT POSITIV';
+        statusColor = '#f59e0b';
+        empfehlung = 'Projekt ist wirtschaftlich, aber mit Optimierungspotenzial.';
+        
+        if (payback > 4) risiken.push('Lange Amortisationsdauer');
+        if (irr < 0.12) risiken.push('IRR unter Zielrendite');
+    } else {
+        status = '❌ BUSINESS CASE NEGATIV';
+        statusColor = '#ef4444';
+        empfehlung = 'Projekt nicht wirtschaftlich. Überarbeitung erforderlich.';
+        
+        if (npv < 0) risiken.push('Negativer Kapitalwert');
+        if (irr < 0.08) risiken.push('IRR unter Hurdle Rate');
+        if (!payback) risiken.push('Keine Amortisation in Planungszeitraum');
+    }
+    
+    statusDiv.innerHTML = `
+        <div style="background: ${statusColor}; color: white; padding: 16px; border-radius: 8px;">
+            <h4 style="font-size: 16px; font-weight: bold; margin-bottom: 8px;">${status}</h4>
+            <p style="font-size: 13px; margin-bottom: 8px;">${empfehlung}</p>
+            ${risiken.length > 0 ? `
+                <div style="background: rgba(0,0,0,0.2); padding: 8px; border-radius: 4px; margin-top: 8px;">
+                    <strong style="font-size: 12px;">Risiken:</strong>
+                    <ul style="margin: 4px 0 0 16px; font-size: 11px;">
+                        ${risiken.map(r => `<li>${r}</li>`).join('')}
+                    </ul>
+                </div>
+            ` : ''}
+            <div style="margin-top: 12px; display: flex; gap: 16px; font-size: 11px;">
+                <div>NPV: <strong>${formatNumber(npv)}T€</strong></div>
+                <div>IRR: <strong>${formatNumber(irr * 100, 1)}%</strong></div>
+                <div>Payback: <strong>${payback || '>7'} Jahre</strong></div>
+                <div>ROI: <strong>${formatNumber(roi, 1)}%</strong></div>
+            </div>
+        </div>
+    `;
+}
+
+// Dashboard-Integration
+function updateDashboardFromWirtschaftlichkeit(kpis) {
+    // Speichere KPIs im globalen Objekt
+    if (!cfoDashboard.artikelData[cfoDashboard.currentArtikel]) {
+        cfoDashboard.artikelData[cfoDashboard.currentArtikel] = {};
+    }
+    
+    cfoDashboard.artikelData[cfoDashboard.currentArtikel].wirtschaftlichkeit = {
+        npv: kpis.npv,
+        irr: kpis.irr,
+        payback: kpis.payback,
+        roi: kpis.roi,
+        db2: kpis.db2,
+        lastUpdate: new Date().toISOString()
+    };
+    
+    // Trigger Dashboard-Update wenn auf Hauptseite
+    if (typeof updateDashboardKPIs === 'function') {
+        updateDashboardKPIs();
+    }
+}
+
+// Hilfsfunktionen
+function updateElement(id, value) {
+    const element = document.getElementById(id);
+    if (element) {
+        element.textContent = value;
+    }
+}
+
+function formatNumber(value, decimals = 0) {
+    if (isNaN(value)) return '0';
+    return value.toFixed(decimals).replace('.', ',');
+}
+
+// Initial-Berechnung beim Laden
+document.addEventListener('DOMContentLoaded', function() {
+    if (document.getElementById('mengengeruest-table')) {
+        setTimeout(() => updateWirtschaftlichkeit(), 100);
+    }
+});
 
 function initializeAI() {
     // Initial welcome message
