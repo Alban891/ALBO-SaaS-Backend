@@ -1469,28 +1469,34 @@ let cfoDashboard = {
         id: 'crimp',
         name: 'Crimpautomat',
         type: 'neu',
-        volumes: { 2024: 0, 2025: 200, 2026: 1000, 2027: 2500, 2028: 5000, 2029: 5000, 2030: 5000 },
-        prices: { 2024: 0, 2025: 5.00, 2026: 5.15, 2027: 5.30, 2028: 5.46, 2029: 5.62, 2030: 5.79 },
+        release: '2024-12',  // Release-Datum hinzugefügt
+        startMenge: 200,     // Start-Menge für Jahr 1
+        startPreis: 5.00,    // Start-Preis
         hk: 3.00,
-        active: true
+        active: true,
+        // Volumes und Prices werden dynamisch berechnet
     },
     komax: {
         id: 'komax',
         name: 'Mini-Komax ohne CORE',
         type: 'neu',
-        volumes: { 2024: 0, 2025: 10, 2026: 25, 2027: 50, 2028: 95, 2029: 110, 2030: 115 },
-        prices: { 2024: 0, 2025: 1000, 2026: 1020, 2027: 1040, 2028: 1061, 2029: 1082, 2030: 1104 },
+        release: '2024-12',  // Release-Datum hinzugefügt
+        startMenge: 10,      // Start-Menge für Jahr 1
+        startPreis: 1000,    // Start-Preis
         hk: 670.00,
-        active: true
+        active: true,
+        // Volumes und Prices werden dynamisch berechnet
     },
     digital: {
         id: 'digital',
         name: 'Digital Shopfloor Backend',
         type: 'cross',
-        volumes: { 2024: 0, 2025: 50, 2026: 125, 2027: 200, 2028: 250, 2029: 250, 2030: 250 },
-        prices: { 2024: 0, 2025: 480, 2026: 480, 2027: 480, 2028: 480, 2029: 480, 2030: 480 },
+        release: '2025-06',  // Release-Datum hinzugefügt
+        startMenge: 50,      // Start-Menge für Jahr 1
+        startPreis: 480,     // Start-Preis
         hk: 192.00,
-        active: true
+        active: true,
+        // Volumes und Prices werden dynamisch berechnet
     }
 },
     currentValues: {
@@ -1997,22 +2003,8 @@ if (!artikelData) {
         price: id === 'crimp' ? 5.00 : id === 'komax' ? 1000.00 : 480.00,
         volume: id === 'crimp' ? 5000 : id === 'komax' ? 115 : 250,
         hk: id === 'crimp' ? 3.00 : id === 'komax' ? 670.00 : 192.00,
-        volumes: {
-            2025: id === 'crimp' ? 200 : id === 'komax' ? 10 : 50,
-            2026: id === 'crimp' ? 1000 : id === 'komax' ? 25 : 125,
-            2027: id === 'crimp' ? 2500 : id === 'komax' ? 50 : 200,
-            2028: id === 'crimp' ? 5000 : id === 'komax' ? 95 : 250,
-            2029: id === 'crimp' ? 5000 : id === 'komax' ? 110 : 250,
-            2030: id === 'crimp' ? 5000 : id === 'komax' ? 115 : 250
-        },
-        prices: {
-            2025: id === 'crimp' ? 5.00 : id === 'komax' ? 1000.00 : 480.00,
-            2026: id === 'crimp' ? 5.15 : id === 'komax' ? 1020.00 : 480.00,
-            2027: id === 'crimp' ? 5.30 : id === 'komax' ? 1040.40 : 480.00,
-            2028: id === 'crimp' ? 5.46 : id === 'komax' ? 1061.21 : 480.00,
-            2029: id === 'crimp' ? 5.62 : id === 'komax' ? 1082.43 : 480.00,
-            2030: id === 'crimp' ? 5.79 : id === 'komax' ? 1104.08 : 480.00
-        }
+        volumes: {},
+        prices: {}
     };
     
     // Store in cfoDashboard for future use
