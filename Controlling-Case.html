@@ -3132,10 +3132,39 @@ function getProjekteTabContent() {
     `;
 }
 
-// Generiere Kostentabelle
-function generateKostenTabelle() {
+// Generiere Kostentabelle mit dynamischen Jahren
+function generateKostenTabelle(customStartYear = null, customEndYear = null) {
     const empfehlung = generiereKostenEmpfehlung();
-    const jahre = ['2024', '2025', '2026', '2027', '2028'];
+    
+    // Jahre dynamisch bestimmen
+    let jahre = [];
+    
+    if (customStartYear && customEndYear) {
+        // Verwende übergebene Jahre
+        for (let year = customStartYear; year <= customEndYear; year++) {
+            jahre.push(year.toString());
+        }
+    } else {
+        // Versuche aus den Input-Feldern zu lesen
+        const startInput = document.getElementById('projekt-start');
+        const endeInput = document.getElementById('projekt-ende');
+        
+        if (startInput && endeInput && startInput.value && endeInput.value) {
+            const startYear = parseInt(startInput.value.split('-')[0]);
+            const endYear = parseInt(endeInput.value.split('-')[0]);
+            
+            for (let year = startYear; year <= endYear; year++) {
+                jahre.push(year.toString());
+            }
+        } else {
+            // Default: 5 Jahre ab 2024
+            jahre = ['2024', '2025', '2026', '2027', '2028'];
+        }
+    }
+    
+    // Release-Jahr hervorheben
+    const artikelData = cfoDashboard.artikelData[cfoDashboard.currentArtikel] || {};
+    const releaseYear = artikelData.release ? parseInt(artikelData.release.split('-')[0]) : null;
     
     return `
         <div style="background: white; border-radius: 8px; overflow-x: auto; border: 1px solid var(--border);">
@@ -3143,7 +3172,13 @@ function generateKostenTabelle() {
                 <thead>
                     <tr style="background: #f8fafc;">
                         <th style="padding: 8px; text-align: left;">Kostenblock</th>
-                        ${jahre.map(jahr => `<th style="padding: 8px; text-align: center;">${jahr}</th>`).join('')}
+                        ${jahre.map(jahr => {
+                            const isReleaseYear = releaseYear && parseInt(jahr) === releaseYear;
+                            return `<th style="padding: 8px; text-align: center; ${isReleaseYear ? 'background: #fef3c7;' : ''}">
+                                ${jahr}
+                                ${isReleaseYear ? '<br><span style="font-size: 9px; color: var(--warning);">Release</span>' : ''}
+                            </th>`;
+                        }).join('')}
                         <th style="padding: 8px; text-align: center; font-weight: bold;">Gesamt</th>
                     </tr>
                 </thead>
@@ -3153,14 +3188,15 @@ function generateKostenTabelle() {
                             <td style="padding: 8px; font-weight: 600;">
                                 ${block.icon} ${block.name}
                             </td>
-                            ${jahre.map(jahr => `
-                                <td style="padding: 8px;">
+                            ${jahre.map(jahr => {
+                                const isReleaseYear = releaseYear && parseInt(jahr) === releaseYear;
+                                return `<td style="padding: 8px; ${isReleaseYear ? 'background: #fffbeb;' : ''}">
                                     <input type="text" id="kosten-${block.id}-${jahr}" 
                                            placeholder="0" 
                                            onchange="updateKostenSumme()"
                                            style="width: 60px; padding: 2px; border: 1px solid var(--border); border-radius: 2px; text-align: right;">
-                                </td>
-                            `).join('')}
+                                </td>`;
+                            }).join('')}
                             <td style="padding: 8px; font-weight: bold;" id="summe-${block.id}">0€</td>
                         </tr>
                     `).join('')}
@@ -3182,9 +3218,41 @@ function updateKostenSumme() {
     console.log('Updating Kostensummen...');
 }
 
-// Update Projekt-Zeitraum
+// Update Projekt-Zeitraum und synchronisiere Tabelle
 function updateProjektZeitraum() {
-    console.log('Updating Zeitraum...');
+    const startInput = document.getElementById('projekt-start');
+    const endeInput = document.getElementById('projekt-ende');
+    
+    if (!startInput || !endeInput) return;
+    
+    const startDate = startInput.value; // Format: "2023-01"
+    const endDate = endeInput.value;    // Format: "2027-12"
+    
+    if (!startDate || !endDate) return;
+    
+    // Parse Jahre aus den Datumswerten
+    const startYear = parseInt(startDate.split('-')[0]);
+    const endYear = parseInt(endDate.split('-')[0]);
+    
+    // Validierung
+    if (endYear < startYear) {
+        alert('Projektende kann nicht vor Projektstart liegen!');
+        endeInput.value = startYear + '-12';
+        return;
+    }
+    
+    // Maximum 10 Jahre Projektlaufzeit
+    if (endYear - startYear > 10) {
+        alert('Maximale Projektlaufzeit ist 10 Jahre!');
+        endeInput.value = (startYear + 10) + '-12';
+        return;
+    }
+    
+    // Tabelle neu generieren mit dynamischen Jahren
+    const kostenTabelleContainer = document.getElementById('projekt-kosten-tabelle');
+    if (kostenTabelleContainer) {
+        kostenTabelleContainer.innerHTML = generateKostenTabelle(startYear, endYear);
+    }
 }
 
 // Dynamisches Hinzufügen von Kostenblöcken
@@ -3251,6 +3319,30 @@ function saveKostenblock() {
         
         closeKostenblockModal();
     }
+}
+
+// Setze initiale Timeline-Werte basierend auf Empfehlungen
+function setzeInitialeTimeline() {
+    const empfehlung = generiereKostenEmpfehlung();
+    const artikelData = cfoDashboard.artikelData[cfoDashboard.currentArtikel] || {};
+    
+    // Parse Release-Datum
+    const releaseDate = artikelData.release || '2025-01';
+    const [releaseYear, releaseMonth] = releaseDate.split('-');
+    
+    // Berechne Start und Ende basierend auf Empfehlung
+    const startYear = parseInt(releaseYear) - Math.floor(empfehlung.regeln.vorlaufzeit / 12);
+    const endYear = parseInt(releaseYear) + Math.floor(empfehlung.regeln.nachlaufzeit / 12);
+    
+    // Setze die Werte in die Input-Felder
+    const startInput = document.getElementById('projekt-start');
+    const endeInput = document.getElementById('projekt-ende');
+    
+    if (startInput) startInput.value = `${startYear}-01`;
+    if (endeInput) endeInput.value = `${endYear}-12`;
+    
+    // Trigger Update
+    updateProjektZeitraum();
 }
 
 function getWirtschaftlichkeitTabContent() {
