@@ -2582,8 +2582,12 @@ setTimeout(() => {
         updateTabellenSpalten();
         updateErsteZeile();
         berechneModelle();
-        berechneArtikelKPIs();
-        aktiviereKPIUpdates();
+        
+        // KPIs mit extra Verzögerung berechnen
+        setTimeout(() => {
+            berechneArtikelKPIs();
+            aktiviereKPIUpdates();
+        }, 500);  // Warte 500ms bis DOM komplett geladen
     }
 }, 100);
 
@@ -4368,7 +4372,6 @@ function resetModelle() {
 
 // KPI Berechnungsfunktion für Artikel-Details
 function berechneArtikelKPIs() {
-    console.log("KPI Berechnung wird ausgeführt!"); // NEU - zum Testen
     const tableData = [];
     
     // Sammle Daten aus der Tabelle
