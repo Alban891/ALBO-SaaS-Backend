@@ -3479,7 +3479,10 @@ function entferneTabellenzeile(blockId) {
     if (checkbox) {
         checkbox.checked = false;
     }
-    
+      // Update Summen
+    updateKostenSumme();
+}
+
 // Update Kostensummen - Berechnet alle Summen automatisch
 function updateKostenSumme() {
     const tbody = document.getElementById('kosten-tbody');
