@@ -2405,7 +2405,7 @@ ${artikelData.annahmen || 'Innovation durch neue Linie'}
         </div>
         
         <div style="text-align: center; margin-top: 16px;">
-            <button onclick="berechneModelle()" style="padding: 10px 30px; background: var(--primary); color: white; border: none; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer;">
+            <button onclick="berechneModelle(); berechneArtikelKPIs();" style="padding: 10px 30px; background: var(--primary); color: white; border: none; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer;">
                 Berechnen & Vorschau aktualisieren
             </button>
             <button onclick="resetModelle()" style="padding: 10px 30px; background: white; color: var(--gray); border: 1px solid var(--border); border-radius: 6px; font-size: 13px; cursor: pointer; margin-left: 12px;">
@@ -4421,21 +4421,37 @@ function berechneArtikelKPIs() {
     const peakAbsatz = tableData.length > 0 ? 
         Math.max(...tableData.map(year => year.menge)) : 0;
     
-    // Update die Anzeige in der unteren KPI-Leiste
-    const revenueElem = document.querySelector('div[style*="font-size: 24px"][style*="color: var(--primary)"]');
-    if (revenueElem && revenueElem.parentElement.textContent.includes('TOTAL REVENUE')) {
-        revenueElem.textContent = formatRevenue(totalRevenue);
-    }
+    // Update die drei KPI-Boxen unten
+    // Total Revenue Box (erste Box mit "0.0M€")
+    const revenueBoxes = document.querySelectorAll('div');
+    revenueBoxes.forEach(box => {
+        if (box.textContent.includes('TOTAL REVENUE')) {
+            const valueDiv = box.previousElementSibling;
+            if (valueDiv && valueDiv.style.fontSize === '24px') {
+                valueDiv.textContent = formatRevenue(totalRevenue);
+            }
+        }
+    });
     
-    const margeElem = document.querySelector('div[style*="font-size: 24px"][style*="color: var(--success)"]');
-    if (margeElem && margeElem.parentElement.textContent.includes('DB2-MARGE')) {
-        margeElem.textContent = avgMarge.toFixed(1) + '%';
-    }
+    // DB2-Marge Box (mittlere Box mit "NaN%")
+    revenueBoxes.forEach(box => {
+        if (box.textContent.includes('DB2-MARGE')) {
+            const valueDiv = box.previousElementSibling;
+            if (valueDiv && valueDiv.style.fontSize === '24px') {
+                valueDiv.textContent = avgMarge > 0 ? avgMarge.toFixed(1) + '%' : '0%';
+            }
+        }
+    });
     
-    const peakElem = document.querySelector('div[style*="font-size: 24px"][style*="color: var(--warning)"]');
-    if (peakElem && peakElem.parentElement.textContent.includes('PEAK ABSATZ')) {
-        peakElem.textContent = formatThousands(peakAbsatz);
-    }
+    // Peak Absatz Box (rechte Box mit "-∞")
+    revenueBoxes.forEach(box => {
+        if (box.textContent.includes('PEAK ABSATZ')) {
+            const valueDiv = box.previousElementSibling;
+            if (valueDiv && valueDiv.style.fontSize === '24px') {
+                valueDiv.textContent = peakAbsatz > 0 ? formatThousands(peakAbsatz) : '0';
+            }
+        }
+    });
     
     return { totalRevenue, avgMarge, peakAbsatz };
 }
