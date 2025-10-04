@@ -4077,39 +4077,21 @@ function updateTabellenSpalten() {
     const startDate = document.getElementById('release-datum')?.value;
     if (!startDate) return;
     
-    const [startYear, startMonth] = startDate.split('-');
-    const yearInt = parseInt(startYear);
-    const monthInt = parseInt(startMonth);
+    const startYear = parseInt(startDate.split('-')[0]);
     
-    // Bestimme das tatsächliche Startjahr basierend auf Release-Monat
-    // Wenn Release in Q4 (Okt-Dez), starte Tabelle im gleichen Jahr
-    // Sonst starte im nächsten Jahr
-    let tableStartYear = yearInt;
-    if (monthInt <= 9) { // Jan-Sep
-        tableStartYear = yearInt + 1;
-    }
+    // Die Tabelle startet IMMER mit dem Release-Jahr (nicht Jahr+1)
+    const tableStartYear = startYear;
     
-    // Aktualisiere die Jahr-Headers und Spalten-Sichtbarkeit
+    // Aktualisiere die Jahr-Headers
     for(let i = 1; i <= 7; i++) {
         const actualYear = tableStartYear + i - 1;
         
-        // Update Headers in der Tabelle
-        const headerSpan = document.querySelector(`.jahr-header-${i}`);
-        if (headerSpan) {
-            headerSpan.textContent = actualYear;
-        }
-        
-        // Update alle Jahr-Spalten
-        const columns = document.querySelectorAll(`.jahr-col.jahr-${i}`);
-        columns.forEach(element => {
-            // Für TH-Elemente setze das Jahr direkt
+        // Update alle Jahr-Spalten Headers
+        const headers = document.querySelectorAll(`.jahr-col.jahr-${i}`);
+        headers.forEach(element => {
             if (element.tagName === 'TH') {
-                const span = element.querySelector('span');
-                if (span) {
-                    span.textContent = actualYear;
-                } else {
-                    element.textContent = actualYear;
-                }
+                // Setze das tatsächliche Jahr als Text
+                element.textContent = actualYear;
             }
             
             // Zeige/Verstecke basierend auf Horizont
@@ -4120,6 +4102,7 @@ function updateTabellenSpalten() {
             }
         });
     }
+}
     
     // Speichere das Startjahr für spätere Berechnungen
     if (!cfoDashboard.currentArtikel) return;
