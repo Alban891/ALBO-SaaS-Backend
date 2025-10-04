@@ -2942,72 +2942,147 @@ function getArtikelTabContent() {
     `;
 }
 
+// ============================================
+// PROJEKT-KOSTEN KI-REGEL ENGINE
+// ============================================
+const projektKostenRegeln = {
+    software: {
+        titel: 'Software-Entwicklung',
+        empfohleneBlöcke: [
+            { id: 'personal', name: 'Personal', icon: '👥', anteil: 70 },
+            { id: 'cloud', name: 'Cloud & Infrastructure', icon: '☁️', anteil: 15 },
+            { id: 'lizenzen', name: 'Software-Lizenzen', icon: '💿', anteil: 10 },
+            { id: 'testing', name: 'Testing & QA', icon: '🧪', anteil: 5 }
+        ],
+        vorlaufzeit: 12,
+        nachlaufzeit: 24
+    },
+    hardware: {
+        titel: 'Hardware-Entwicklung',
+        empfohleneBlöcke: [
+            { id: 'personal', name: 'Personal', icon: '👥', anteil: 40 },
+            { id: 'material', name: 'Material & Prototypen', icon: '🔧', anteil: 30 },
+            { id: 'werkzeuge', name: 'Werkzeuge & Formen', icon: '⚙️', anteil: 20 },
+            { id: 'zertifizierung', name: 'Zertifizierung', icon: '📋', anteil: 10 }
+        ],
+        vorlaufzeit: 18,
+        nachlaufzeit: 12
+    },
+    service: {
+        titel: 'Service/Beratung',
+        empfohleneBlöcke: [
+            { id: 'personal', name: 'Personal', icon: '👥', anteil: 80 },
+            { id: 'schulung', name: 'Schulungen', icon: '🎓', anteil: 15 },
+            { id: 'reise', name: 'Reisekosten', icon: '✈️', anteil: 5 }
+        ],
+        vorlaufzeit: 3,
+        nachlaufzeit: 36
+    }
+};
+
+// Hilfsfunktion: Projekt-Typ ermitteln
+function ermittleProjektTyp() {
+    const artikelData = cfoDashboard.artikelData[cfoDashboard.currentArtikel];
+    if (!artikelData) return 'software'; // Default
+    
+    // Aus den Basis-Informationen ableiten
+    const kategorie = document.getElementById('produkt-kategorie')?.value || 'software';
+    return kategorie.toLowerCase();
+}
+
+// Hilfsfunktion: KI-Empfehlungen generieren
+function generiereKostenEmpfehlung() {
+    const projektTyp = ermittleProjektTyp();
+    const regeln = projektKostenRegeln[projektTyp] || projektKostenRegeln.software;
+    
+    return {
+        typ: projektTyp,
+        regeln: regeln,
+        zeitraum: {
+            start: regeln.vorlaufzeit,
+            ende: regeln.nachlaufzeit
+        }
+    };
+}
+
 function getProjekteTabContent() {
+    // KI-Empfehlung generieren
+    const empfehlung = generiereKostenEmpfehlung();
+    const artikelData = cfoDashboard.artikelData[cfoDashboard.currentArtikel] || {};
+    
     return `
-        <div style="padding: 20px; background: var(--gray-light); border-radius: 8px;">
-            <h3 style="margin-bottom: 20px;">Projekt-Kosten Planung</h3>
-            
-            <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden;">
-                <thead>
-                    <tr style="background: var(--primary); color: white;">
-                        <th style="padding: 12px; text-align: left;">Kategorie</th>
-                        <th style="padding: 12px; text-align: center;">2024</th>
-                        <th style="padding: 12px; text-align: center;">2025</th>
-                        <th style="padding: 12px; text-align: center;">2026</th>
-                        <th style="padding: 12px; text-align: center;">2027</th>
-                        <th style="padding: 12px; text-align: center;">2028</th>
-                        <th style="padding: 12px; text-align: center;">2029</th>
-                        <th style="padding: 12px; text-align: center;">2030</th>
-                        <th style="padding: 12px; text-align: center;">Gesamt</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td style="padding: 12px; border-bottom: 1px solid var(--border);">Personal</td>
-                        <td style="padding: 12px; border-bottom: 1px solid var(--border); text-align: center;">0</td>
-                        <td style="padding: 12px; border-bottom: 1px solid var(--border); text-align: center;">981</td>
-                        <td style="padding: 12px; border-bottom: 1px solid var(--border); text-align: center;">1.485</td>
-                        <td style="padding: 12px; border-bottom: 1px solid var(--border); text-align: center;">1.727</td>
-                        <td style="padding: 12px; border-bottom: 1px solid var(--border); text-align: center;">1.881</td>
-                        <td style="padding: 12px; border-bottom: 1px solid var(--border); text-align: center;">2.040</td>
-                        <td style="padding: 12px; border-bottom: 1px solid var(--border); text-align: center;">2.203</td>
-                        <td style="padding: 12px; border-bottom: 1px solid var(--border); text-align: center; font-weight: bold;">10.317</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 12px; border-bottom: 1px solid var(--border);">Material</td>
-                        <td style="padding: 12px; border-bottom: 1px solid var(--border); text-align: center;">0</td>
-                        <td style="padding: 12px; border-bottom: 1px solid var(--border); text-align: center;">83</td>
-                        <td style="padding: 12px; border-bottom: 1px solid var(--border); text-align: center;">105</td>
-                        <td style="padding: 12px; border-bottom: 1px solid var(--border); text-align: center;">128</td>
-                        <td style="padding: 12px; border-bottom: 1px solid var(--border); text-align: center;">142</td>
-                        <td style="padding: 12px; border-bottom: 1px solid var(--border); text-align: center;">156</td>
-                        <td style="padding: 12px; border-bottom: 1px solid var(--border); text-align: center;">171</td>
-                        <td style="padding: 12px; border-bottom: 1px solid var(--border); text-align: center; font-weight: bold;">785</td>
-                    </tr>
-                    <tr style="background: #fef3c7;">
-                        <td style="padding: 12px; border-bottom: 1px solid var(--border); font-weight: 600;">CAPEX</td>
-                        <td style="padding: 12px; border-bottom: 1px solid var(--border); text-align: center; font-weight: 600;">1.250</td>
-                        <td style="padding: 12px; border-bottom: 1px solid var(--border); text-align: center;">1.000</td>
-                        <td style="padding: 12px; border-bottom: 1px solid var(--border); text-align: center;">1.250</td>
-                        <td style="padding: 12px; border-bottom: 1px solid var(--border); text-align: center;">800</td>
-                        <td style="padding: 12px; border-bottom: 1px solid var(--border); text-align: center;">800</td>
-                        <td style="padding: 12px; border-bottom: 1px solid var(--border); text-align: center;">800</td>
-                        <td style="padding: 12px; border-bottom: 1px solid var(--border); text-align: center;">800</td>
-                        <td style="padding: 12px; border-bottom: 1px solid var(--border); text-align: center; font-weight: bold;">6.700</td>
-                    </tr>
-                    <tr style="background: var(--primary); color: white;">
-                        <td style="padding: 12px; font-weight: bold;">Gesamt</td>
-                        <td style="padding: 12px; text-align: center; font-weight: bold;">1.570</td>
-                        <td style="padding: 12px; text-align: center; font-weight: bold;">2.544</td>
-                        <td style="padding: 12px; text-align: center; font-weight: bold;">3.200</td>
-                        <td style="padding: 12px; text-align: center; font-weight: bold;">2.895</td>
-                        <td style="padding: 12px; text-align: center; font-weight: bold;">2.943</td>
-                        <td style="padding: 12px; text-align: center; font-weight: bold;">3.116</td>
-                        <td style="padding: 12px; text-align: center; font-weight: bold;">3.294</td>
-                        <td style="padding: 12px; text-align: center; font-weight: bold;">19.562</td>
-                    </tr>
-                </tbody>
-            </table>
+        <div style="padding: 20px;">
+            <!-- KI-Analyse Header -->
+            <div style="background: linear-gradient(135deg, #dbeafe, #e0e7ff); padding: 16px; border-radius: 8px; margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h4 style="font-size: 14px; font-weight: 600; color: var(--primary); margin-bottom: 8px;">
+                            🤖 KI-Projektkosten-Assistent
+                        </h4>
+                        <div style="font-size: 12px; color: var(--text);">
+                            Erkannt: <strong>${empfehlung.regeln.titel}</strong> | 
+                            Empfohlene Vorlaufzeit: <strong>${empfehlung.regeln.vorlaufzeit} Monate</strong> | 
+                            Nachlaufzeit: <strong>${empfehlung.regeln.nachlaufzeit} Monate</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Projekt-Timeline -->
+            <div style="background: white; padding: 16px; border-radius: 8px; margin-bottom: 20px; border: 1px solid var(--border);">
+                <h4 style="font-size: 13px; font-weight: 600; margin-bottom: 12px;">⏱️ Projekt-Timeline</h4>
+                
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+                    <div>
+                        <label style="font-size: 10px; color: var(--gray); text-transform: uppercase;">Projektstart</label>
+                        <input type="month" id="projekt-start" value="2024-01" 
+                               onchange="updateProjektZeitraum()"
+                               style="width: 100%; padding: 6px; border: 1px solid var(--border); border-radius: 4px; font-size: 12px;">
+                    </div>
+                    
+                    <div>
+                        <label style="font-size: 10px; color: var(--gray); text-transform: uppercase;">Release (aus Artikel)</label>
+                        <div style="padding: 6px; background: var(--gray-light); border-radius: 4px; font-size: 12px; font-weight: 600;">
+                            ${artikelData.release || '2025-01'}
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label style="font-size: 10px; color: var(--gray); text-transform: uppercase;">Projektende</label>
+                        <input type="month" id="projekt-ende" value="2027-12" 
+                               onchange="updateProjektZeitraum()"
+                               style="width: 100%; padding: 6px; border: 1px solid var(--border); border-radius: 4px; font-size: 12px;">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Empfohlene Kostenblöcke -->
+            <div style="background: white; padding: 16px; border-radius: 8px; margin-bottom: 20px; border: 1px solid var(--border);">
+                <h4 style="font-size: 13px; font-weight: 600; margin-bottom: 12px;">📊 Kostenblöcke konfigurieren</h4>
+                
+                <div style="background: #f0f9ff; padding: 12px; border-radius: 6px; margin-bottom: 12px;">
+                    <div style="font-size: 11px; font-weight: 600; color: var(--primary); margin-bottom: 8px;">
+                        ✨ KI-Empfehlung für ${empfehlung.regeln.titel}:
+                    </div>
+                    <div id="empfohlene-kostenblöcke">
+                        ${empfehlung.regeln.empfohleneBlöcke.map(block => `
+                            <label style="display: inline-flex; align-items: center; margin: 4px; padding: 6px 10px; background: white; border: 1px solid var(--primary); border-radius: 4px; font-size: 11px; cursor: pointer;">
+                                <input type="checkbox" checked id="block-${block.id}" data-block='${JSON.stringify(block)}' style="margin-right: 6px;">
+                                ${block.icon} ${block.name} (${block.anteil}%)
+                            </label>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <button onclick="addCustomKostenblock()" style="padding: 8px 16px; background: var(--primary); color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">
+                    + Eigenen Kostenblock hinzufügen
+                </button>
+            </div>
+
+            <!-- Kostenplanung Tabelle -->
+            <div id="projekt-kosten-tabelle">
+                ${generateKostenTabelle()}
+            </div>
         </div>
     `;
 }
