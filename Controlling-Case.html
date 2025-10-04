@@ -3112,7 +3112,10 @@ function getProjekteTabContent() {
                     <div id="empfohlene-kostenblöcke">
                         ${empfehlung.regeln.empfohleneBlöcke.map(block => `
                             <label style="display: inline-flex; align-items: center; margin: 4px; padding: 6px 10px; background: white; border: 1px solid var(--primary); border-radius: 4px; font-size: 11px; cursor: pointer;">
-                                <input type="checkbox" checked id="block-${block.id}" data-block='${JSON.stringify(block)}' style="margin-right: 6px;">
+                                <input type="checkbox" checked id="block-${block.id}"
+                                        onchange="updateKostenbloeckeAuswahl()"
+                                        data-block='${JSON.stringify(block)}' 
+                                        style="margin-right: 6px;">
                                 ${block.icon} ${block.name} (${block.anteil}%)
                             </label>
                         `).join('')}
@@ -3132,20 +3135,17 @@ function getProjekteTabContent() {
     `;
 }
 
-// Generiere Kostentabelle mit dynamischen Jahren
+// Generiere Kostentabelle mit dynamischen Jahren und Blöcken
 function generateKostenTabelle(customStartYear = null, customEndYear = null) {
     const empfehlung = generiereKostenEmpfehlung();
     
-    // Jahre dynamisch bestimmen
+    // Jahre dynamisch bestimmen (wie vorher)
     let jahre = [];
-    
     if (customStartYear && customEndYear) {
-        // Verwende übergebene Jahre
         for (let year = customStartYear; year <= customEndYear; year++) {
             jahre.push(year.toString());
         }
     } else {
-        // Versuche aus den Input-Feldern zu lesen
         const startInput = document.getElementById('projekt-start');
         const endeInput = document.getElementById('projekt-ende');
         
@@ -3157,12 +3157,16 @@ function generateKostenTabelle(customStartYear = null, customEndYear = null) {
                 jahre.push(year.toString());
             }
         } else {
-            // Default: 5 Jahre ab 2024
             jahre = ['2024', '2025', '2026', '2027', '2028'];
         }
     }
     
-    // Release-Jahr hervorheben
+    // Nur aktive Blöcke anzeigen - Checkboxen prüfen
+    const aktiveBlöcke = empfehlung.regeln.empfohleneBlöcke.filter(block => {
+        const checkbox = document.getElementById(`block-${block.id}`);
+        return !checkbox || checkbox.checked; // Wenn Checkbox nicht existiert oder checked ist
+    });
+    
     const artikelData = cfoDashboard.artikelData[cfoDashboard.currentArtikel] || {};
     const releaseYear = artikelData.release ? parseInt(artikelData.release.split('-')[0]) : null;
     
@@ -3183,7 +3187,7 @@ function generateKostenTabelle(customStartYear = null, customEndYear = null) {
                     </tr>
                 </thead>
                 <tbody id="kosten-tbody">
-                    ${empfehlung.regeln.empfohleneBlöcke.map(block => `
+                    ${aktiveBlöcke.map(block => `
                         <tr data-block-id="${block.id}">
                             <td style="padding: 8px; font-weight: 600;">
                                 ${block.icon} ${block.name}
@@ -3211,6 +3215,12 @@ function generateKostenTabelle(customStartYear = null, customEndYear = null) {
             </table>
         </div>
     `;
+}
+
+// Update Tabelle wenn Checkboxen geändert werden
+function updateKostenbloeckeAuswahl() {
+    // Tabelle neu generieren basierend auf aktiven Checkboxen
+    updateProjektZeitraum();
 }
 
 // Update Kostensummen
