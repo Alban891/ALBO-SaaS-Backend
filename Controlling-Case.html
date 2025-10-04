@@ -2069,15 +2069,18 @@ artikelData.prices = artikelData.prices || {};
                 
                 <!-- Tab Navigation -->
                 <div style="display: flex; gap: 20px; border-bottom: 2px solid var(--border); margin-bottom: 24px;">
-                    <button onclick="switchDetailTab('artikel')" class="detail-tab active" 
+                    <button onclick="switchArtikelDetailTab('artikel')" class="detail-tab active"
+                            id="artikel-detail-tab-artikel" 
                             style="padding: 12px 20px; border: none; background: none; font-size: 14px; font-weight: 500; cursor: pointer; color: var(--primary); border-bottom: 3px solid var(--primary);">
                         📦 Artikel
                     </button>
-                    <button onclick="switchDetailTab('projekte')" class="detail-tab"
+                    <button onclick="switchArtikelDetailTab('projekte')" class="detail-tab"
+                            id="artikel-detail-tab-projekte"
                             style="padding: 12px 20px; border: none; background: none; font-size: 14px; font-weight: 500; cursor: pointer; color: var(--gray); border-bottom: 3px solid transparent;">
                         🏗️ Projekte
                     </button>
-                    <button onclick="switchDetailTab('wirtschaft')" class="detail-tab"
+                    <button onclick="switchArtikelDetailTab('wirtschaft')" class="detail-tab"
+                            id="artikel-detail-tab-wirtschaft"
                             style="padding: 12px 20px; border: none; background: none; font-size: 14px; font-weight: 500; cursor: pointer; color: var(--gray); border-bottom: 3px solid transparent;">
                         💰 Wirtschaftlichkeit
                     </button>
@@ -2685,6 +2688,17 @@ ${artikelData.annahmen || 'Innovation durch neue Linie'}
                 </div>
             </div>
         `;
+
+// Speichere den originalen Artikel-Tab-Content
+setTimeout(() => {
+    const artikelTabContent = document.getElementById('artikel-tab-content');
+    if (artikelTabContent) {
+        if (!cfoDashboard.artikelDetailTabs) {
+            cfoDashboard.artikelDetailTabs = {};
+        }
+        cfoDashboard.artikelDetailTabs.artikel = artikelTabContent.innerHTML;
+    }
+}, 100);
         
  // Zeige Detail-View
 detailView.style.display = 'block';
@@ -3509,7 +3523,7 @@ function initDB3KumuliertChart() {
         }
     });
 }
-function switchDetailTab(tabName) {
+function switchDetailTab_OLD(tabName) {
     // Remove active styles from all tabs
     document.querySelectorAll('.detail-tab').forEach(tab => {
         tab.style.color = 'var(--gray)';
@@ -3980,6 +3994,55 @@ function updateAllCharts() {
     if (db3KumuliertChart) {
         db3KumuliertChart.data.datasets[0].data = data.db3Kumuliert;
         db3KumuliertChart.update();
+    }
+}
+
+function switchArtikelDetailTab(tabName) {
+    // Tab-Button Styles zurücksetzen
+    document.querySelectorAll('.detail-tab').forEach(tab => {
+        tab.style.color = 'var(--gray)';
+        tab.style.borderBottomColor = 'transparent';
+    });
+    
+    // Aktiven Tab markieren
+    const activeTab = document.getElementById('artikel-detail-tab-' + tabName);
+    if (activeTab) {
+        activeTab.style.color = 'var(--primary)';
+        activeTab.style.borderBottomColor = 'var(--primary)';
+    }
+    
+    // Content-Container holen
+    const contentDiv = document.getElementById('detail-tab-content');
+    if (!contentDiv) return;
+    
+    // Tab-Content speichern falls noch nicht vorhanden
+    if (!cfoDashboard.artikelDetailTabs) {
+        cfoDashboard.artikelDetailTabs = {};
+    }
+    
+    // Content nur einmal generieren und dann wiederverwenden
+    switch(tabName) {
+        case 'artikel':
+            if (!cfoDashboard.artikelDetailTabs.artikel) {
+                // Originalen Artikel-Tab-Content beibehalten (nicht neu generieren!)
+                return; // Nichts tun, der Content ist schon da
+            }
+            contentDiv.innerHTML = cfoDashboard.artikelDetailTabs.artikel;
+            break;
+            
+        case 'projekte':
+            if (!cfoDashboard.artikelDetailTabs.projekte) {
+                cfoDashboard.artikelDetailTabs.projekte = getProjekteTabContent();
+            }
+            contentDiv.innerHTML = cfoDashboard.artikelDetailTabs.projekte;
+            break;
+            
+        case 'wirtschaft':
+            if (!cfoDashboard.artikelDetailTabs.wirtschaft) {
+                cfoDashboard.artikelDetailTabs.wirtschaft = getWirtschaftlichkeitTabContent();
+            }
+            contentDiv.innerHTML = cfoDashboard.artikelDetailTabs.wirtschaft;
+            break;
     }
 }
 
