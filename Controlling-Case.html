@@ -4306,9 +4306,61 @@ function updateWirtschaftlichkeit() {
 }
 
 function updateViewLevel() {
-    const level = document.getElementById('view-level').value;
-    // Zeige/Verstecke Zeilen je nach Level
-    console.log('View Level:', level);
+    const level = document.getElementById('view-level')?.value;
+    if (!level) return;
+    
+    // Alle Sections verstecken
+    const sections = [
+        '.db2-section',
+        '.db3-section', 
+        '.db4-section',
+        '.db5-section',
+        '.trading-section',
+        '.ebit-section'
+    ];
+    
+    sections.forEach(selector => {
+        document.querySelectorAll(selector).forEach(row => {
+            row.style.display = 'none';
+        });
+    });
+    
+    // Je nach Level die entsprechenden Zeilen zeigen
+    switch(level) {
+        case 'db2':
+            // Nur DB1 und DB2 zeigen
+            document.querySelectorAll('.db2-section').forEach(row => {
+                row.style.display = 'table-row';
+            });
+            break;
+            
+        case 'db5':
+            // Bis DB5 zeigen
+            document.querySelectorAll('.db2-section, .db3-section, .db4-section, .db5-section').forEach(row => {
+                row.style.display = 'table-row';
+            });
+            break;
+            
+        case 'ebit':
+            // Bis EBIT zeigen (ohne alle Details)
+            document.querySelectorAll('.db2-section, .db3-section').forEach(row => {
+                row.style.display = 'table-row';
+            });
+            document.querySelectorAll('.trading-section, .ebit-section').forEach(row => {
+                row.style.display = 'table-row';
+            });
+            break;
+            
+        case 'all':
+        default:
+            // Alles zeigen
+            sections.forEach(selector => {
+                document.querySelectorAll(selector).forEach(row => {
+                    row.style.display = 'table-row';
+                });
+            });
+            break;
+    }
 }
 
 function initializeAI() {
@@ -5036,6 +5088,11 @@ function switchArtikelDetailTab(tabName) {
                 cfoDashboard.artikelDetailTabs.wirtschaft = getWirtschaftlichkeitTabContent();
             }
             contentDiv.innerHTML = cfoDashboard.artikelDetailTabs.wirtschaft;
+            // Filter initial setzen
+            setTimeout(() => {
+                updateViewLevel();
+                updateWirtschaftlichkeit();
+            }, 50);
             break;
     }
 }
