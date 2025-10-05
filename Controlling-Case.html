@@ -1136,11 +1136,79 @@
                 <div class="tab-content" id="tab-assumptions">
                     <div class="assumptions-container">
                         
+                        <!-- PROJEKT PORTFOLIO OVERVIEW (NEUE HAUPTEBENE) -->
+                        <div class="assumptions-section" id="projekt-overview">
+                            <!-- Header mit View Switcher -->
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                                <div class="section-title" style="margin: 0; padding: 0; border: none;">📁 Projekt Portfolio</div>
+                                
+                                <!-- View Switcher -->
+                                <div style="display: flex; gap: 4px; background: var(--gray-light); padding: 4px; border-radius: 8px;">
+                                    <button id="view-projekt-list" class="view-btn" onclick="switchProjektView('list')" 
+                                            style="padding: 6px 12px; border: none; background: var(--white); color: var(--primary); border-radius: 4px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); transition: all 0.2s;">
+                                        ☰ Liste
+                                    </button>
+                                    <button id="view-projekt-cards" class="view-btn" onclick="switchProjektView('cards')"
+                                            style="padding: 6px 12px; border: none; background: transparent; color: var(--gray); border-radius: 4px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: all 0.2s;">
+                                        ▦ Karten
+                                    </button>
+                                    <button id="view-projekt-compact" class="view-btn" onclick="switchProjektView('compact')"
+                                            style="padding: 6px 12px; border: none; background: transparent; color: var(--gray); border-radius: 4px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: all 0.2s;">
+                                        ▤ Kompakt
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- List View (Default) -->
+                            <div id="projekt-list-view" style="display: block;">
+                                <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                                    <thead>
+                                        <tr style="background: var(--gray-light); border-bottom: 2px solid var(--border);">
+                                            <th style="padding: 12px; text-align: left; font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase;">Projekt</th>
+                                            <th style="padding: 12px; text-align: center; font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase;">Status</th>
+                                            <th style="padding: 12px; text-align: center; font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase;">Artikel</th>
+                                            <th style="padding: 12px; text-align: right; font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase;">Total Revenue</th>
+                                            <th style="padding: 12px; text-align: center; font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase;">Aktionen</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="projekt-list-tbody">
+                                        <!-- Wird dynamisch gefüllt -->
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <!-- Card View -->
+                            <div id="projekt-card-view" style="display: none;">
+                                <div id="projekt-grid-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px;">
+                                    <!-- Wird dynamisch gefüllt -->
+                                </div>
+                            </div>
+                            
+                            <!-- Compact View -->
+                            <div id="projekt-compact-view" style="display: none;">
+                                <div id="projekt-compact-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px;">
+                                    <!-- Wird dynamisch gefüllt -->
+                                </div>
+                            </div>
+                            
+                            <div style="text-align: center; margin-top: 20px;">
+                                <button class="add-artikel-btn" onclick="addNewProjekt()">
+                                    ➕ Neues Projekt anlegen
+                                </button>
+                            </div>
+                        </div>
+
                         <!-- Artikel Portfolio Overview (Hauptebene) -->
                         <div class="assumptions-section" id="artikel-overview">
                             <!-- Header mit View Switcher -->
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                                <div class="section-title" style="margin: 0; padding: 0; border: none;">📦 Artikel Portfolio</div>
+                                <div class="section-title" style="margin: 0; padding: 0; border: none;">
+                                    <button onclick="backToProjektOverview()" 
+                                            style="padding: 6px 12px; border: 1px solid var(--border); background: white; color: var(--gray); border-radius: 4px; font-size: 11px; cursor: pointer; margin-right: 12px;">
+                                        ← Zurück zu Projekten
+                                    </button>
+                                    📦 Artikel Portfolio
+                                </div>
                                 
                                 <!-- View Switcher -->
                                 <div style="display: flex; gap: 4px; background: var(--gray-light); padding: 4px; border-radius: 8px;">
@@ -5345,13 +5413,243 @@ function switchArtikelDetailTab(tabName) {
     }
 })();
 
+// ============================================
+// PROJEKT-ÜBERSICHT FUNKTIONEN
+// ============================================
+
+function renderProjektOverview() {
+    renderProjektList();
+    renderProjektCards();
+    renderProjektCompact();
+}
+
+function renderProjektList() {
+    const tbody = document.getElementById('projekt-list-tbody');
+    if (!tbody) return;
+    
+    tbody.innerHTML = '';
+    
+    Object.values(cfoDashboard.projektData).forEach(projekt => {
+        const anzahlArtikel = projekt.artikel.length;
+        const totalRevenue = calculateProjektRevenue(projekt);
+        
+        const row = document.createElement('tr');
+        row.style.cursor = 'pointer';
+        row.style.transition = 'background 0.2s';
+        row.onmouseover = function() { this.style.background = 'var(--gray-light)'; };
+        row.onmouseout = function() { this.style.background = 'transparent'; };
+        row.onclick = function() { openProjektArtikel(projekt.id); };
+        
+        row.innerHTML = `
+            <td style="padding: 12px; font-weight: 500; color: var(--text); font-size: 13px;">
+                📁 ${projekt.name}
+            </td>
+            <td style="padding: 12px; text-align: center;">
+                <span style="padding: 2px 8px; background: #dcfce7; color: var(--success); border-radius: 12px; font-size: 11px; font-weight: 500;">
+                    ${projekt.status}
+                </span>
+            </td>
+            <td style="padding: 12px; text-align: center; font-size: 13px;">${anzahlArtikel}</td>
+            <td style="padding: 12px; text-align: right; font-size: 13px; font-weight: 600; color: var(--primary);">
+                ${formatRevenue(totalRevenue)}
+            </td>
+            <td style="padding: 12px; text-align: center;">
+                <button onclick="event.stopPropagation(); openProjektArtikel('${projekt.id}')" 
+                        style="padding: 4px 8px; border: 1px solid var(--border); background: white; border-radius: 4px; font-size: 11px; cursor: pointer;">
+                    Artikel anzeigen
+                </button>
+            </td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+function renderProjektCards() {
+    const container = document.getElementById('projekt-grid-container');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    Object.values(cfoDashboard.projektData).forEach(projekt => {
+        const anzahlArtikel = projekt.artikel.length;
+        const totalRevenue = calculateProjektRevenue(projekt);
+        
+        const card = document.createElement('div');
+        card.className = 'artikel-card';
+        card.onclick = function() { openProjektArtikel(projekt.id); };
+        
+        card.innerHTML = `
+            <div class="artikel-header">
+                <div class="artikel-name">📁 ${projekt.name}</div>
+                <div class="artikel-effect" style="background: #dcfce7; color: var(--success);">${projekt.status}</div>
+            </div>
+            <div class="artikel-details">
+                <div class="detail-row">
+                    <span class="detail-label">Start:</span>
+                    <span class="detail-value">${projekt.startDatum}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Artikel:</span>
+                    <span class="detail-value">${anzahlArtikel}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Total Revenue:</span>
+                    <span class="detail-value success">${formatRevenue(totalRevenue)}</span>
+                </div>
+            </div>
+            <div class="artikel-assumptions">
+                <strong>Beschreibung:</strong> ${projekt.beschreibung}
+            </div>
+        `;
+        container.appendChild(card);
+    });
+}
+
+function renderProjektCompact() {
+    const container = document.getElementById('projekt-compact-container');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    Object.values(cfoDashboard.projektData).forEach(projekt => {
+        const totalRevenue = calculateProjektRevenue(projekt);
+        
+        const compact = document.createElement('div');
+        compact.onclick = function() { openProjektArtikel(projekt.id); };
+        compact.style.cssText = "padding: 12px; background: white; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; transition: all 0.2s;";
+        compact.onmouseover = function() {
+            this.style.borderColor = 'var(--primary)';
+            this.style.transform = 'translateY(-2px)';
+            this.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)';
+        };
+        compact.onmouseout = function() {
+            this.style.borderColor = 'var(--border)';
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = 'none';
+        };
+        
+        compact.innerHTML = `
+            <div style="font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 8px;">📁 ${projekt.name}</div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                <span style="font-size: 11px; color: var(--gray);">Artikel:</span>
+                <span style="font-size: 11px; font-weight: 600; color: var(--text);">${projekt.artikel.length}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+                <span style="font-size: 11px; color: var(--gray);">Revenue:</span>
+                <span style="font-size: 11px; font-weight: 600; color: var(--primary);">${formatRevenue(totalRevenue)}</span>
+            </div>
+        `;
+        container.appendChild(compact);
+    });
+}
+
+function calculateProjektRevenue(projekt) {
+    let total = 0;
+    projekt.artikel.forEach(artikelId => {
+        const artikel = cfoDashboard.artikelData[artikelId];
+        if (artikel) {
+            // Summiere alle Jahre
+            for (let year = 2025; year <= 2030; year++) {
+                const vol = artikel.volumes?.[year] || 0;
+                const price = artikel.prices?.[year] || artikel.price || 0;
+                total += vol * price;
+            }
+        }
+    });
+    return total;
+}
+
+function switchProjektView(viewType) {
+    // Update buttons
+    document.querySelectorAll('#projekt-overview .view-btn').forEach(btn => {
+        btn.style.background = 'transparent';
+        btn.style.color = 'var(--gray)';
+        btn.style.boxShadow = 'none';
+    });
+    
+    const activeBtn = document.getElementById('view-projekt-' + viewType);
+    if (activeBtn) {
+        activeBtn.style.background = 'var(--white)';
+        activeBtn.style.color = 'var(--primary)';
+        activeBtn.style.boxShadow = '0 1px 2px rgba(0,0,0,0.1)';
+    }
+    
+    // Hide all views
+    document.getElementById('projekt-list-view').style.display = 'none';
+    document.getElementById('projekt-card-view').style.display = 'none';
+    document.getElementById('projekt-compact-view').style.display = 'none';
+    
+    // Show selected
+    if (viewType === 'list') document.getElementById('projekt-list-view').style.display = 'block';
+    if (viewType === 'cards') document.getElementById('projekt-card-view').style.display = 'block';
+    if (viewType === 'compact') document.getElementById('projekt-compact-view').style.display = 'block';
+}
+
+function openProjektArtikel(projektId) {
+    cfoDashboard.currentProjekt = projektId;
+    
+    // Verstecke Projekt-Übersicht
+    document.getElementById('projekt-overview').style.display = 'none';
+    
+    // Zeige Artikel-Übersicht
+    document.getElementById('artikel-overview').style.display = 'block';
+    
+    // Filtere Artikel nach Projekt und rendere
+    filterArtikelByProjekt(projektId);
+}
+
+function filterArtikelByProjekt(projektId) {
+    const projekt = cfoDashboard.projektData[projektId];
+    if (!projekt) return;
+    
+    // Update Titel
+    const titleDiv = document.querySelector('#artikel-overview .section-title');
+    if (titleDiv) {
+        titleDiv.innerHTML = `📦 Artikel Portfolio - ${projekt.name}`;
+    }
+    
+    // Hier die Artikel-Tabelle/Karten/Compact mit gefilterten Artikeln neu rendern
+    // Das machen wir in Schritt 6
+}
+
+function backToProjektOverview() {
+    cfoDashboard.currentProjekt = null;
+    
+    // Verstecke Artikel-Übersicht
+    document.getElementById('artikel-overview').style.display = 'none';
+    
+    // Zeige Projekt-Übersicht
+    document.getElementById('projekt-overview').style.display = 'block';
+    
+    // KI-Feedback
+    cfoDashboard.aiController.addAIMessage({
+        level: 'info',
+        title: '📁 Zurück zur Projekt-Übersicht',
+        text: 'Projekt-Portfolio-Ansicht aktiviert.',
+        timestamp: 'Navigation'
+    });
+}
+
+function addNewProjekt() {
+    alert('Neues Projekt anlegen - wird implementiert');
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // ERST Charts und AI initialisieren
     initializeCharts();
     initializeAI();
+    
+    // PROJEKT-ÜBERSICHT rendern und anzeigen
+    renderProjektOverview();
+    
+    // Initial: Projekt-Übersicht zeigen, Artikel-Übersicht verstecken
+    const projektOverview = document.getElementById('projekt-overview');
+    const artikelOverview = document.getElementById('artikel-overview');
+    if (projektOverview) projektOverview.style.display = 'block';
+    if (artikelOverview) artikelOverview.style.display = 'none';
 
     // Navigation SOFORT wiederherstellen - ohne Verzögerung!
-    restoreNavigationState();    
+    restoreNavigationState();
     
     // Set up periodic AI insights
     setInterval(() => {
