@@ -858,6 +858,13 @@
     content: "i";
     font-style: normal;
 }
+/* Verhindere Flash beim Laden */
+.tab-content {
+    display: none;
+}
+.tab-content.active {
+    display: block !important;
+}
     </style>
 </head>
 <body>
@@ -1532,25 +1539,26 @@ function openArtikelDetail(artikelName) {
     cfoDashboard.currentDetailTab = 'artikel';
     cfoDashboard.currentMainTab = 'assumptions';
 
+    // Debug - prüfen was gespeichert wird
+    console.log('VOR saveNavigationState:', {
+    artikel: cfoDashboard.currentArtikel,
+    view: cfoDashboard.currentView,
+    tab: cfoDashboard.currentDetailTab,
+    mainTab: cfoDashboard.currentMainTab
+    });
+
     // State speichern wenn Artikel geöffnet wird
     saveNavigationState();
+
+    // Nochmal prüfen
+    const saved = localStorage.getItem('cfo-dashboard-state');
+    console.log('NACH saveNavigationState:', saved);
     
     // Lade ersten Tab (falls switchArtikelDetailTab existiert)
     if (typeof switchArtikelDetailTab === 'function') {
         switchArtikelDetailTab('artikel');
     }
-    
-    // State speichern
-    saveNavigationState();
 }
-
-// Am Ende der Datei, im DOMContentLoaded Event hinzufügen:
-document.addEventListener('DOMContentLoaded', function() {
-    // Ihre bestehende Initialisierung...
-    
-    // Navigation State wiederherstellen
-    restoreNavigationState();
-});
 
 // Zurück zur Artikel-Übersicht Funktion
 function backToArtikelOverview() {
@@ -5344,16 +5352,28 @@ function switchArtikelDetailTab(tabName) {
     saveNavigationState();
 
 }
-// Navigation SOFORT wiederherstellen (noch VOR DOMContentLoaded)
-restoreNavigationState();
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Navigation State NICHT mehr hier aufrufen (entfernen Sie restoreNavigationState() von hier)
-    restoreNavigationState();
-
-    // Initialize charts and AI
+    // ERST Charts und AI initialisieren
     initializeCharts();
     initializeAI();
+    
+    // DANN nach kurzer Verzögerung Navigation wiederherstellen
+    setTimeout(function() {
+        const hash = window.location.hash;
+        const savedState = localStorage.getItem('cfo-dashboard-state');
+        
+        if (hash && hash !== '#' && hash !== '#dashboard') {
+            // Hash hat Priorität
+            console.log('Restore from Hash:', hash);
+            restoreNavigationState();
+        } else if (savedState) {
+            // Sonst localStorage nutzen
+            console.log('Restore from localStorage:', savedState);
+            restoreNavigationState();
+        }
+    }, 300); // 300ms Verzögerung damit alles geladen ist
+    
     
     // Set up periodic AI insights
     setInterval(() => {
@@ -5818,3 +5838,4 @@ document.addEventListener('DOMContentLoaded', function() {
     </script>
 </body>
 </html>
+
