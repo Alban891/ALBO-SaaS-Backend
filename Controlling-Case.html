@@ -6284,7 +6284,7 @@ async function testSupabaseConnection() {
     
     try {
         const { data, error } = await window.supabaseClient
-            .from('projects')
+            .from('ALBO_Projects')
             .select('*');
         
         if (error) {
