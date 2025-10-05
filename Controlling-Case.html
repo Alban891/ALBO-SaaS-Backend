@@ -5602,14 +5602,20 @@ function filterArtikelByProjekt(projektId) {
     const projekt = cfoDashboard.projektData[projektId];
     if (!projekt) return;
     
-    // Update Titel
+    // Update Titel MIT Zurück-Button
     const titleDiv = document.querySelector('#artikel-overview .section-title');
     if (titleDiv) {
-        titleDiv.innerHTML = `📦 Artikel Portfolio - ${projekt.name}`;
+        titleDiv.innerHTML = `
+            <button onclick="backToProjektOverview()" 
+                    style="padding: 6px 12px; border: 1px solid var(--border); background: white; color: var(--gray); border-radius: 4px; font-size: 11px; cursor: pointer; margin-right: 12px;">
+                ← Zurück zu Projekten
+            </button>
+            📦 Artikel Portfolio - ${projekt.name}
+        `;
     }
     
     // Hier die Artikel-Tabelle/Karten/Compact mit gefilterten Artikeln neu rendern
-    // Das machen wir in Schritt 6
+    // Das machen wir später
 }
 
 function backToProjektOverview() {
