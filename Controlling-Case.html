@@ -1672,49 +1672,97 @@ Object.assign(cfoDashboard, {
 // Speichere aktuellen Zustand in URL und localStorage
 function saveNavigationState() {
     const state = {
+        mainTab: getCurrentMainTab(), // NEU: Haupt-Tab speichern
         view: cfoDashboard.currentView || 'dashboard',
         artikel: cfoDashboard.currentArtikel,
         tab: cfoDashboard.currentDetailTab || 'artikel',
         timestamp: new Date().toISOString()
     };
     
-    // In localStorage speichern
     localStorage.setItem('cfo-dashboard-state', JSON.stringify(state));
     
-    // URL-Hash aktualisieren (ohne Seiten-Reload)
-    if (state.view === 'detail' && state.artikel) {
-        window.history.replaceState(null, null, `#artikel/${state.artikel}/${state.tab}`);
+    // URL mit Haupt-Tab Info
+    if (state.mainTab === 'assumptions' && state.view === 'detail' && state.artikel) {
+        window.history.replaceState(null, null, `#assumptions/artikel/${state.artikel}/${state.tab}`);
+    } else if (state.mainTab !== 'dashboard') {
+        window.history.replaceState(null, null, `#${state.mainTab}`);
     } else {
         window.history.replaceState(null, null, '#dashboard');
     }
 }
 
+// Neue Hilfsfunktion
+function getCurrentMainTab() {
+    const activeTab = document.querySelector('.tab-btn.active');
+    if (activeTab) {
+        const onclick = activeTab.getAttribute('onclick');
+        if (onclick) {
+            const match = onclick.match(/switchTab\('(.+?)'\)/);
+            if (match) return match[1];
+        }
+    }
+    return 'dashboard';
+}
 // Lade gespeicherten Zustand beim Seitenaufruf
 function restoreNavigationState() {
-    // Prüfe URL-Hash zuerst
     const hash = window.location.hash;
     
-    if (hash.startsWith('#artikel/')) {
-        // Parse: #artikel/[artikelName]/[tabName]
+    // Parse verschiedene URL-Formate
+    if (hash.startsWith('#assumptions/artikel/')) {
+        // Format: #assumptions/artikel/[artikelName]/[tabName]
         const parts = hash.split('/');
-        const artikelName = decodeURIComponent(parts[1] || '');
-        const tabName = parts[2] || 'artikel';
+        const artikelName = decodeURIComponent(parts[2] || '');
+        const tabName = parts[3] || 'artikel';
         
-        if (artikelName) {
-            // Direkt zur Artikel-Detailansicht springen
-            setTimeout(() => {
-                openArtikelDetail(artikelName);
+        // Erst zum Annahmen-Tab wechseln
+        switchTab('assumptions');
+        
+        // Dann Artikel öffnen
+        setTimeout(() => {
+            openArtikelDetail(artikelName);
+            if (tabName !== 'artikel') {
                 setTimeout(() => {
-                    if (tabName !== 'artikel') {
-                        switchArtikelDetailTab(tabName);
-                    }
+                    switchArtikelDetailTab(tabName);
                 }, 100);
-            }, 200);
+            }
+        }, 200);
+        return;
+    } else if (hash.startsWith('#')) {
+        // Einfacher Tab-Switch
+        const tabName = hash.substring(1);
+        if (['dashboard', 'assumptions', 'analysis', 'ai-agents'].includes(tabName)) {
+            switchTab(tabName);
             return;
         }
     }
+    
+    // Fallback auf localStorage
+    const savedState = localStorage.getItem('cfo-dashboard-state');
+    if (savedState) {
+        try {
+            const state = JSON.parse(savedState);
+            
+            // Haupt-Tab wiederherstellen
+            if (state.mainTab) {
+                switchTab(state.mainTab);
+            }
+            
+            // Artikel-Detail wiederherstellen falls nötig
+            if (state.mainTab === 'assumptions' && state.view === 'detail' && state.artikel) {
+                setTimeout(() => {
+                    openArtikelDetail(state.artikel);
+                    if (state.tab && state.tab !== 'artikel') {
+                        setTimeout(() => {
+                            switchArtikelDetailTab(state.tab);
+                        }, 100);
+                    }
+                }, 300);
+            }
+        } catch (e) {
+            console.log('Konnte State nicht wiederherstellen:', e);
+        }
+    }
 }
-
 // Browser Zurück-Button Support
 window.addEventListener('popstate', function(event) {
     restoreNavigationState();
@@ -1796,6 +1844,9 @@ window.switchTab = function(tabName) {
             timestamp: 'Navigation'
         });
     }
+    
+    // State speichern bei Tab-Wechsel (NEUE ZEILE HIER EINFÜGEN)
+    saveNavigationState();
 }
 
 // Alle anderen bestehenden Funktionen bleiben unverändert
