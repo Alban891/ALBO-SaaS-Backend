@@ -1135,6 +1135,51 @@
                 <!-- Tab Content: Annahmen - HIER KOMMT DIE NEUE VIEW SWITCHING FUNKTIONALITÄT -->
                 <div class="tab-content" id="tab-assumptions">
                     <div class="assumptions-container">
+
+                         <!-- NEUE Projekt-Übersicht (wird standardmäßig angezeigt) -->
+                        <div class="assumptions-section" id="projekt-overview">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                                <div class="section-title" style="margin: 0; padding: 0; border: none;">
+                                    📂 Projekt-Portfolio
+                                </div>
+                            </div>
+            
+                            <!-- Projekt-Karten -->
+                            <div id="projekt-cards" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px;">
+                                <!-- Projekt 1: Robotics -->
+                                <div class="projekt-card" style="background: white; border: 1px solid var(--border); border-radius: 12px; padding: 20px; cursor: pointer; transition: all 0.3s;"
+                                    onclick="openProjektDetail('robotics')">
+                                    <h3 style="margin: 0 0 10px 0; color: var(--primary);">🤖 Robotics im Schaltschrankbau</h3>
+                                    <div style="font-size: 12px; color: var(--gray); margin-bottom: 10px;">3 Artikel</div>
+                                    <div style="font-size: 11px;">
+                                        • Crimpautomat<br>
+                                        • Mini-Komax ohne CORE<br>
+                                        • Digital Shopfloor Backend
+                                    </div>
+                                </div>
+                
+                            <!-- Projekt 2: Cyber Security -->
+                            <div class="projekt-card" style="background: white; border: 1px solid var(--border); border-radius: 12px; padding: 20px; cursor: pointer; transition: all 0.3s;"
+                                onclick="openProjektDetail('cybersecurity')">
+                                <h3 style="margin: 0 0 10px 0; color: var(--primary);">🔒 Cyber Security Consulting</h3>
+                                <div style="font-size: 12px; color: var(--gray); margin-bottom: 10px;">3 Artikel</div>
+                                <div style="font-size: 11px;">
+                                     • Hardware CC100<br>
+                                    • Software Planet<br>
+                                    • Beratung
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+        
+                    <!-- IHR BESTEHENDER ARTIKEL-CODE (nur versteckt) -->
+                    <div class="assumptions-section" id="artikel-overview" style="display: none;">
+                        <!-- Header mit View Switcher -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <button onclick="backToProjektOverview()" style="padding: 6px 12px; background: white; border: 1px solid var(--border); border-radius: 4px; font-size: 12px; cursor: pointer; color: var(--gray);">
+                                ← Zurück zu Projekten
+                            </button>
+                            <div class="section-title" style="margin: 0; padding: 0; border: none;">📦 Artikel Portfolio</div>
                         
                         <!-- Artikel Portfolio Overview (Hauptebene) -->
                         <div class="assumptions-section" id="artikel-overview">
@@ -2218,6 +2263,121 @@ if (!artikelData) {
     
     // Store in cfoDashboard for future use
     cfoDashboard.artikelData[id] = artikelData;
+}
+
+// ===== NEUE PROJEKT-STRUKTUR =====
+// Projekt-Definitionen
+cfoDashboard.projekte = {
+    'robotics': {
+        id: 'robotics',
+        name: 'Robotics im Schaltschrankbau',
+        beschreibung: 'Automatisierung der Schaltschrankfertigung',
+        status: 'aktiv',
+        startdatum: '2024-01',
+        artikel: ['crimp', 'komax', 'digital']
+    },
+    'cybersecurity': {
+        id: 'cybersecurity',
+        name: 'Cyber Security Consulting',
+        beschreibung: 'Sicherheitslösungen für Industrie 4.0',
+        status: 'planung',
+        startdatum: '2025-01',
+        artikel: ['hardware-cc100', 'software-planet', 'beratung']
+    }
+};
+
+// Neue Artikel für Cyber Security (falls noch nicht vorhanden)
+if (!cfoDashboard.artikelData) {
+    cfoDashboard.artikelData = {};
+}
+
+cfoDashboard.artikelData['hardware-cc100'] = {
+    id: 'hardware-cc100',
+    name: 'Hardware CC100',
+    type: 'neu',
+    release: '2025-01',
+    price: 2500,
+    volume: 50,
+    hk: 1500,
+    active: true,
+    volumes: {},
+    prices: {}
+};
+
+cfoDashboard.artikelData['software-planet'] = {
+    id: 'software-planet',
+    name: 'Software Planet',
+    type: 'neu',
+    release: '2025-03',
+    price: 500,
+    volume: 200,
+    hk: 100,
+    active: true,
+    volumes: {},
+    prices: {}
+};
+
+cfoDashboard.artikelData['beratung'] = {
+    id: 'beratung',
+    name: 'Beratung',
+    type: 'service',
+    release: '2025-01',
+    price: 1500,
+    volume: 100,
+    hk: 500,
+    active: true,
+    volumes: {},
+    prices: {}
+};
+
+// Projekt-Funktionen
+function openProjektDetail(projektId) {
+    const projekt = cfoDashboard.projekte[projektId];
+    if (!projekt) return;
+    
+    // Verstecke Projekt-Übersicht
+    document.getElementById('projekt-overview').style.display = 'none';
+    
+    // Zeige Artikel-Übersicht
+    document.getElementById('artikel-overview').style.display = 'block';
+    
+    // State speichern
+    cfoDashboard.currentProjekt = projektId;
+    saveNavigationState();
+}
+
+function backToProjektOverview() {
+    document.getElementById('artikel-overview').style.display = 'none';
+    document.getElementById('projekt-overview').style.display = 'block';
+    
+    cfoDashboard.currentProjekt = null;
+    saveNavigationState();
+}
+
+// Artikel nach Projekt filtern
+function filterArtikelByProjekt(artikelIds) {
+    // Verstecke alle Artikel-Zeilen
+    const allRows = document.querySelectorAll('#artikel-list-tbody tr');
+    allRows.forEach(row => row.style.display = 'none');
+    
+    // Zeige nur Artikel des ausgewählten Projekts
+    artikelIds.forEach(artikelId => {
+        const row = document.querySelector(`tr[onclick*="${artikelId}"]`);
+        if (row) {
+            row.style.display = '';
+        }
+    });
+    
+    // Aktualisiere auch Card View
+    const allCards = document.querySelectorAll('.artikel-card');
+    allCards.forEach(card => card.style.display = 'none');
+    
+    artikelIds.forEach(artikelId => {
+        const card = document.querySelector(`.artikel-card[onclick*="${artikelId}"]`);
+        if (card) {
+            card.style.display = 'block';
+        }
+    });
 }
 
 // Ensure all properties exist with defaults
