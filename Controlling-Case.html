@@ -1488,6 +1488,7 @@
 // Globale Variablen für Dashboard (falls noch nicht vorhanden)
 const cfoDashboard = {
     currentView: 'dashboard',
+    currentProjekt: null,
     currentArtikel: null,
     currentDetailTab: null,
     artikelDetailTabs: {}
@@ -1619,6 +1620,26 @@ Object.assign(cfoDashboard, {
         // Volumes und Prices werden dynamisch berechnet
     }
 },
+
+projektData: {
+        'robotics': {
+            id: 'robotics',
+            name: 'Robotics im Schaltschrankbau',
+            beschreibung: 'Verdrahtungsautomatisierung',
+            artikel: ['crimp', 'komax', 'digital'],  // Verweise auf existierende Artikel
+            status: 'aktiv',
+            startDatum: '2024-01'
+        },
+        'cybersecurity': {
+            id: 'cybersecurity',
+            name: 'Cyber Security Consulting',
+            beschreibung: 'IT-Sicherheitslösungen',
+            artikel: [],  // Aktuell keine Artikel
+            status: 'aktiv',
+            startDatum: '2025-01'
+        }
+    },
+
     currentValues: {
         marketVolume: 100,
         pricePremium: 100,
