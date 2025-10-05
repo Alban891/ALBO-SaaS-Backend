@@ -2257,7 +2257,7 @@ artikelData.prices = artikelData.prices || {};
         
         // Update Detail-View mit Tabs und allen Feldern
         detailView.innerHTML = `
-            <div style="background: white; padding: 24px; border-radius: 12px;">
+            <div style="background: white; padding: 24px; border-radius: 12px; max-height: calc(100vh - 250px); overflow-y: auto;">
                 <!-- Header -->
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
                     <h2 style="font-size: 20px; font-weight: 600; color: var(--primary); margin: 0;">
@@ -2288,7 +2288,7 @@ artikelData.prices = artikelData.prices || {};
                 </div>
                 
                 <!-- Tab Content -->
-                <div id="detail-tab-content">
+                <div id="detail-tab-content" style="max-height: calc(100vh - 350px); overflow-y: auto;">
                     <!-- Artikel Tab -->
                     <div id="artikel-tab-content">
                         <!-- Basis-Informationen -->
@@ -3266,7 +3266,7 @@ function getProjekteTabContent() {
     const artikelData = cfoDashboard.artikelData[cfoDashboard.currentArtikel] || {};
     
     return `
-        <div style="padding: 20px;">
+        <div style="padding: 20px; max-height: calc(100vh - 400px); overflow-y: auto;">
             <!-- KI-Analyse Header -->
             <div style="background: linear-gradient(135deg, #dbeafe, #e0e7ff); padding: 16px; border-radius: 8px; margin-bottom: 20px;">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -4142,7 +4142,7 @@ function getWirtschaftlichkeitTabContent() {
     const artikelData = cfoDashboard.artikelData[cfoDashboard.currentArtikel] || {};
     
     return `
-        <div style="padding: 20px;">
+        <div style="padding: 20px; max-height: calc(100vh - 400px); overflow-y: auto;">
             <!-- Header -->
             <div style="background: white; padding: 16px; border-radius: 8px; margin-bottom: 20px; border: 1px solid var(--border);">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
