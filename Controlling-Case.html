@@ -6251,6 +6251,73 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 100);
     }
 });
-    </script>
+
+<!-- Supabase Integration -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+// Supabase Konfiguration
+const SUPABASE_URL = 'https://oibmbhkmqkjumtteysvi.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9pYm1iaGttcWtqdW10dGV5c3ZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk1ODIyNzMsImV4cCI6MjA3NTE1ODI3M30.ePL5g9d1xcZH3ClX4fA9txuu9l8UmHnaBiBF8nRnL2A';
+// Supabase Client initialisieren
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// Test-Funktion
+async function testSupabase() {
+    console.log('🔄 Teste Supabase Verbindung...');
+    const { data, error } = await supabase
+        .from('projects')
+        .select('*');
+    
+    if (error) {
+        console.error('❌ Verbindungsfehler:', error);
+    } else {
+        console.log('✅ Supabase verbunden! Anzahl Projekte:', data.length);
+        if (data.length > 0) {
+            console.log('Gespeicherte Projekte:', data);
+        }
+    }
+}
+
+// Projekt speichern - wird aufgerufen wenn "Projekt anlegen" geklickt wird
+async function saveProjectToSupabase() {
+    // Hole Werte aus deinem Formular (IDs anpassen falls anders!)
+    const projektName = document.querySelector('input[placeholder*="Projekt"]')?.value;
+    const beschreibung = document.querySelector('textarea')?.value || '';
+    
+    if (!projektName) {
+        alert('Bitte Projektname eingeben!');
+        return;
+    }
+    
+    console.log('💾 Speichere Projekt:', projektName);
+    
+    const { data, error } = await supabase
+        .from('projects')
+        .insert([{
+            project_name: projektName,
+            description: beschreibung,
+            project_status: 'In Umsetzung',
+            company_name: 'Demo GmbH',
+            business_unit: 'Entwicklung'
+        }])
+        .select();
+    
+    if (error) {
+        console.error('❌ Fehler:', error);
+        alert('Fehler beim Speichern!');
+    } else {
+        console.log('✅ Projekt gespeichert:', data);
+        alert('✅ Projekt erfolgreich gespeichert!');
+        // Hier kannst du das Modal schließen
+        // closeProjectModal();
+    }
+}
+
+// Teste beim Laden
+setTimeout(() => {
+    testSupabase();
+}, 1000);
+</script>
 </body>
 </html>
