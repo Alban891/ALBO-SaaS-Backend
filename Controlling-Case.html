@@ -918,7 +918,7 @@
                 
                 <!-- Tab Navigation -->
                 <div class="tab-navigation">
-                    <button class="tab-btn" onclick="switchTab('dashboard')">
+                    <button class="tab-btn active" onclick="switchTab('dashboard')">
                         📊 Dashboard
                     </button>
                     <button class="tab-btn" onclick="switchTab('assumptions')">
@@ -933,7 +933,7 @@
                 </div>
                 
                 <!-- Tab Content: Dashboard -->
-                <div class="tab-content" id="tab-dashboard">
+                <div class="tab-content active" id="tab-dashboard">
                     <!-- Quick Controls -->
                     <div class="quick-controls">
                         <div class="control-section">
@@ -1514,52 +1514,25 @@ function saveNavigationState() {
 function restoreNavigationState() {
     const savedState = localStorage.getItem('cfo-dashboard-state');
     
-    // TEMPORÄRER DEBUG CODE
-    console.log('GELADEN:', savedState);
-    
-    if (!savedState) {
-        // KEIN gespeicherter State - setze Dashboard als Standard
-        const dashboardBtn = document.querySelector('[onclick="switchTab(\'dashboard\')"]');
-        if (dashboardBtn) {
-            dashboardBtn.click();
-        } else {
-            // Fallback: Setze Klassen manuell
-            document.getElementById('tab-dashboard')?.classList.add('active');
-            document.querySelector('[onclick="switchTab(\'dashboard\')"]')?.classList.add('active');
-        }
-        return;
-    }
+    // Wenn kein State gespeichert ist, bleibe bei Dashboard (ist schon active)
+    if (!savedState) return;
     
     try {
         const state = JSON.parse(savedState);
         
-        // Tab wiederherstellen
-        const tabBtn = document.querySelector(`[onclick="switchTab('${state.mainTab || 'dashboard'}')"]`);
-        if (tabBtn) {
-            tabBtn.click();
-        } else {
-            // Fallback auf Dashboard
-            document.querySelector('[onclick="switchTab(\'dashboard\')"]')?.click();
+        // Nur wenn NICHT Dashboard gespeichert ist, wechseln
+        if (state.mainTab && state.mainTab !== 'dashboard') {
+            switchTab(state.mainTab);
         }
         
-        // Wenn wir in einem Artikel waren
-        if (state.view === 'detail' && state.artikel) {
+        // Artikel-Detail wiederherstellen
+        if (state.view === 'detail' && state.artikel && state.mainTab === 'assumptions') {
             setTimeout(() => {
                 openArtikelDetail(state.artikel);
-                
-                if (state.detailTab && state.detailTab !== 'artikel') {
-                    setTimeout(() => {
-                        if (typeof switchArtikelDetailTab === 'function') {
-                            switchArtikelDetailTab(state.detailTab);
-                        }
-                    }, 100);
-                }
             }, 100);
         }
     } catch (e) {
-        console.error('Fehler beim Wiederherstellen:', e);
-        // Bei Fehler: Dashboard als Fallback
-        document.querySelector('[onclick="switchTab(\'dashboard\')"]')?.click();
+        console.error('Fehler:', e);
     }
 }
 
