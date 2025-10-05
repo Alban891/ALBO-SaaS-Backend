@@ -1513,28 +1513,53 @@ function saveNavigationState() {
 
 function restoreNavigationState() {
     const savedState = localStorage.getItem('cfo-dashboard-state');
-    if (!savedState) return;
+    
+    // TEMPORÄRER DEBUG CODE
+    console.log('GELADEN:', savedState);
+    
+    if (!savedState) {
+        // KEIN gespeicherter State - setze Dashboard als Standard
+        const dashboardBtn = document.querySelector('[onclick="switchTab(\'dashboard\')"]');
+        if (dashboardBtn) {
+            dashboardBtn.click();
+        } else {
+            // Fallback: Setze Klassen manuell
+            document.getElementById('tab-dashboard')?.classList.add('active');
+            document.querySelector('[onclick="switchTab(\'dashboard\')"]')?.classList.add('active');
+        }
+        return;
+    }
     
     try {
         const state = JSON.parse(savedState);
         
-        // Direkt zum gespeicherten Tab wechseln
-        if (state.mainTab && state.mainTab !== 'dashboard') {
-            const tabBtn = document.querySelector(`[onclick="switchTab('${state.mainTab}')"]`);
-            if (tabBtn) {
-                tabBtn.click();
-            }
+        // Tab wiederherstellen
+        const tabBtn = document.querySelector(`[onclick="switchTab('${state.mainTab || 'dashboard'}')"]`);
+        if (tabBtn) {
+            tabBtn.click();
+        } else {
+            // Fallback auf Dashboard
+            document.querySelector('[onclick="switchTab(\'dashboard\')"]')?.click();
         }
         
         // Wenn wir in einem Artikel waren
         if (state.view === 'detail' && state.artikel) {
-            // Kurze Verzögerung NUR für Artikel-Detail
             setTimeout(() => {
                 openArtikelDetail(state.artikel);
-            }, 50);
+                
+                if (state.detailTab && state.detailTab !== 'artikel') {
+                    setTimeout(() => {
+                        if (typeof switchArtikelDetailTab === 'function') {
+                            switchArtikelDetailTab(state.detailTab);
+                        }
+                    }, 100);
+                }
+            }, 100);
         }
     } catch (e) {
         console.error('Fehler beim Wiederherstellen:', e);
+        // Bei Fehler: Dashboard als Fallback
+        document.querySelector('[onclick="switchTab(\'dashboard\')"]')?.click();
     }
 }
 
