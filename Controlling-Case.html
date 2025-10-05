@@ -1498,25 +1498,30 @@ function saveNavigationState() {
     }
 }
 
-// Lade gespeicherten Zustand
 function restoreNavigationState() {
-    const hash = window.location.hash;
+    const savedState = localStorage.getItem('cfo-dashboard-state');
+    if (!savedState) return;
     
-    if (hash.startsWith('#artikel/')) {
-        const parts = hash.split('/');
-        const artikelName = decodeURIComponent(parts[1] || '');
-        const tabName = parts[2] || 'artikel';
+    try {
+        const state = JSON.parse(savedState);
         
-        if (artikelName) {
-            setTimeout(() => {
-                openArtikelDetail(artikelName);
-                if (tabName !== 'artikel') {
-                    setTimeout(() => {
-                        switchArtikelDetailTab(tabName);
-                    }, 100);
-                }
-            }, 200);
+        // Direkt zum gespeicherten Tab wechseln
+        if (state.mainTab && state.mainTab !== 'dashboard') {
+            const tabBtn = document.querySelector(`[onclick="switchTab('${state.mainTab}')"]`);
+            if (tabBtn) {
+                tabBtn.click();
+            }
         }
+        
+        // Wenn wir in einem Artikel waren
+        if (state.view === 'detail' && state.artikel) {
+            // Kurze Verzögerung NUR für Artikel-Detail
+            setTimeout(() => {
+                openArtikelDetail(state.artikel);
+            }, 50);
+        }
+    } catch (e) {
+        console.error('Fehler beim Wiederherstellen:', e);
     }
 }
 
