@@ -1731,79 +1731,37 @@ function getCurrentMainTab() {
 }
 // Lade gespeicherten Zustand beim Seitenaufruf
 function restoreNavigationState() {
-    const hash = window.location.hash;
-    
-    // Prüfe URL-Hash für direkte Navigation
-    if (hash && hash !== '#') {
-        const parts = hash.substring(1).split('/');
-        
-        if (parts[0] === 'assumptions' && parts[1] === 'artikel' && parts[2]) {
-            // Format: #assumptions/artikel/[artikelName]/[tabName]
-            const artikelName = decodeURIComponent(parts[2]);
-            const tabName = parts[3] || 'artikel';
-            
-            // Wechsle zu Annahmen Tab
-            setTimeout(() => {
-                switchTab('assumptions');
-                
-                // Öffne Artikel
-                setTimeout(() => {
-                    openArtikelDetail(artikelName);
-                    
-                    // Wechsle zum richtigen Sub-Tab
-                    if (tabName !== 'artikel') {
-                        setTimeout(() => {
-                            switchArtikelDetailTab(tabName);
-                        }, 100);
-                    }
-                }, 200);
-            }, 100);
-            return;
-        } else if (['dashboard', 'assumptions', 'analysis', 'ai-agents'].includes(parts[0])) {
-            // Einfacher Tab-Wechsel
-            setTimeout(() => {
-                switchTab(parts[0]);
-            }, 100);
-            return;
-        }
-    }
-    
-    // Falls kein Hash, nutze localStorage
     const savedState = localStorage.getItem('cfo-dashboard-state');
-    if (savedState) {
-        try {
-            const state = JSON.parse(savedState);
-            
-            // Zeitstempel prüfen (nur States der letzten 24h wiederherstellen)
-            const stateAge = new Date() - new Date(state.timestamp);
-            if (stateAge > 24 * 60 * 60 * 1000) {
-                console.log('Gespeicherter State ist zu alt, verwende Defaults');
-                return;
+    if (!savedState) return;
+    
+    try {
+        const state = JSON.parse(savedState);
+        
+        // Direkt zum gespeicherten Tab wechseln
+        if (state.mainTab && state.mainTab !== 'dashboard') {
+            const tabBtn = document.querySelector(`[onclick="switchTab('${state.mainTab}')"]`);
+            if (tabBtn) {
+                tabBtn.click();
             }
-            
-            // Haupt-Tab wiederherstellen
-            if (state.mainTab && state.mainTab !== 'dashboard') {
-                setTimeout(() => {
-                    switchTab(state.mainTab);
-                    
-                    // Wenn wir in einer Artikel-Detailansicht waren
-                    if (state.mainTab === 'assumptions' && state.view === 'detail' && state.artikel) {
-                        setTimeout(() => {
-                            openArtikelDetail(state.artikel);
-                            
-                            // Sub-Tab wiederherstellen
-                            if (state.tab && state.tab !== 'artikel') {
-                                setTimeout(() => {
-                                    switchArtikelDetailTab(state.tab);
-                                }, 200);
-                            }
-                        }, 300);
-                    }
-                }, 100);
-            }
-        } catch (e) {
-            console.error('Fehler beim Wiederherstellen des States:', e);
         }
+        
+        // Wenn wir in einem Artikel waren - VEREINFACHT!
+        if (state.view === 'detail' && state.artikel) {
+            setTimeout(() => {
+                openArtikelDetail(state.artikel);
+                
+                // Sub-Tab wiederherstellen falls nötig
+                if (state.detailTab && state.detailTab !== 'artikel') {
+                    setTimeout(() => {
+                        if (typeof switchArtikelDetailTab === 'function') {
+                            switchArtikelDetailTab(state.detailTab);
+                        }
+                    }, 100);
+                }
+            }, 100);
+        }
+    } catch (e) {
+        console.error('Fehler beim Wiederherstellen:', e);
     }
 }
 // Browser Zurück-Button Support
