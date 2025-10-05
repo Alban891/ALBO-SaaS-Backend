@@ -5357,23 +5357,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // ERST Charts und AI initialisieren
     initializeCharts();
     initializeAI();
-    
-    // DANN nach kurzer Verzögerung Navigation wiederherstellen
-    setTimeout(function() {
-        const hash = window.location.hash;
-        const savedState = localStorage.getItem('cfo-dashboard-state');
-        
-        if (hash && hash !== '#' && hash !== '#dashboard') {
-            // Hash hat Priorität
-            console.log('Restore from Hash:', hash);
-            restoreNavigationState();
-        } else if (savedState) {
-            // Sonst localStorage nutzen
-            console.log('Restore from localStorage:', savedState);
-            restoreNavigationState();
-        }
-    }, 300); // 300ms Verzögerung damit alles geladen ist
-    
+
+    // Navigation SOFORT wiederherstellen - ohne Verzögerung!
+    restoreNavigationState();    
     
     // Set up periodic AI insights
     setInterval(() => {
