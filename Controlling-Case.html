@@ -1530,6 +1530,7 @@ function openArtikelDetail(artikelName) {
     cfoDashboard.currentArtikel = artikelName;
     cfoDashboard.currentView = 'detail';
     cfoDashboard.currentDetailTab = 'artikel';
+    cfoDashboard.currentMainTab = 'assumptions';
 
     // State speichern wenn Artikel geöffnet wird
     saveNavigationState();
@@ -1674,26 +1675,37 @@ Object.assign(cfoDashboard, {
 
 // Speichere aktuellen Zustand in URL und localStorage
 function saveNavigationState() {
+    // Sammle alle relevanten State-Informationen
     const state = {
-        mainTab: getCurrentMainTab(), // NEU: Haupt-Tab speichern
-        view: cfoDashboard.currentView || 'dashboard',
+        mainTab: getCurrentMainTab(),
+        view: cfoDashboard.currentView || 'overview',
         artikel: cfoDashboard.currentArtikel,
-        tab: cfoDashboard.currentDetailTab || 'artikel',
+        detailTab: cfoDashboard.currentDetailTab || 'artikel',
         timestamp: new Date().toISOString()
     };
     
+    // Speichere in localStorage
     localStorage.setItem('cfo-dashboard-state', JSON.stringify(state));
     
-    // URL mit Haupt-Tab Info
-    if (state.mainTab === 'assumptions' && state.view === 'detail' && state.artikel) {
-        window.history.replaceState(null, null, `#assumptions/artikel/${state.artikel}/${state.tab}`);
+    // URL-Hash für Browser-History
+    let hashUrl = '#';
+    if (state.mainTab === 'assumptions') {
+        if (state.view === 'detail' && state.artikel) {
+            hashUrl = `#assumptions/artikel/${state.artikel}/${state.detailTab}`;
+        } else {
+            hashUrl = '#assumptions';
+        }
     } else if (state.mainTab !== 'dashboard') {
-        window.history.replaceState(null, null, `#${state.mainTab}`);
+        hashUrl = `#${state.mainTab}`;
     } else {
-        window.history.replaceState(null, null, '#dashboard');
+        hashUrl = '#dashboard';
     }
+    
+    window.history.replaceState(state, null, hashUrl);
+    
+    // Debug
+    console.log('State gespeichert:', state, 'URL:', hashUrl);
 }
-
 // Neue Hilfsfunktion
 function getCurrentMainTab() {
     const activeTab = document.querySelector('.tab-btn.active');
@@ -5332,11 +5344,13 @@ function switchArtikelDetailTab(tabName) {
     saveNavigationState();
 
 }
+// Navigation SOFORT wiederherstellen (noch VOR DOMContentLoaded)
+restoreNavigationState();
 
-// Initialize everything when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
-    // Navigation State wiederherstellen
+    // Navigation State NICHT mehr hier aufrufen (entfernen Sie restoreNavigationState() von hier)
     restoreNavigationState();
+
     // Initialize charts and AI
     initializeCharts();
     initializeAI();
