@@ -858,6 +858,26 @@
     content: "i";
     font-style: normal;
 }
+/* Verhindere Flash beim Laden */
+.tab-content {
+    display: none;
+}
+.tab-content.active {
+    display: block !important;
+}
+/* Initial Tab Setup */
+[data-initial-tab="assumptions"] #tab-assumptions {
+    display: block !important;
+}
+[data-initial-tab="assumptions"] #tab-dashboard {
+    display: none !important;
+}
+[data-initial-tab="analysis"] #tab-analysis {
+    display: block !important;
+}
+[data-initial-tab="analysis"] #tab-dashboard {
+    display: none !important;
+}
     </style>
 </head>
 <body>
@@ -1461,8 +1481,108 @@
     </div>
 
     <script>
-// Enhanced Global dashboard data with KI intelligence
-let cfoDashboard = {
+// ============================================
+// STATE MANAGEMENT & NAVIGATION PERSISTENCE
+// ============================================
+
+// Globale Variablen für Dashboard (falls noch nicht vorhanden)
+const cfoDashboard = {
+    currentView: 'dashboard',
+    currentArtikel: null,
+    currentDetailTab: null,
+    artikelDetailTabs: {}
+};
+
+// Speichere aktuellen Zustand
+function saveNavigationState() {
+    const state = {
+        view: cfoDashboard.currentView || 'dashboard',
+        artikel: cfoDashboard.currentArtikel,
+        tab: cfoDashboard.currentDetailTab || 'artikel',
+        timestamp: new Date().toISOString()
+    };
+    
+    localStorage.setItem('cfo-dashboard-state', JSON.stringify(state));
+    
+    if (state.view === 'detail' && state.artikel) {
+        window.history.replaceState(null, null, `#artikel/${state.artikel}/${state.tab}`);
+    } else {
+        window.history.replaceState(null, null, '#dashboard');
+    }
+}
+
+function restoreNavigationState() {
+    const savedState = localStorage.getItem('cfo-dashboard-state');
+    
+    // Wenn kein State gespeichert ist, bleibe bei Dashboard (ist schon active)
+    if (!savedState) return;
+    
+    try {
+        const state = JSON.parse(savedState);
+        
+        // Nur wenn NICHT Dashboard gespeichert ist, wechseln
+        if (state.mainTab && state.mainTab !== 'dashboard') {
+            switchTab(state.mainTab);
+        }
+        
+        // Artikel-Detail wiederherstellen
+        if (state.view === 'detail' && state.artikel && state.mainTab === 'assumptions') {
+            setTimeout(() => {
+                openArtikelDetail(state.artikel);
+            }, 100);
+        }
+    } catch (e) {
+        console.error('Fehler:', e);
+    }
+}
+
+// Browser Zurück-Button Support
+window.addEventListener('popstate', function(event) {
+    restoreNavigationState();
+});
+
+// Funktion zum Öffnen der Artikel-Detailansicht
+function openArtikelDetail(artikelName) {
+    // Verstecke Artikel-Übersicht
+    document.getElementById('artikel-overview').style.display = 'none';
+    
+    // Zeige Detail-View
+    document.getElementById('artikel-detail-view').style.display = 'block';
+    
+    // Speichere aktuellen Artikel
+    cfoDashboard.currentArtikel = artikelName;
+    cfoDashboard.currentView = 'detail';
+    cfoDashboard.currentDetailTab = 'artikel';
+    cfoDashboard.currentMainTab = 'assumptions';
+
+    // State speichern wenn Artikel geöffnet wird
+    saveNavigationState();
+    
+    // Lade ersten Tab (falls switchArtikelDetailTab existiert)
+    if (typeof switchArtikelDetailTab === 'function') {
+        switchArtikelDetailTab('artikel');
+    }
+}
+
+// Zurück zur Artikel-Übersicht Funktion
+function backToArtikelOverview() {
+    // Verstecke Detail-View
+    document.getElementById('artikel-detail-view').style.display = 'none';
+    
+    // Zeige Artikel-Übersicht wieder
+    document.getElementById('artikel-overview').style.display = 'block';
+    
+    // State zurücksetzen
+    cfoDashboard.currentView = 'overview';
+    cfoDashboard.currentArtikel = null;
+    cfoDashboard.currentDetailTab = null;
+    
+    // State speichern (URL zurücksetzen)
+    saveNavigationState();
+}
+
+// Erweitere das bestehende cfoDashboard Objekt
+Object.assign(cfoDashboard, {
     currentArtikel: null,
     artikelData: {
     crimp: {
@@ -1559,7 +1679,93 @@ let cfoDashboard = {
             });
         }
     }
-};
+});
+
+// ============================================
+// STATE MANAGEMENT & NAVIGATION PERSISTENCE
+// ============================================
+
+// Speichere aktuellen Zustand in URL und localStorage
+function saveNavigationState() {
+    // Sammle alle relevanten State-Informationen
+    const state = {
+        mainTab: getCurrentMainTab(),
+        view: cfoDashboard.currentView || 'overview',
+        artikel: cfoDashboard.currentArtikel,
+        detailTab: cfoDashboard.currentDetailTab || 'artikel',
+        timestamp: new Date().toISOString()
+    };
+    
+    // Speichere in localStorage
+    localStorage.setItem('cfo-dashboard-state', JSON.stringify(state));
+    
+    // URL-Hash für Browser-History
+    let hashUrl = '#';
+    if (state.mainTab === 'assumptions') {
+        if (state.view === 'detail' && state.artikel) {
+            hashUrl = `#assumptions/artikel/${state.artikel}/${state.detailTab}`;
+        } else {
+            hashUrl = '#assumptions';
+        }
+    } else if (state.mainTab !== 'dashboard') {
+        hashUrl = `#${state.mainTab}`;
+    } else {
+        hashUrl = '#dashboard';
+    }
+    
+    window.history.replaceState(state, null, hashUrl);
+}
+// Neue Hilfsfunktion
+function getCurrentMainTab() {
+    const activeTab = document.querySelector('.tab-btn.active');
+    if (activeTab) {
+        const onclick = activeTab.getAttribute('onclick');
+        if (onclick) {
+            const match = onclick.match(/switchTab\('(.+?)'\)/);
+            if (match) return match[1];
+        }
+    }
+    return 'dashboard';
+}
+// Lade gespeicherten Zustand beim Seitenaufruf
+function restoreNavigationState() {
+    const savedState = localStorage.getItem('cfo-dashboard-state');
+    if (!savedState) return;
+    
+    try {
+        const state = JSON.parse(savedState);
+        
+        // Direkt zum gespeicherten Tab wechseln
+        if (state.mainTab && state.mainTab !== 'dashboard') {
+            const tabBtn = document.querySelector(`[onclick="switchTab('${state.mainTab}')"]`);
+            if (tabBtn) {
+                tabBtn.click();
+            }
+        }
+        
+        // Wenn wir in einem Artikel waren - VEREINFACHT!
+        if (state.view === 'detail' && state.artikel) {
+            setTimeout(() => {
+                openArtikelDetail(state.artikel);
+                
+                // Sub-Tab wiederherstellen falls nötig
+                if (state.detailTab && state.detailTab !== 'artikel') {
+                    setTimeout(() => {
+                        if (typeof switchArtikelDetailTab === 'function') {
+                            switchArtikelDetailTab(state.detailTab);
+                        }
+                    }, 100);
+                }
+            }, 100);
+        }
+    } catch (e) {
+        console.error('Fehler beim Wiederherstellen:', e);
+    }
+}
+// Browser Zurück-Button Support
+window.addEventListener('popstate', function(event) {
+    restoreNavigationState();
+});
 
 // NEUE FUNKTION: View Switching für Artikel
 function switchArtikelView(viewType) {
@@ -1603,7 +1809,7 @@ function switchArtikelView(viewType) {
 }
 
 // Tab switching functionality
-function switchTab(tabName) {
+window.switchTab = function(tabName) {
     // Remove active class from all tabs and content
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
@@ -1637,6 +1843,9 @@ function switchTab(tabName) {
             timestamp: 'Navigation'
         });
     }
+
+    // State speichern bei Tab-Wechsel (NEUE ZEILE HIER EINFÜGEN)
+    saveNavigationState();
 }
 
 // Alle anderen bestehenden Funktionen bleiben unverändert
@@ -2220,8 +2429,6 @@ ${artikelData.annahmen || 'Innovation durch neue Linie'}
         <strong>KI-Validierung:</strong> <span id="ki-feedback-text"></span>
     </div>
 </div>
-                        
-                        // In der openArtikelDetail Funktion, ersetze den Finanz-Parameter Block mit:
 
 <!-- Finanz-Parameter NEUE VERSION -->
 <div style="background: var(--gray-light); padding: 16px; border-radius: 8px; margin-bottom: 24px;">
@@ -2405,7 +2612,7 @@ ${artikelData.annahmen || 'Innovation durch neue Linie'}
         </div>
         
         <div style="text-align: center; margin-top: 16px;">
-            <button onclick="berechneModelle()" style="padding: 10px 30px; background: var(--primary); color: white; border: none; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer;">
+            <button onclick="berechneModelle();" style="padding: 10px 30px; background: var(--primary); color: white; border: none; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer;">
                 Berechnen & Vorschau aktualisieren
             </button>
             <button onclick="resetModelle()" style="padding: 10px 30px; background: white; color: var(--gray); border: 1px solid var(--border); border-radius: 6px; font-size: 13px; cursor: pointer; margin-left: 12px;">
@@ -2451,121 +2658,78 @@ ${artikelData.annahmen || 'Innovation durch neue Linie'}
                     <td style="padding: 10px; font-weight: 600; background: #f8fafc;">Menge (Stk)</td>
                     <td class="jahr-col jahr-1" style="padding: 10px; text-align: center;">
                         <input type="text" id="menge-jahr-1" style="width: 70px; padding: 4px; border: 1px solid var(--border); border-radius: 3px; text-align: center;">
-                        onchange="berechneArtikelKPIs()">
                     </td>
                     <td class="jahr-col jahr-2" style="padding: 10px; text-align: center;">
                         <input type="text" id="menge-jahr-2" style="width: 70px; padding: 4px; border: 1px solid var(--border); border-radius: 3px; text-align: center;">
-                        onchange="berechneArtikelKPIs()">
                     </td>
                     <td class="jahr-col jahr-3" style="padding: 10px; text-align: center;">
                         <input type="text" id="menge-jahr-3" style="width: 70px; padding: 4px; border: 1px solid var(--border); border-radius: 3px; text-align: center;">
-                        onchange="berechneArtikelKPIs()">
                     </td>
                     <td class="jahr-col jahr-4" style="padding: 10px; text-align: center;">
                         <input type="text" id="menge-jahr-4" style="width: 70px; padding: 4px; border: 1px solid var(--border); border-radius: 3px; text-align: center;">
-                        onchange="berechneArtikelKPIs()">
                     </td>
                     <td class="jahr-col jahr-5" style="padding: 10px; text-align: center;">
                         <input type="text" id="menge-jahr-5" style="width: 70px; padding: 4px; border: 1px solid var(--border); border-radius: 3px; text-align: center;">
-                        onchange="berechneArtikelKPIs()">
                     </td>
                     <td class="jahr-col jahr-6" style="padding: 10px; text-align: center; display: none;">
                         <input type="text" id="menge-jahr-6" style="width: 70px; padding: 4px; border: 1px solid var(--border); border-radius: 3px; text-align: center;">
-                        onchange="berechneArtikelKPIs()">
                     </td>
                     <td class="jahr-col jahr-7" style="padding: 10px; text-align: center; display: none;">
                         <input type="text" id="menge-jahr-7" style="width: 70px; padding: 4px; border: 1px solid var(--border); border-radius: 3px; text-align: center;">
-                        onchange="berechneArtikelKPIs()">
                     </td>
                 </tr>
                 <tr style="background: #f8fafc;">
                     <td style="padding: 10px; font-weight: 600;">Preis (€)</td>
                     <td class="jahr-col jahr-1" style="padding: 10px; text-align: center;">
                         <input type="text" id="preis-jahr-1" style="width: 70px; padding: 4px; border: 1px solid var(--border); border-radius: 3px; text-align: center;">
-                        onchange="berechneArtikelKPIs()">
                     </td>
                     <td class="jahr-col jahr-2" style="padding: 10px; text-align: center;">
                         <input type="text" id="preis-jahr-2" style="width: 70px; padding: 4px; border: 1px solid var(--border); border-radius: 3px; text-align: center;">
-                        onchange="berechneArtikelKPIs()">
                     </td>
                     <td class="jahr-col jahr-3" style="padding: 10px; text-align: center;">
                         <input type="text" id="preis-jahr-3" style="width: 70px; padding: 4px; border: 1px solid var(--border); border-radius: 3px; text-align: center;">
-                        onchange="berechneArtikelKPIs()">
                     </td>
                     <td class="jahr-col jahr-4" style="padding: 10px; text-align: center;">
                         <input type="text" id="preis-jahr-4" style="width: 70px; padding: 4px; border: 1px solid var(--border); border-radius: 3px; text-align: center;">
-                        onchange="berechneArtikelKPIs()">
                     </td>
                     <td class="jahr-col jahr-5" style="padding: 10px; text-align: center;">
                         <input type="text" id="preis-jahr-5" style="width: 70px; padding: 4px; border: 1px solid var(--border); border-radius: 3px; text-align: center;">
-                        onchange="berechneArtikelKPIs()">
                     </td>
                     <td class="jahr-col jahr-6" style="padding: 10px; text-align: center; display: none;">
                         <input type="text" id="preis-jahr-6" style="width: 70px; padding: 4px; border: 1px solid var(--border); border-radius: 3px; text-align: center;">
-                        onchange="berechneArtikelKPIs()">
                     </td>
                     <td class="jahr-col jahr-7" style="padding: 10px; text-align: center; display: none;">
                         <input type="text" id="preis-jahr-7" style="width: 70px; padding: 4px; border: 1px solid var(--border); border-radius: 3px; text-align: center;">
-                        onchange="berechneArtikelKPIs()">
                     </td>
                 </tr>
                 <tr>
                     <td style="padding: 10px; font-weight: 600; background: #f8fafc;">HK (€)</td>
                     <td class="jahr-col jahr-1" style="padding: 10px; text-align: center;">
                         <input type="text" id="hk-jahr-1" style="width: 70px; padding: 4px; border: 1px solid var(--border); border-radius: 3px; text-align: center;">
-                        onchange="berechneArtikelKPIs()">
                     </td>
                     <td class="jahr-col jahr-2" style="padding: 10px; text-align: center;">
                         <input type="text" id="hk-jahr-2" style="width: 70px; padding: 4px; border: 1px solid var(--border); border-radius: 3px; text-align: center;">
-                        onchange="berechneArtikelKPIs()">
                     </td>
                     <td class="jahr-col jahr-3" style="padding: 10px; text-align: center;">
                         <input type="text" id="hk-jahr-3" style="width: 70px; padding: 4px; border: 1px solid var(--border); border-radius: 3px; text-align: center;">
-                        onchange="berechneArtikelKPIs()">
                     </td>
                     <td class="jahr-col jahr-4" style="padding: 10px; text-align: center;">
                         <input type="text" id="hk-jahr-4" style="width: 70px; padding: 4px; border: 1px solid var(--border); border-radius: 3px; text-align: center;">
-                        onchange="berechneArtikelKPIs()">
                     </td>
                     <td class="jahr-col jahr-5" style="padding: 10px; text-align: center;">
                         <input type="text" id="hk-jahr-5" style="width: 70px; padding: 4px; border: 1px solid var(--border); border-radius: 3px; text-align: center;">
-                        onchange="berechneArtikelKPIs()">
                     </td>
                     <td class="jahr-col jahr-6" style="padding: 10px; text-align: center; display: none;">
                         <input type="text" id="hk-jahr-6" style="width: 70px; padding: 4px; border: 1px solid var(--border); border-radius: 3px; text-align: center;">
-                        onchange="berechneArtikelKPIs()">
                     </td>
                     <td class="jahr-col jahr-7" style="padding: 10px; text-align: center; display: none;">
                         <input type="text" id="hk-jahr-7" style="width: 70px; padding: 4px; border: 1px solid var(--border); border-radius: 3px; text-align: center;">
-                        onchange="berechneArtikelKPIs()">
                     </td>
                 </tr>
             </tbody>
         </table>
     </div>
 </div>
-                        
-                        <!-- KPI Summary -->
-                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px;">
-                            <div style="text-align: center; padding: 20px; background: var(--gray-light); border-radius: 8px;">
-                                <div style="font-size: 24px; font-weight: bold; color: var(--primary);">
-                                    ${(totalRevenue / 1000000).toFixed(1)}M€
-                                </div>
-                                <div style="font-size: 11px; color: var(--gray); text-transform: uppercase;">Total Revenue (6 Jahre)</div>
-                            </div>
-                            <div style="text-align: center; padding: 20px; background: var(--gray-light); border-radius: 8px;">
-                                <div style="font-size: 24px; font-weight: bold; color: var(--success);">
-                                    ${db2Margin}%
-                                </div>
-                                <div style="font-size: 11px; color: var(--gray); text-transform: uppercase;">Ø DB2-Marge</div>
-                            </div>
-                            <div style="text-align: center; padding: 20px; background: var(--gray-light); border-radius: 8px;">
-                                <div style="font-size: 24px; font-weight: bold; color: var(--warning);">
-                                     ${Math.max(...Object.values(artikelData.volumes || {})).toLocaleString('de-DE')}
-                                </div>
-                                <div style="font-size: 11px; color: var(--gray); text-transform: uppercase;">Peak Absatz</div>
-                            </div>
-                        </div>
                         
                         <!-- Action Buttons -->
                         <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px;">
@@ -2603,7 +2767,6 @@ setTimeout(() => {
         updateTabellenSpalten();
         updateErsteZeile();
         berechneModelle();
-        berechneArtikelKPIs();
     }
 }, 100);
 
@@ -2988,184 +3151,1426 @@ function getArtikelTabContent() {
     `;
 }
 
+
+// ============================================
+// PROJEKT-KOSTEN KI-REGEL ENGINE (ERWEITERT)
+// ============================================
+const projektKostenRegeln = {
+    software: {
+        titel: 'Software-Entwicklung',
+        empfohleneBlöcke: [
+            { id: 'personal', name: 'Personal', icon: '👥', anteil: 70 },
+            { id: 'cloud', name: 'Cloud & Infrastructure', icon: '☁️', anteil: 15 },
+            { id: 'lizenzen', name: 'Software-Lizenzen', icon: '💿', anteil: 10 },
+            { id: 'testing', name: 'Testing & QA', icon: '🧪', anteil: 5 }
+        ],
+        vorlaufzeit: 12,
+        nachlaufzeit: 24
+    },
+    hardware: {
+        titel: 'Hardware-Entwicklung',
+        empfohleneBlöcke: [
+            { id: 'personal', name: 'Personal', icon: '👥', anteil: 40 },
+            { id: 'material', name: 'Material & Prototypen', icon: '🔧', anteil: 30 },
+            { id: 'werkzeuge', name: 'Werkzeuge & Formen', icon: '⚙️', anteil: 20 },
+            { id: 'zertifizierung', name: 'Zertifizierung', icon: '📋', anteil: 10 }
+        ],
+        vorlaufzeit: 18,
+        nachlaufzeit: 12
+    },
+    service: {
+        titel: 'Service/Beratung',
+        empfohleneBlöcke: [
+            { id: 'personal', name: 'Personal', icon: '👥', anteil: 80 },
+            { id: 'schulung', name: 'Schulungen', icon: '🎓', anteil: 15 },
+            { id: 'reise', name: 'Reisekosten', icon: '✈️', anteil: 5 }
+        ],
+        vorlaufzeit: 3,
+        nachlaufzeit: 36
+    },
+    hybrid: {
+        titel: 'Hybrid-Lösung',
+        empfohleneBlöcke: [
+            { id: 'personal', name: 'Personal', icon: '👥', anteil: 50 },
+            { id: 'hardware', name: 'Hardware-Komponenten', icon: '🖥️', anteil: 20 },
+            { id: 'software', name: 'Software-Lizenzen', icon: '💿', anteil: 15 },
+            { id: 'beratung', name: 'Consulting & Setup', icon: '💼', anteil: 10 },
+            { id: 'schulung', name: 'Schulung & Support', icon: '🎓', anteil: 5 }
+        ],
+        vorlaufzeit: 12,
+        nachlaufzeit: 24
+    }
+};
+
+// Erweiterte Funktion: Intelligente Projekt-Typ Ermittlung
+function ermittleProjektTyp() {
+    const artikelData = cfoDashboard.artikelData[cfoDashboard.currentArtikel];
+    if (!artikelData) return 'software'; // Default
+    
+    // Hole Werte aus den Dropdowns
+    const kategorie = document.getElementById('produkt-kategorie')?.value || 'software';
+    const geschaeftsmodell = document.getElementById('geschaeftsmodell')?.value || '';
+    
+    // Intelligente Erkennung von Hybrid-Modellen
+    if (kategorie === 'hybrid') {
+        return 'hybrid';
+    }
+    
+    // Cyber Security, IoT, etc. sind oft Hybrid
+    const hybridKeywords = ['cyber', 'security', 'iot', 'industrie 4.0', 'digital twin'];
+    const artikelName = (artikelData.name || '').toLowerCase();
+    
+    if (hybridKeywords.some(keyword => artikelName.includes(keyword))) {
+        return 'hybrid';
+    }
+    
+    // Standard-Mapping
+    return kategorie.toLowerCase();
+}
+
+// Erweiterte KI-Empfehlung mit Multi-Select
+function generiereKostenEmpfehlung() {
+    const projektTyp = ermittleProjektTyp();
+    let regeln = projektKostenRegeln[projektTyp] || projektKostenRegeln.software;
+    
+    // Bei Hybrid: Kombiniere Blöcke aus verschiedenen Bereichen
+    if (projektTyp === 'hybrid') {
+        const geschaeftsmodell = document.getElementById('geschaeftsmodell')?.value;
+        
+        // Passe Empfehlung basierend auf Geschäftsmodell an
+        if (geschaeftsmodell === 'subscription') {
+            // Mehr Software-Fokus
+            regeln.empfohleneBlöcke = [
+                { id: 'personal', name: 'Personal (Dev & Support)', icon: '👥', anteil: 45 },
+                { id: 'cloud', name: 'Cloud Infrastructure', icon: '☁️', anteil: 20 },
+                { id: 'hardware', name: 'Hardware (Initial)', icon: '🖥️', anteil: 15 },
+                { id: 'beratung', name: 'Implementation Services', icon: '💼', anteil: 15 },
+                { id: 'support', name: 'Ongoing Support', icon: '🛠️', anteil: 5 }
+            ];
+        }
+    }
+    
+    return {
+        typ: projektTyp,
+        regeln: regeln,
+        zeitraum: {
+            start: regeln.vorlaufzeit,
+            ende: regeln.nachlaufzeit
+        }
+    };
+}
+
 function getProjekteTabContent() {
+    // KI-Empfehlung generieren
+    const empfehlung = generiereKostenEmpfehlung();
+    const artikelData = cfoDashboard.artikelData[cfoDashboard.currentArtikel] || {};
+    
     return `
-        <div style="padding: 20px; background: var(--gray-light); border-radius: 8px;">
-            <h3 style="margin-bottom: 20px;">Projekt-Kosten Planung</h3>
+        <div style="padding: 20px;">
+            <!-- KI-Analyse Header -->
+            <div style="background: linear-gradient(135deg, #dbeafe, #e0e7ff); padding: 16px; border-radius: 8px; margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h4 style="font-size: 14px; font-weight: 600; color: var(--primary); margin-bottom: 8px;">
+                            🤖 KI-Projektkosten-Assistent
+                        </h4>
+                        <div style="font-size: 12px; color: var(--text);">
+                            Erkannt: <strong>${empfehlung.regeln.titel}</strong> | 
+                            Empfohlene Vorlaufzeit: <strong>${empfehlung.regeln.vorlaufzeit} Monate</strong> | 
+                            Nachlaufzeit: <strong>${empfehlung.regeln.nachlaufzeit} Monate</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Projekt-Timeline -->
+            <div style="background: white; padding: 16px; border-radius: 8px; margin-bottom: 20px; border: 1px solid var(--border);">
+                <h4 style="font-size: 13px; font-weight: 600; margin-bottom: 12px;">⏱️ Projekt-Timeline</h4>
+                
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+                    <div>
+                        <label style="font-size: 10px; color: var(--gray); text-transform: uppercase;">Projektstart</label>
+                        <input type="month" id="projekt-start" value="2024-01" 
+                               onchange="updateProjektZeitraum()"
+                               style="width: 100%; padding: 6px; border: 1px solid var(--border); border-radius: 4px; font-size: 12px;">
+                    </div>
+                    
+                    <div>
+                        <label style="font-size: 10px; color: var(--gray); text-transform: uppercase;">Release (aus Artikel)</label>
+                        <div style="padding: 6px; background: var(--gray-light); border-radius: 4px; font-size: 12px; font-weight: 600;">
+                            ${artikelData.release || '2025-01'}
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label style="font-size: 10px; color: var(--gray); text-transform: uppercase;">Projektende</label>
+                        <input type="month" id="projekt-ende" value="2027-12" 
+                               onchange="updateProjektZeitraum()"
+                               style="width: 100%; padding: 6px; border: 1px solid var(--border); border-radius: 4px; font-size: 12px;">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Empfohlene Kostenblöcke -->
+            <div style="background: white; padding: 16px; border-radius: 8px; margin-bottom: 20px; border: 1px solid var(--border);">
+                <h4 style="font-size: 13px; font-weight: 600; margin-bottom: 12px;">📊 Kostenblöcke konfigurieren</h4>
+                
+                <div style="background: #f0f9ff; padding: 12px; border-radius: 6px; margin-bottom: 12px;">
+                    <div style="font-size: 11px; font-weight: 600; color: var(--primary); margin-bottom: 8px;">
+                        ✨ KI-Empfehlung für ${empfehlung.regeln.titel}:
+                    </div>
+                    <div id="empfohlene-kostenblöcke" style="display: flex; flex-wrap: wrap; gap: 8px;">
+    ${empfehlung.regeln.empfohleneBlöcke.map(block => `
+        <div class="kostenblock-item" id="container-${block.id}" style="display: inline-flex; align-items: center; padding: 6px 10px; background: white; border: 1px solid var(--primary); border-radius: 4px; position: relative;">
+            <input type="checkbox" checked id="block-${block.id}" 
+                   onchange="updateKostenbloeckeAuswahl()"
+                   data-block='${JSON.stringify(block)}' 
+                   style="margin-right: 6px;">
+            <label for="block-${block.id}" style="font-size: 11px; cursor: pointer; margin-right: 8px;">
+                ${block.icon} ${block.name} (${block.anteil}%)
+            </label>
+            <button onclick="entferneKostenblock('${block.id}')" 
+                    style="background: transparent; border: none; color: var(--danger); cursor: pointer; padding: 0 4px; font-size: 14px; line-height: 1;"
+                    title="Kostenblock entfernen">
+                ×
+            </button>
+        </div>
+    `).join('')}
+</div>
+
+                <button onclick="addCustomKostenblock()" style="padding: 8px 16px; background: var(--primary); color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">
+                    + Eigenen Kostenblock hinzufügen
+                </button>
+            </div>
+
+            <!-- Kostenplanung Tabelle -->
+            <div id="projekt-kosten-tabelle">
+                ${generateKostenTabelle()}
+            </div>
+        </div>
+    `;
+}
+
+// Generiere Kostentabelle mit dynamischen Jahren und löschbaren Zeilen
+function generateKostenTabelle(customStartYear = null, customEndYear = null) {
+    const empfehlung = generiereKostenEmpfehlung();
+    
+    // Jahre dynamisch bestimmen (wie vorher)
+    let jahre = [];
+    if (customStartYear && customEndYear) {
+        for (let year = customStartYear; year <= customEndYear; year++) {
+            jahre.push(year.toString());
+        }
+    } else {
+        const startInput = document.getElementById('projekt-start');
+        const endeInput = document.getElementById('projekt-ende');
+        
+        if (startInput && endeInput && startInput.value && endeInput.value) {
+            const startYear = parseInt(startInput.value.split('-')[0]);
+            const endYear = parseInt(endeInput.value.split('-')[0]);
             
-            <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden;">
+            for (let year = startYear; year <= endYear; year++) {
+                jahre.push(year.toString());
+            }
+        } else {
+            jahre = ['2024', '2025', '2026', '2027', '2028'];
+        }
+    }
+    
+    // Nur aktive Blöcke anzeigen
+    const aktiveBlöcke = empfehlung.regeln.empfohleneBlöcke.filter(block => {
+        const checkbox = document.getElementById(`block-${block.id}`);
+        return !checkbox || checkbox.checked;
+    });
+    
+    const artikelData = cfoDashboard.artikelData[cfoDashboard.currentArtikel] || {};
+    const releaseYear = artikelData.release ? parseInt(artikelData.release.split('-')[0]) : null;
+    
+    return `
+        <div style="background: white; border-radius: 8px; overflow-x: auto; border: 1px solid var(--border);">
+            <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
                 <thead>
-                    <tr style="background: var(--primary); color: white;">
-                        <th style="padding: 12px; text-align: left;">Kategorie</th>
-                        <th style="padding: 12px; text-align: center;">2024</th>
-                        <th style="padding: 12px; text-align: center;">2025</th>
-                        <th style="padding: 12px; text-align: center;">2026</th>
-                        <th style="padding: 12px; text-align: center;">2027</th>
-                        <th style="padding: 12px; text-align: center;">2028</th>
-                        <th style="padding: 12px; text-align: center;">2029</th>
-                        <th style="padding: 12px; text-align: center;">2030</th>
-                        <th style="padding: 12px; text-align: center;">Gesamt</th>
+                    <tr style="background: #f8fafc;">
+                        <th style="padding: 8px; text-align: left;">Kostenblock</th>
+                        ${jahre.map(jahr => {
+                            const isReleaseYear = releaseYear && parseInt(jahr) === releaseYear;
+                            return `<th style="padding: 8px; text-align: center; ${isReleaseYear ? 'background: #fef3c7;' : ''}">
+                                ${jahr}
+                                ${isReleaseYear ? '<br><span style="font-size: 9px; color: var(--warning);">Release</span>' : ''}
+                            </th>`;
+                        }).join('')}
+                        <th style="padding: 8px; text-align: center; font-weight: bold;">Gesamt</th>
+                        <th style="padding: 8px; text-align: center; width: 60px;">Aktion</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr>
-                        <td style="padding: 12px; border-bottom: 1px solid var(--border);">Personal</td>
-                        <td style="padding: 12px; border-bottom: 1px solid var(--border); text-align: center;">0</td>
-                        <td style="padding: 12px; border-bottom: 1px solid var(--border); text-align: center;">981</td>
-                        <td style="padding: 12px; border-bottom: 1px solid var(--border); text-align: center;">1.485</td>
-                        <td style="padding: 12px; border-bottom: 1px solid var(--border); text-align: center;">1.727</td>
-                        <td style="padding: 12px; border-bottom: 1px solid var(--border); text-align: center;">1.881</td>
-                        <td style="padding: 12px; border-bottom: 1px solid var(--border); text-align: center;">2.040</td>
-                        <td style="padding: 12px; border-bottom: 1px solid var(--border); text-align: center;">2.203</td>
-                        <td style="padding: 12px; border-bottom: 1px solid var(--border); text-align: center; font-weight: bold;">10.317</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 12px; border-bottom: 1px solid var(--border);">Material</td>
-                        <td style="padding: 12px; border-bottom: 1px solid var(--border); text-align: center;">0</td>
-                        <td style="padding: 12px; border-bottom: 1px solid var(--border); text-align: center;">83</td>
-                        <td style="padding: 12px; border-bottom: 1px solid var(--border); text-align: center;">105</td>
-                        <td style="padding: 12px; border-bottom: 1px solid var(--border); text-align: center;">128</td>
-                        <td style="padding: 12px; border-bottom: 1px solid var(--border); text-align: center;">142</td>
-                        <td style="padding: 12px; border-bottom: 1px solid var(--border); text-align: center;">156</td>
-                        <td style="padding: 12px; border-bottom: 1px solid var(--border); text-align: center;">171</td>
-                        <td style="padding: 12px; border-bottom: 1px solid var(--border); text-align: center; font-weight: bold;">785</td>
-                    </tr>
-                    <tr style="background: #fef3c7;">
-                        <td style="padding: 12px; border-bottom: 1px solid var(--border); font-weight: 600;">CAPEX</td>
-                        <td style="padding: 12px; border-bottom: 1px solid var(--border); text-align: center; font-weight: 600;">1.250</td>
-                        <td style="padding: 12px; border-bottom: 1px solid var(--border); text-align: center;">1.000</td>
-                        <td style="padding: 12px; border-bottom: 1px solid var(--border); text-align: center;">1.250</td>
-                        <td style="padding: 12px; border-bottom: 1px solid var(--border); text-align: center;">800</td>
-                        <td style="padding: 12px; border-bottom: 1px solid var(--border); text-align: center;">800</td>
-                        <td style="padding: 12px; border-bottom: 1px solid var(--border); text-align: center;">800</td>
-                        <td style="padding: 12px; border-bottom: 1px solid var(--border); text-align: center;">800</td>
-                        <td style="padding: 12px; border-bottom: 1px solid var(--border); text-align: center; font-weight: bold;">6.700</td>
-                    </tr>
-                    <tr style="background: var(--primary); color: white;">
-                        <td style="padding: 12px; font-weight: bold;">Gesamt</td>
-                        <td style="padding: 12px; text-align: center; font-weight: bold;">1.570</td>
-                        <td style="padding: 12px; text-align: center; font-weight: bold;">2.544</td>
-                        <td style="padding: 12px; text-align: center; font-weight: bold;">3.200</td>
-                        <td style="padding: 12px; text-align: center; font-weight: bold;">2.895</td>
-                        <td style="padding: 12px; text-align: center; font-weight: bold;">2.943</td>
-                        <td style="padding: 12px; text-align: center; font-weight: bold;">3.116</td>
-                        <td style="padding: 12px; text-align: center; font-weight: bold;">3.294</td>
-                        <td style="padding: 12px; text-align: center; font-weight: bold;">19.562</td>
-                    </tr>
+                <tbody id="kosten-tbody">
+                    ${aktiveBlöcke.map(block => `
+                        <tr data-block-id="${block.id}" id="row-${block.id}">
+                            <td style="padding: 8px; font-weight: 600;">
+                                ${block.icon} ${block.name}
+                                ${block.id === 'personal' ? `
+                                    <button onclick="openPersonalDetail('${block.id}')"
+                                            style="margin-left: 8px; padding: 2px 6px; background: var(--primary);
+                                            color: white; border: none; border-radius: 3px; font-size: 9px; cursor: pointer;"
+                                            title="Detailplanung öffnen">
+                                        📊 Details
+                                    </button>
+                                ` : ''}
+                            </td>
+                            ${jahre.map(jahr => {
+                                const isReleaseYear = releaseYear && parseInt(jahr) === releaseYear;
+                                return `<td style="padding: 8px; ${isReleaseYear ? 'background: #fffbeb;' : ''}">
+                                    <input type="text" id="kosten-${block.id}-${jahr}" 
+                                           placeholder="0"
+                                           onchange="formatKostenInput(this); updateKostenSumme();"
+                                           onblur="formatKostenInput(this);"
+                                           style="width: 60px; padding: 2px; border: 1px solid var(--border); border-radius: 2px; text-align: right;">
+                                </td>`;
+                            }).join('')}
+                            <td style="padding: 8px; font-weight: bold;" id="summe-${block.id}">0€</td>
+                            <td style="padding: 8px; text-align: center;">
+                                <button onclick="entferneTabellenzeile('${block.id}')" 
+                                        style="background: transparent; border: 1px solid var(--danger); color: var(--danger); 
+                                               padding: 2px 8px; border-radius: 3px; font-size: 10px; cursor: pointer;"
+                                        title="Zeile entfernen">
+                                    ✕
+                                </button>
+                            </td>
+                        </tr>
+                    `).join('')}
                 </tbody>
+                <tfoot>
+                    <tr style="background: var(--primary); color: white; font-weight: bold;">
+                        <td style="padding: 10px;">GESAMT</td>
+                        ${jahre.map(jahr => `<td style="padding: 10px; text-align: center;" id="gesamt-${jahr}">0€</td>`).join('')}
+                        <td style="padding: 10px; text-align: center;" id="gesamt-total">0€</td>
+                        <td></td>
+                    </tr>
+                </tfoot>
             </table>
         </div>
     `;
 }
 
-function getWirtschaftlichkeitTabContent() {
-    return `
-        <div style="padding: 20px; background: var(--gray-light); border-radius: 8px;">
-            <h3 style="margin-bottom: 20px;">💰 Wirtschaftlichkeitsberechnung & Amortisation</h3>
-            
-            <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; margin-bottom: 20px;">
-                <thead>
-                    <tr style="background: var(--primary); color: white;">
-                        <th style="padding: 12px; text-align: left;">Kennzahl</th>
-                        <th style="padding: 12px; text-align: center;">2024</th>
-                        <th style="padding: 12px; text-align: center;">2025</th>
-                        <th style="padding: 12px; text-align: center;">2026</th>
-                        <th style="padding: 12px; text-align: center;">2027</th>
-                        <th style="padding: 12px; text-align: center;">2028</th>
-                        <th style="padding: 12px; text-align: center;">2029</th>
-                        <th style="padding: 12px; text-align: center;">2030</th>
-                        <th style="padding: 12px; text-align: center;">Gesamt</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr style="background: #dbeafe;">
-                        <td style="padding: 12px;">📈 Umsatz (in T€)</td>
-                        <td style="padding: 12px; text-align: center;">0</td>
-                        <td style="padding: 12px; text-align: center;">2.900</td>
-                        <td style="padding: 12px; text-align: center;">10.800</td>
-                        <td style="padding: 12px; text-align: center;">24.200</td>
-                        <td style="padding: 12px; text-align: center;">42.300</td>
-                        <td style="padding: 12px; text-align: center;">47.000</td>
-                        <td style="padding: 12px; text-align: center;">48.800</td>
-                        <td style="padding: 12px; text-align: center; font-weight: bold;">176.000</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 12px;">⚙️ Herstellkosten (HK)</td>
-                        <td style="padding: 12px; text-align: center;">0</td>
-                        <td style="padding: 12px; text-align: center; color: var(--danger);">-1.900</td>
-                        <td style="padding: 12px; text-align: center; color: var(--danger);">-7.200</td>
-                        <td style="padding: 12px; text-align: center; color: var(--danger);">-15.800</td>
-                        <td style="padding: 12px; text-align: center; color: var(--danger);">-27.500</td>
-                        <td style="padding: 12px; text-align: center; color: var(--danger);">-30.600</td>
-                        <td style="padding: 12px; text-align: center; color: var(--danger);">-31.800</td>
-                        <td style="padding: 12px; text-align: center; font-weight: bold; color: var(--danger);">-114.800</td>
-                    </tr>
-                    <tr style="background: #f0f9ff; font-weight: 600;">
-                        <td style="padding: 12px;">= DB2 (nach variablen Kosten)</td>
-                        <td style="padding: 12px; text-align: center;">0</td>
-                        <td style="padding: 12px; text-align: center;">855</td>
-                        <td style="padding: 12px; text-align: center;">3.060</td>
-                        <td style="padding: 12px; text-align: center;">7.190</td>
-                        <td style="padding: 12px; text-align: center;">12.685</td>
-                        <td style="padding: 12px; text-align: center;">14.050</td>
-                        <td style="padding: 12px; text-align: center;">14.560</td>
-                        <td style="padding: 12px; text-align: center; color: var(--success);">52.400</td>
-                    </tr>
-                    <tr style="background: #fef3c7;">
-                        <td style="padding: 12px;">🏗️ Projektkosten</td>
-                        <td style="padding: 12px; text-align: center; color: var(--danger);">-1.570</td>
-                        <td style="padding: 12px; text-align: center; color: var(--danger);">-2.544</td>
-                        <td style="padding: 12px; text-align: center; color: var(--danger);">-3.200</td>
-                        <td style="padding: 12px; text-align: center; color: var(--danger);">-2.895</td>
-                        <td style="padding: 12px; text-align: center; color: var(--danger);">-2.943</td>
-                        <td style="padding: 12px; text-align: center; color: var(--danger);">-3.116</td>
-                        <td style="padding: 12px; text-align: center; color: var(--danger);">-3.294</td>
-                        <td style="padding: 12px; text-align: center; font-weight: bold; color: var(--danger);">-19.562</td>
-                    </tr>
-                    <tr style="background: var(--primary); color: white; font-weight: bold;">
-                        <td style="padding: 12px;">= DB3 (nach Projektkosten)</td>
-                        <td style="padding: 12px; text-align: center;">-1.570</td>
-                        <td style="padding: 12px; text-align: center;">-1.689</td>
-                        <td style="padding: 12px; text-align: center;">-140</td>
-                        <td style="padding: 12px; text-align: center;">4.295</td>
-                        <td style="padding: 12px; text-align: center;">9.742</td>
-                        <td style="padding: 12px; text-align: center;">10.934</td>
-                        <td style="padding: 12px; text-align: center;">11.266</td>
-                        <td style="padding: 12px; text-align: center;">32.838</td>
-                    </tr>
-                </tbody>
-            </table>
-            
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
-                <div style="background: white; padding: 16px; border-radius: 8px; text-align: center;">
-                    <div style="font-size: 28px; font-weight: bold; color: var(--success);">3.2 Jahre</div>
-                    <div style="font-size: 12px; color: var(--gray);">Payback-Zeit</div>
-                    <div style="font-size: 11px; color: var(--gray); margin-top: 4px;">Break-Even in Q2/2027</div>
-                </div>
+// Update Tabelle wenn Checkboxen geändert werden
+function updateKostenbloeckeAuswahl() {
+    // Tabelle neu generieren basierend auf aktiven Checkboxen
+    updateProjektZeitraum();
+}
+
+// Update Kostensummen
+function updateKostenSumme() {
+    console.log('Updating Kostensummen...');
+}
+
+// Update Projekt-Zeitraum und synchronisiere Tabelle
+function updateProjektZeitraum() {
+    const startInput = document.getElementById('projekt-start');
+    const endeInput = document.getElementById('projekt-ende');
+    
+    if (!startInput || !endeInput) return;
+    
+    const startDate = startInput.value; // Format: "2023-01"
+    const endDate = endeInput.value;    // Format: "2027-12"
+    
+    if (!startDate || !endDate) return;
+    
+    // Parse Jahre aus den Datumswerten
+    const startYear = parseInt(startDate.split('-')[0]);
+    const endYear = parseInt(endDate.split('-')[0]);
+    
+    // Validierung
+    if (endYear < startYear) {
+        alert('Projektende kann nicht vor Projektstart liegen!');
+        endeInput.value = startYear + '-12';
+        return;
+    }
+    
+    // Maximum 10 Jahre Projektlaufzeit
+    if (endYear - startYear > 10) {
+        alert('Maximale Projektlaufzeit ist 10 Jahre!');
+        endeInput.value = (startYear + 10) + '-12';
+        return;
+    }
+    
+    // Tabelle neu generieren mit dynamischen Jahren
+    const kostenTabelleContainer = document.getElementById('projekt-kosten-tabelle');
+    if (kostenTabelleContainer) {
+        kostenTabelleContainer.innerHTML = generateKostenTabelle(startYear, endYear);
+    }
+}
+
+// Dynamisches Hinzufügen von Kostenblöcken
+function addCustomKostenblock() {
+    const modalHTML = `
+        <div id="kostenblock-modal" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 9999; display: flex; align-items: center; justify-content: center;">
+            <div style="background: white; padding: 24px; border-radius: 8px; max-width: 400px;">
+                <h3 style="margin-bottom: 16px;">Kostenblock hinzufügen</h3>
+                <input type="text" id="block-name" placeholder="Name des Kostenblocks" style="width: 100%; padding: 8px; margin-bottom: 12px; border: 1px solid var(--border); border-radius: 4px;">
                 
-                <div style="background: white; padding: 16px; border-radius: 8px; text-align: center;">
-                    <div style="font-size: 28px; font-weight: bold; color: var(--primary);">32.8M€</div>
-                    <div style="font-size: 12px; color: var(--gray);">NPV (7 Jahre)</div>
-                    <div style="font-size: 11px; color: var(--gray); margin-top: 4px;">ohne Diskontierung</div>
-                </div>
+                <select id="block-type" style="width: 100%; padding: 8px; margin-bottom: 12px; border: 1px solid var(--border); border-radius: 4px;">
+                    <option value="">-- Kategorie wählen --</option>
+                    <option value="personal">Personal</option>
+                    <option value="material">Material</option>
+                    <option value="software">Software</option>
+                    <option value="hardware">Hardware</option>
+                    <option value="beratung">Beratung</option>
+                    <option value="sonstige">Sonstige</option>
+                </select>
                 
-                <div style="background: white; padding: 16px; border-radius: 8px; text-align: center;">
-                    <div style="font-size: 28px; font-weight: bold; color: var(--warning);">168%</div>
-                    <div style="font-size: 12px; color: var(--gray);">ROI</div>
-                    <div style="font-size: 11px; color: var(--gray); margin-top: 4px;">32.8M€ / 19.6M€</div>
-                </div>
-            </div>
-            
-            <div style="margin-top: 16px; padding: 16px; background: #f0fdf4; border-left: 4px solid var(--success); border-radius: 8px;">
-                <div style="font-weight: bold; color: var(--success); margin-bottom: 8px;">✅ BUSINESS CASE POSITIV</div>
-                <div style="font-size: 13px; color: var(--text);">
-                    <strong>Empfehlung:</strong> Freigabe empfohlen.<br>
-                    <strong>Kritisch:</strong> 3.4M€ Vorfinanzierung bis Break-Even.<br>
-                    <strong>Risiko:</strong> Marktpenetration muss planmäßig erfolgen.
+                <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                    <button onclick="closeKostenblockModal()" style="padding: 8px 16px; border: 1px solid var(--border); background: white; border-radius: 4px;">Abbrechen</button>
+                    <button onclick="saveKostenblock()" style="padding: 8px 16px; background: var(--primary); color: white; border: none; border-radius: 4px;">Hinzufügen</button>
                 </div>
             </div>
         </div>
     `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+}
+
+function closeKostenblockModal() {
+    const modal = document.getElementById('kostenblock-modal');
+    if (modal) modal.remove();
+}
+
+function saveKostenblock() {
+    const name = document.getElementById('block-name').value;
+    const type = document.getElementById('block-type').value;
+    
+    if (name && type) {
+        // Füge neue Zeile zur Tabelle hinzu
+        const tbody = document.getElementById('kosten-tbody');
+        if (tbody) {
+            const newRow = document.createElement('tr');
+            const blockId = 'custom-' + Date.now();
+            const jahre = ['2024', '2025', '2026', '2027', '2028'];
+            
+            newRow.innerHTML = `
+                <td style="padding: 8px; font-weight: 600;">
+                    ➕ ${name}
+                </td>
+                ${jahre.map(jahr => `
+                    <td style="padding: 8px;">
+                        <input type="text" placeholder="0" onchange="updateKostenSumme()"
+                               style="width: 60px; padding: 2px; border: 1px solid var(--border); border-radius: 2px; text-align: right;">
+                    </td>
+                `).join('')}
+                <td style="padding: 8px; font-weight: bold;">0€</td>
+            `;
+            
+            tbody.appendChild(newRow);
+        }
+        
+        closeKostenblockModal();
+    }
+}
+
+// Setze initiale Timeline-Werte basierend auf Empfehlungen
+function setzeInitialeTimeline() {
+    const empfehlung = generiereKostenEmpfehlung();
+    const artikelData = cfoDashboard.artikelData[cfoDashboard.currentArtikel] || {};
+    
+    // Parse Release-Datum
+    const releaseDate = artikelData.release || '2025-01';
+    const [releaseYear, releaseMonth] = releaseDate.split('-');
+    
+    // Berechne Start und Ende basierend auf Empfehlung
+    const startYear = parseInt(releaseYear) - Math.floor(empfehlung.regeln.vorlaufzeit / 12);
+    const endYear = parseInt(releaseYear) + Math.floor(empfehlung.regeln.nachlaufzeit / 12);
+    
+    // Setze die Werte in die Input-Felder
+    const startInput = document.getElementById('projekt-start');
+    const endeInput = document.getElementById('projekt-ende');
+    
+    if (startInput) startInput.value = `${startYear}-01`;
+    if (endeInput) endeInput.value = `${endYear}-12`;
+    
+    // Trigger Update
+    updateProjektZeitraum();
+}
+
+// Kostenblock komplett entfernen
+function entferneKostenblock(blockId) {
+    // Entferne den Container aus der DOM
+    const container = document.getElementById(`container-${blockId}`);
+    if (container) {
+        container.remove();
+    }
+    
+    // Update die Tabelle
+    updateKostenbloeckeAuswahl();
+}
+
+// Kostenblock wieder hinzufügen
+function kostenblockWiederHinzufuegen() {
+    const modalHTML = `
+        <div id="block-restore-modal" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 9999; display: flex; align-items: center; justify-content: center;">
+            <div style="background: white; padding: 24px; border-radius: 8px; max-width: 500px; max-height: 80vh; overflow-y: auto;">
+                <h3 style="margin-bottom: 16px;">Kostenblock auswählen</h3>
+                <div style="font-size: 12px; color: var(--gray); margin-bottom: 16px;">
+                    Wählen Sie einen Standard-Kostenblock oder erstellen Sie einen eigenen:
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <h4 style="font-size: 13px; margin-bottom: 12px;">Software-Blöcke:</h4>
+                    <button onclick="addStandardBlock('personal', 'Personal', '👥')" style="margin: 4px; padding: 6px 12px; border: 1px solid var(--border); background: white; border-radius: 4px; font-size: 11px; cursor: pointer;">👥 Personal</button>
+                    <button onclick="addStandardBlock('cloud', 'Cloud & Infrastructure', '☁️')" style="margin: 4px; padding: 6px 12px; border: 1px solid var(--border); background: white; border-radius: 4px; font-size: 11px; cursor: pointer;">☁️ Cloud & Infrastructure</button>
+                    <button onclick="addStandardBlock('lizenzen', 'Software-Lizenzen', '💿')" style="margin: 4px; padding: 6px 12px; border: 1px solid var(--border); background: white; border-radius: 4px; font-size: 11px; cursor: pointer;">💿 Software-Lizenzen</button>
+                    <button onclick="addStandardBlock('testing', 'Testing & QA', '🧪')" style="margin: 4px; padding: 6px 12px; border: 1px solid var(--border); background: white; border-radius: 4px; font-size: 11px; cursor: pointer;">🧪 Testing & QA</button>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <h4 style="font-size: 13px; margin-bottom: 12px;">Hardware-Blöcke:</h4>
+                    <button onclick="addStandardBlock('material', 'Material & Prototypen', '🔧')" style="margin: 4px; padding: 6px 12px; border: 1px solid var(--border); background: white; border-radius: 4px; font-size: 11px; cursor: pointer;">🔧 Material & Prototypen</button>
+                    <button onclick="addStandardBlock('werkzeuge', 'Werkzeuge & Formen', '⚙️')" style="margin: 4px; padding: 6px 12px; border: 1px solid var(--border); background: white; border-radius: 4px; font-size: 11px; cursor: pointer;">⚙️ Werkzeuge & Formen</button>
+                    <button onclick="addStandardBlock('zertifizierung', 'Zertifizierung', '📋')" style="margin: 4px; padding: 6px 12px; border: 1px solid var(--border); background: white; border-radius: 4px; font-size: 11px; cursor: pointer;">📋 Zertifizierung</button>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <h4 style="font-size: 13px; margin-bottom: 12px;">Service-Blöcke:</h4>
+                    <button onclick="addStandardBlock('beratung', 'Beratung', '💼')" style="margin: 4px; padding: 6px 12px; border: 1px solid var(--border); background: white; border-radius: 4px; font-size: 11px; cursor: pointer;">💼 Beratung</button>
+                    <button onclick="addStandardBlock('schulung', 'Schulungen', '🎓')" style="margin: 4px; padding: 6px 12px; border: 1px solid var(--border); background: white; border-radius: 4px; font-size: 11px; cursor: pointer;">🎓 Schulungen</button>
+                    <button onclick="addStandardBlock('reise', 'Reisekosten', '✈️')" style="margin: 4px; padding: 6px 12px; border: 1px solid var(--border); background: white; border-radius: 4px; font-size: 11px; cursor: pointer;">✈️ Reisekosten</button>
+                </div>
+                
+                <div style="display: flex; gap: 12px; justify-content: flex-end; border-top: 1px solid var(--border); padding-top: 16px;">
+                    <button onclick="closeBlockRestoreModal()" style="padding: 8px 16px; border: 1px solid var(--border); background: white; border-radius: 4px;">Schließen</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+}
+
+function addStandardBlock(id, name, icon) {
+    const container = document.getElementById('empfohlene-kostenblöcke');
+    
+    // Prüfe ob Block schon existiert
+    if (document.getElementById(`container-${id}`)) {
+        alert('Dieser Kostenblock ist bereits vorhanden!');
+        return;
+    }
+    
+    // Füge neuen Block hinzu
+    const newBlock = document.createElement('div');
+    newBlock.className = 'kostenblock-item';
+    newBlock.id = `container-${id}`;
+    newBlock.style = 'display: inline-flex; align-items: center; padding: 6px 10px; background: white; border: 1px solid var(--primary); border-radius: 4px; position: relative;';
+    
+    newBlock.innerHTML = `
+        <input type="checkbox" checked id="block-${id}" 
+               onchange="updateKostenbloeckeAuswahl()"
+               data-block='{"id":"${id}","name":"${name}","icon":"${icon}","anteil":0}' 
+               style="margin-right: 6px;">
+        <label for="block-${id}" style="font-size: 11px; cursor: pointer; margin-right: 8px;">
+            ${icon} ${name}
+        </label>
+        <button onclick="entferneKostenblock('${id}')" 
+                style="background: transparent; border: none; color: var(--danger); cursor: pointer; padding: 0 4px; font-size: 14px; line-height: 1;"
+                title="Kostenblock entfernen">
+            ×
+        </button>
+    `;
+    
+    container.appendChild(newBlock);
+    closeBlockRestoreModal();
+    updateKostenbloeckeAuswahl();
+}
+
+function closeBlockRestoreModal() {
+    const modal = document.getElementById('block-restore-modal');
+    if (modal) modal.remove();
+}
+
+// Entferne Tabellenzeile und deaktiviere entsprechende Checkbox
+function entferneTabellenzeile(blockId) {
+    // Entferne die Zeile aus der Tabelle
+    const row = document.getElementById(`row-${blockId}`);
+    if (row) {
+        row.remove();
+    }
+    
+    // Deaktiviere die entsprechende Checkbox oben
+    const checkbox = document.getElementById(`block-${blockId}`);
+    if (checkbox) {
+        checkbox.checked = false;
+    }
+      // Update Summen
+    updateKostenSumme();
+}
+
+// Update Kostensummen - Berechnet alle Summen automatisch
+function updateKostenSumme() {
+    const tbody = document.getElementById('kosten-tbody');
+    if (!tbody) return;
+    
+    // Sammle alle Jahre aus den Tabellen-Headers
+    const headerCells = document.querySelectorAll('thead th');
+    const jahre = [];
+    headerCells.forEach(cell => {
+        const cellText = cell.textContent.trim();
+        // Extrahiere Jahr (4-stellige Zahl)
+        if (/^\d{4}/.test(cellText)) {
+            jahre.push(cellText.substring(0, 4));
+        }
+    });
+    
+    // Initialisiere Jahres-Summen
+    const jahresSummen = {};
+    jahre.forEach(jahr => {
+        jahresSummen[jahr] = 0;
+    });
+    
+    let gesamtSummeAlle = 0;
+    
+    // Durchlaufe alle Zeilen
+    const rows = tbody.querySelectorAll('tr[data-block-id]');
+    rows.forEach(row => {
+        const blockId = row.dataset.blockId;
+        let zeilenSumme = 0;
+        
+        // Durchlaufe alle Jahre für diese Zeile
+        jahre.forEach(jahr => {
+            const input = document.getElementById(`kosten-${blockId}-${jahr}`);
+            if (input) {
+                // Parse den Wert (entferne Tausender-Trenner, ersetze Komma mit Punkt)
+                let value = input.value.trim();
+                value = value.replace(/\./g, '').replace(',', '.');
+                const numValue = parseFloat(value) || 0;
+                
+                // Addiere zur Zeilensumme und Jahressumme
+                zeilenSumme += numValue;
+                jahresSummen[jahr] += numValue;
+            }
+        });
+        
+        // Update Zeilensumme
+        const summeCell = document.getElementById(`summe-${blockId}`);
+        if (summeCell) {
+            summeCell.textContent = formatKostenAnzeige(zeilenSumme);
+        }
+        
+        gesamtSummeAlle += zeilenSumme;
+    });
+    
+    // Update Jahres-Summen in der Fußzeile
+    jahre.forEach(jahr => {
+        const gesamtCell = document.getElementById(`gesamt-${jahr}`);
+        if (gesamtCell) {
+            gesamtCell.textContent = formatKostenAnzeige(jahresSummen[jahr]);
+        }
+    });
+    
+    // Update Gesamt-Summe
+    const gesamtTotalCell = document.getElementById('gesamt-total');
+    if (gesamtTotalCell) {
+        gesamtTotalCell.textContent = formatKostenAnzeige(gesamtSummeAlle);
+    }
+}
+
+// Formatiere Kostenanzeige (mit k€ oder M€)
+function formatKostenAnzeige(value) {
+    if (value === 0) return '0€';
+    
+    // Wenn >= 1 Million
+    if (value >= 1000) {
+        return (value / 1000).toFixed(1).replace('.', ',') + 'M€';
+    }
+    
+    // Standard in k€
+    return value.toFixed(0) + '€';
+}
+
+// Erweiterte Input-Formatierung mit automatischer Berechnung
+function formatKostenInput(input) {
+    let value = input.value.trim();
+    
+    // Erlaube leeres Feld
+    if (value === '') {
+        updateKostenSumme();
+        return;
+    }
+    
+    // Entferne alle Nicht-Zahlen außer Komma und Punkt
+    value = value.replace(/[^\d,.-]/g, '');
+    
+    // Ersetze Komma mit Punkt für Berechnung
+    value = value.replace(',', '.');
+    
+    const numValue = parseFloat(value);
+    
+    if (!isNaN(numValue)) {
+        // Formatiere ohne Nachkommastellen für Kosten
+        input.value = Math.round(numValue).toString();
+    }
+    
+    // Trigger Berechnung
+    updateKostenSumme();
+}
+
+// Öffne Personal-Detailplanung Sidebar
+function openPersonalDetail(blockId) {
+    // Hole vorhandene Daten falls vorhanden
+    const kostenDaten = getPersonalKostenDaten(blockId);
+    
+    const sidebarHTML = `
+        <div id="personal-detail-sidebar" style="position: fixed; top: 0; right: -50%; bottom: 0; 
+             width: 50%; background: white; box-shadow: -2px 0 10px rgba(0,0,0,0.1); 
+             z-index: 9998; transition: right 0.3s ease-in-out; overflow-y: auto;">
+            
+            <!-- Header -->
+            <div style="padding: 20px; background: linear-gradient(135deg, #dbeafe, #e0e7ff); 
+                        border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h3 style="margin: 0; font-size: 16px; color: var(--primary);">
+                        👥 Personalkosten - Detailplanung
+                    </h3>
+                    <button onclick="closePersonalDetail()" 
+                            style="background: transparent; border: none; font-size: 20px; 
+                                   cursor: pointer; color: var(--gray);">✕</button>
+                </div>
+            </div>
+            
+            <!-- KI-Hinweise -->
+            <div id="ki-hints" style="padding: 16px; background: #fef3c7; border-left: 4px solid var(--warning); margin: 16px;">
+                <div style="font-size: 12px; font-weight: 600; margin-bottom: 8px;">
+                    🤖 KI-Analyse:
+                </div>
+                <div id="ki-feedback" style="font-size: 11px; line-height: 1.5;">
+                    Analysiere Teamzusammensetzung...
+                </div>
+            </div>
+            
+            <!-- Positions-Tabelle -->
+            <div style="padding: 20px;">
+                <h4 style="font-size: 14px; margin-bottom: 16px;">Team-Zusammensetzung</h4>
+                
+                <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                    <thead>
+                        <tr style="background: #f8fafc; border-bottom: 2px solid var(--border);">
+                            <th style="padding: 10px; text-align: left;">Position</th>
+                            <th style="padding: 10px; text-align: center;">Anzahl</th>
+                            <th style="padding: 10px; text-align: center;">Gehalt/Jahr</th>
+                            <th style="padding: 10px; text-align: center;">2024</th>
+                            <th style="padding: 10px; text-align: center;">2025</th>
+                            <th style="padding: 10px; text-align: center;">2026</th>
+                            <th style="padding: 10px; text-align: center;">2027</th>
+                            <th style="padding: 10px; text-align: center;">Gesamt</th>
+                            <th style="padding: 10px; text-align: center;">Aktion</th>
+                        </tr>
+                    </thead>
+                    <tbody id="personal-detail-tbody">
+                        ${generatePersonalPositions()}
+                    </tbody>
+                    <tfoot>
+                        <tr style="background: var(--primary); color: white; font-weight: bold;">
+                            <td style="padding: 10px;" colspan="3">SUMME</td>
+                            <td style="padding: 10px; text-align: center;" id="personal-sum-2024">0€</td>
+                            <td style="padding: 10px; text-align: center;" id="personal-sum-2025">0€</td>
+                            <td style="padding: 10px; text-align: center;" id="personal-sum-2026">0€</td>
+                            <td style="padding: 10px; text-align: center;" id="personal-sum-2027">0€</td>
+                            <td style="padding: 10px; text-align: center;" id="personal-sum-total">0€</td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+                
+                <button onclick="addPersonalPosition()" 
+                        style="margin-top: 16px; padding: 8px 16px; background: var(--primary); 
+                               color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">
+                    + Position hinzufügen
+                </button>
+                
+                <!-- Vorlagen -->
+                <div style="margin-top: 20px; padding: 16px; background: #f0f9ff; border-radius: 8px;">
+                    <h5 style="font-size: 13px; margin-bottom: 12px;">🎯 Schnell-Vorlagen</h5>
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                        <button onclick="applyPersonalTemplate('scrum-team')" 
+                                style="padding: 6px 12px; background: white; border: 1px solid var(--primary); 
+                                       color: var(--primary); border-radius: 4px; font-size: 11px; cursor: pointer;">
+                            Scrum Team (8 Personen)
+                        </button>
+                        <button onclick="applyPersonalTemplate('startup')" 
+                                style="padding: 6px 12px; background: white; border: 1px solid var(--primary); 
+                                       color: var(--primary); border-radius: 4px; font-size: 11px; cursor: pointer;">
+                            Startup Team (3 Personen)
+                        </button>
+                        <button onclick="applyPersonalTemplate('enterprise')" 
+                                style="padding: 6px 12px; background: white; border: 1px solid var(--primary); 
+                                       color: var(--primary); border-radius: 4px; font-size: 11px; cursor: pointer;">
+                            Enterprise Team (15 Personen)
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Footer mit Aktionen -->
+            <div style="position: sticky; bottom: 0; padding: 20px; background: white; 
+                        border-top: 1px solid var(--border); display: flex; justify-content: space-between;">
+                <button onclick="closePersonalDetail()" 
+                        style="padding: 10px 20px; border: 1px solid var(--border); 
+                               background: white; border-radius: 4px; cursor: pointer;">
+                    Abbrechen
+                </button>
+                <button onclick="savePersonalDetail()" 
+                        style="padding: 10px 20px; background: var(--primary); color: white; 
+                               border: none; border-radius: 4px; cursor: pointer;">
+                    Übernehmen & Schließen
+                </button>
+            </div>
+        </div>
+    `;
+    
+    // Füge Sidebar zum DOM hinzu
+    document.body.insertAdjacentHTML('beforeend', sidebarHTML);
+    
+    // Slide-in Animation
+    setTimeout(() => {
+        document.getElementById('personal-detail-sidebar').style.right = '0';
+    }, 10);
+    
+    // Initial-Berechnung
+    calculatePersonalSums();
+    checkPersonalPlausibility();
+}
+
+// Generiere Standard-Positionen
+function generatePersonalPositions() {
+    const positions = [
+        { id: 'senior-dev', name: 'Senior Developer', anzahl: 3, gehalt: 120000 },
+        { id: 'junior-dev', name: 'Junior Developer', anzahl: 2, gehalt: 70000 },
+        { id: 'pm', name: 'Projektleiter', anzahl: 1, gehalt: 130000 },
+        { id: 'qa', name: 'QA Engineer', anzahl: 2, gehalt: 85000 }
+    ];
+    
+    return positions.map(pos => `
+        <tr data-position-id="${pos.id}">
+            <td style="padding: 8px;">
+                <input type="text" value="${pos.name}" 
+                       style="width: 100%; padding: 4px; border: 1px solid var(--border); 
+                              border-radius: 3px; font-size: 11px;">
+            </td>
+            <td style="padding: 8px; text-align: center;">
+                <input type="number" value="${pos.anzahl}" min="0" step="0.5"
+                       onchange="calculatePersonalSums(); checkPersonalPlausibility();"
+                       style="width: 60px; padding: 4px; border: 1px solid var(--border); 
+                              border-radius: 3px; text-align: center;">
+            </td>
+            <td style="padding: 8px;">
+                <input type="number" value="${pos.gehalt}" step="1000"
+                       onchange="calculatePersonalSums(); checkPersonalPlausibility();"
+                       style="width: 80px; padding: 4px; border: 1px solid var(--border); 
+                              border-radius: 3px; text-align: right;">€
+            </td>
+            ${['2024', '2025', '2026', '2027'].map(jahr => `
+                <td style="padding: 8px;">
+                    <input type="number" min="0" max="${pos.anzahl}" step="0.5"
+                           placeholder="${pos.anzahl}"
+                           onchange="calculatePersonalSums();"
+                           style="width: 50px; padding: 4px; border: 1px solid var(--border); 
+                                  border-radius: 3px; text-align: center;">
+                </td>
+            `).join('')}
+            <td style="padding: 8px; text-align: right; font-weight: bold;" 
+                id="pos-sum-${pos.id}">0€</td>
+            <td style="padding: 8px; text-align: center;">
+                <button onclick="removePersonalPosition('${pos.id}')"
+                        style="background: transparent; border: 1px solid var(--danger); 
+                               color: var(--danger); padding: 2px 6px; border-radius: 3px; 
+                               font-size: 10px; cursor: pointer;">✕</button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+// Berechne Personal-Summen
+function calculatePersonalSums() {
+    const tbody = document.getElementById('personal-detail-tbody');
+    if (!tbody) return;
+    
+    const jahre = ['2024', '2025', '2026', '2027'];
+    const jahresSummen = {};
+    jahre.forEach(jahr => jahresSummen[jahr] = 0);
+    
+    let gesamtSumme = 0;
+    
+    // Durchlaufe alle Positionen
+    tbody.querySelectorAll('tr').forEach(row => {
+        const inputs = row.querySelectorAll('input[type="number"]');
+        const anzahl = parseFloat(inputs[0].value) || 0;
+        const gehalt = parseFloat(inputs[1].value) || 0;
+        
+        let positionsSumme = 0;
+        
+        // Berechne für jedes Jahr
+        jahre.forEach((jahr, index) => {
+            const fte = parseFloat(inputs[index + 2].value) || anzahl;
+            const jahresKosten = fte * gehalt;
+            jahresSummen[jahr] += jahresKosten;
+            positionsSumme += jahresKosten;
+        });
+        
+        // Update Positionssumme
+        const sumCell = row.querySelector('[id^="pos-sum-"]');
+        if (sumCell) {
+            sumCell.textContent = formatKostenAnzeige(positionsSumme / 1000) + '€';
+        }
+        
+        gesamtSumme += positionsSumme;
+    });
+    
+    // Update Footer-Summen
+    jahre.forEach(jahr => {
+        const cell = document.getElementById(`personal-sum-${jahr}`);
+        if (cell) {
+            cell.textContent = formatKostenAnzeige(jahresSummen[jahr] / 1000) + '€';
+        }
+    });
+    
+    const totalCell = document.getElementById('personal-sum-total');
+    if (totalCell) {
+        totalCell.textContent = formatKostenAnzeige(gesamtSumme / 1000) + '€';
+    }
+}
+
+// KI-Plausibilitätsprüfung
+function checkPersonalPlausibility() {
+    const feedback = document.getElementById('ki-feedback');
+    if (!feedback) return;
+    
+    const warnings = [];
+    const tbody = document.getElementById('personal-detail-tbody');
+    
+    // Prüfe Gehälter
+    tbody.querySelectorAll('tr').forEach(row => {
+        const nameInput = row.querySelector('input[type="text"]');
+        const gehaltInput = row.querySelectorAll('input[type="number"]')[1];
+        
+        const position = nameInput.value.toLowerCase();
+        const gehalt = parseFloat(gehaltInput.value);
+        
+        // Plausibilitätsprüfungen
+        if (position.includes('praktikant') && gehalt > 30000) {
+            warnings.push(`⚠️ Praktikanten-Gehalt (${gehalt}€) ungewöhnlich hoch`);
+        }
+        if (position.includes('senior') && gehalt < 80000) {
+            warnings.push(`⚠️ Senior-Position unter Marktdurchschnitt`);
+        }
+        if (position.includes('junior') && gehalt > 100000) {
+            warnings.push(`⚠️ Junior-Gehalt über Marktdurchschnitt`);
+        }
+    });
+    
+    // Team-Zusammensetzung prüfen
+    const devCount = [...tbody.querySelectorAll('input[type="text"]')]
+        .filter(i => i.value.toLowerCase().includes('developer')).length;
+    const qaCount = [...tbody.querySelectorAll('input[type="text"]')]
+        .filter(i => i.value.toLowerCase().includes('qa') || i.value.toLowerCase().includes('test')).length;
+    
+    if (devCount > 3 && qaCount === 0) {
+        warnings.push(`💡 Empfehlung: QA-Ressourcen für ${devCount} Entwickler fehlen`);
+    }
+    
+    // Update KI-Feedback
+    if (warnings.length > 0) {
+        feedback.innerHTML = warnings.join('<br>');
+        feedback.parentElement.style.background = '#fef3c7';
+    } else {
+        feedback.innerHTML = '✅ Teamzusammensetzung sieht plausibel aus';
+        feedback.parentElement.style.background = '#d1fae5';
+    }
+}
+
+// Schließe Personal-Detail Sidebar
+function closePersonalDetail() {
+    const sidebar = document.getElementById('personal-detail-sidebar');
+    if (sidebar) {
+        sidebar.style.right = '-50%';
+        setTimeout(() => sidebar.remove(), 300);
+    }
+}
+
+// Speichere und übernehme Werte
+function savePersonalDetail() {
+    // Übertrage Summen in Haupttabelle
+    const jahre = ['2024', '2025', '2026', '2027'];
+    jahre.forEach(jahr => {
+        const sumValue = document.getElementById(`personal-sum-${jahr}`);
+        const mainInput = document.getElementById(`kosten-personal-${jahr}`);
+        if (sumValue && mainInput) {
+            // Konvertiere von € zu Eingabeformat
+            const value = sumValue.textContent.replace('€', '').replace('k', '');
+            mainInput.value = value;
+        }
+    });
+    
+    // Update Haupttabelle
+    updateKostenSumme();
+    
+    // Schließe Sidebar
+    closePersonalDetail();
+}
+
+// Weitere Hilfsfunktionen
+function getPersonalKostenDaten(blockId) {
+    // Hole gespeicherte Daten falls vorhanden
+    return cfoDashboard.personalDetails || {};
+}
+
+function addPersonalPosition() {
+    // Implementierung folgt
+    alert('Position hinzufügen - wird implementiert');
+}
+
+function removePersonalPosition(posId) {
+    const row = document.querySelector(`[data-position-id="${posId}"]`);
+    if (row) {
+        row.remove();
+        calculatePersonalSums();
+        checkPersonalPlausibility();
+    }
+}
+
+function applyPersonalTemplate(template) {
+    // Implementierung folgt
+    alert(`Template "${template}" wird geladen...`);
+}
+
+function getWirtschaftlichkeitTabContent() {
+    const artikelData = cfoDashboard.artikelData[cfoDashboard.currentArtikel] || {};
+    
+    return `
+        <div style="padding: 20px;">
+            <!-- Header -->
+            <div style="background: white; padding: 16px; border-radius: 8px; margin-bottom: 20px; border: 1px solid var(--border);">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h3 style="margin: 0; font-size: 16px;">📊 Profitability Calculation</h3>
+                    <div style="display: flex; gap: 12px;">
+                        <select id="view-level" onchange="updateViewLevel()" 
+                                style="padding: 6px 12px; border: 1px solid var(--border); border-radius: 4px; font-size: 12px;">
+                            <option value="db2">Manufacturing Margin (DB2)</option>
+                            <option value="db5">DB5 (vor Trading Profit)</option>
+                            <option value="ebit">Operating Profit (EBIT)</option>
+                            <option value="all" selected>Alle Stufen anzeigen</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contribution Margin Scheme -->
+            <div style="background: white; border-radius: 8px; overflow: hidden; border: 1px solid var(--border);">
+                <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+                    <thead>
+                        <tr style="background: linear-gradient(to right, #1e40af, #3730a3); color: white;">
+                            <th style="padding: 10px; text-align: left; width: 280px; font-size: 11px;">Position</th>
+                            <th style="padding: 10px; text-align: center;">2024</th>
+                            <th style="padding: 10px; text-align: center;">2025</th>
+                            <th style="padding: 10px; text-align: center;">2026</th>
+                            <th style="padding: 10px; text-align: center;">2027</th>
+                            <th style="padding: 10px; text-align: center;">2028</th>
+                            <th style="padding: 10px; text-align: center;">2029</th>
+                            <th style="padding: 10px; text-align: center;">2030</th>
+                            <th style="padding: 10px; text-align: center; background: #1e293b;">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Sales Revenue -->
+                        <tr style="background: #f0f9ff;">
+                            <td style="padding: 8px; font-weight: bold;">
+                                📈 Sales Revenue
+                            </td>
+                            ${generateRevenueRow()}
+                        </tr>
+                        
+                        <!-- DB1 Calculation -->
+                        <tr>
+                            <td style="padding: 6px; padding-left: 20px;">
+                                ./. Material Costs
+                                <input type="number" id="material-cost-rate" value="35" min="0" max="100" step="0.5"
+                                       onchange="updateWirtschaftlichkeit()" 
+                                       style="width: 40px; margin-left: 8px; padding: 2px; border: 1px solid var(--border); 
+                                              border-radius: 2px; font-size: 10px;">%
+                            </td>
+                            ${generateCostRow('material-costs', true)}
+                        </tr>
+                        <tr>
+                            <td style="padding: 6px; padding-left: 20px;">
+                                ./. Direct Labour
+                                <input type="number" id="direct-labour-rate" value="15" min="0" max="100" step="0.5"
+                                       onchange="updateWirtschaftlichkeit()"
+                                       style="width: 40px; margin-left: 8px; padding: 2px; border: 1px solid var(--border); 
+                                              border-radius: 2px; font-size: 10px;">%
+                            </td>
+                            ${generateCostRow('direct-labour', true)}
+                        </tr>
+                        <tr style="background: #e0e7ff; font-weight: bold;">
+                            <td style="padding: 8px;">
+                                = Contribution Margin I (DB1)
+                            </td>
+                            ${generateResultRow('db1')}
+                        </tr>
+                        <tr style="font-size: 10px; color: var(--gray);">
+                            <td style="padding: 4px 8px; padding-left: 20px;">DB1 Margin %</td>
+                            ${generatePercentageResultRow('db1-margin')}
+                        </tr>
+                        
+                        <!-- DB2 Calculation -->
+                        <tr class="db2-section">
+                            <td style="padding: 6px; padding-left: 20px;">
+                                ./. Material Overhead
+                                <input type="number" id="material-overhead-rate" value="8" min="0" max="100" step="0.5"
+                                       onchange="updateWirtschaftlichkeit()"
+                                       style="width: 40px; margin-left: 8px; padding: 2px; border: 1px solid var(--border); 
+                                              border-radius: 2px; font-size: 10px;">%
+                            </td>
+                            ${generateCostRow('material-overhead', true)}
+                        </tr>
+                        <tr class="db2-section">
+                            <td style="padding: 6px; padding-left: 20px;">
+                                ./. Manufacturing Overhead
+                                <input type="number" id="manufacturing-overhead-rate" value="12" min="0" max="100" step="0.5"
+                                       onchange="updateWirtschaftlichkeit()"
+                                       style="width: 40px; margin-left: 8px; padding: 2px; border: 1px solid var(--border); 
+                                              border-radius: 2px; font-size: 10px;">%
+                            </td>
+                            ${generateCostRow('manufacturing-overhead', true)}
+                        </tr>
+                        <tr style="background: #dbeafe; font-weight: bold;">
+                            <td style="padding: 8px;">
+                                = Manufacturing Margin (DB2)
+                            </td>
+                            ${generateResultRow('db2')}
+                        </tr>
+                        <tr style="font-size: 10px; color: var(--gray);">
+                            <td style="padding: 4px 8px; padding-left: 20px;">Manufacturing Margin %</td>
+                            ${generatePercentageResultRow('db2-margin')}
+                        </tr>
+                        
+                        <!-- DB3 Calculation -->
+                        <tr class="db3-section">
+                            <td style="padding: 6px; padding-left: 20px;">
+                                ./. Development Overhead
+                                <span style="font-size: 10px; color: var(--primary);">[aus Projekte-Tab]</span>
+                            </td>
+                            ${generateProjectCostRow('development')}
+                        </tr>
+                        <tr style="background: #fef3c7; font-weight: bold;" class="db3-section">
+                            <td style="padding: 8px;">
+                                = Contribution Margin III (DB3)
+                            </td>
+                            ${generateResultRow('db3')}
+                        </tr>
+                        
+                        <!-- DB4 Calculation -->
+                        <tr class="db4-section">
+                            <td style="padding: 6px; padding-left: 20px;">
+                                ./. Selling Overhead
+                                <input type="number" id="selling-overhead-rate" value="6" min="0" max="100" step="0.5"
+                                       onchange="updateWirtschaftlichkeit()"
+                                       style="width: 40px; margin-left: 8px; padding: 2px; border: 1px solid var(--border); 
+                                              border-radius: 2px; font-size: 10px;">%
+                            </td>
+                            ${generateCostRow('selling-overhead', true)}
+                        </tr>
+                        <tr class="db4-section">
+                            <td style="padding: 6px; padding-left: 20px;">
+                                ./. Marketing Overhead
+                                <input type="number" id="marketing-overhead-rate" value="4" min="0" max="100" step="0.5"
+                                       onchange="updateWirtschaftlichkeit()"
+                                       style="width: 40px; margin-left: 8px; padding: 2px; border: 1px solid var(--border); 
+                                              border-radius: 2px; font-size: 10px;">%
+                            </td>
+                            ${generateCostRow('marketing-overhead', true)}
+                        </tr>
+                        <tr style="background: #f3e8ff; font-weight: bold;" class="db4-section">
+                            <td style="padding: 8px;">
+                                = Contribution Margin IV (DB4)
+                            </td>
+                            ${generateResultRow('db4')}
+                        </tr>
+                        
+                        <!-- DB5 Calculation -->
+                        <tr class="db5-section">
+                            <td style="padding: 6px; padding-left: 20px;">
+                                ./. Distribution Overhead
+                                <input type="number" id="distribution-overhead-rate" value="3" min="0" max="100" step="0.5"
+                                       onchange="updateWirtschaftlichkeit()"
+                                       style="width: 40px; margin-left: 8px; padding: 2px; border: 1px solid var(--border); 
+                                              border-radius: 2px; font-size: 10px;">%
+                            </td>
+                            ${generateCostRow('distribution-overhead', true)}
+                        </tr>
+                        <tr class="db5-section">
+                            <td style="padding: 6px; padding-left: 20px;">
+                                ./. Administration Overhead
+                                <input type="number" id="admin-overhead-rate" value="5" min="0" max="100" step="0.5"
+                                       onchange="updateWirtschaftlichkeit()"
+                                       style="width: 40px; margin-left: 8px; padding: 2px; border: 1px solid var(--border); 
+                                              border-radius: 2px; font-size: 10px;">%
+                            </td>
+                            ${generateCostRow('admin-overhead', true)}
+                        </tr>
+                        <tr style="background: #e0f2fe; font-weight: bold;" class="db5-section">
+                            <td style="padding: 8px;">
+                                = Contribution Margin V (DB5)
+                            </td>
+                            ${generateResultRow('db5')}
+                        </tr>
+                        
+                        <!-- Trading Profit -->
+                        <tr class="trading-section">
+                            <td style="padding: 6px; padding-left: 20px;">
+                                +/- Other Operating Revenues/Expenses
+                            </td>
+                            ${generateEditableRow('other-operating')}
+                        </tr>
+                        <tr style="background: #dcfce7; font-weight: bold;" class="trading-section">
+                            <td style="padding: 8px;">
+                                = Trading Profit
+                            </td>
+                            ${generateResultRow('trading-profit')}
+                        </tr>
+                        
+                        <!-- EBIT -->
+                        <tr class="ebit-section">
+                            <td style="padding: 6px; padding-left: 20px;">
+                                ./. Amortization of Goodwill
+                            </td>
+                            ${generateEditableRow('goodwill-amort')}
+                        </tr>
+                        <tr style="background: #10b981; color: white; font-weight: bold;" class="ebit-section">
+                            <td style="padding: 10px;">
+                                = Operating Profit (EBIT)
+                            </td>
+                            ${generateResultRow('ebit', 'white')}
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- KPI Dashboard -->
+            <div style="margin-top: 20px;">
+                <h4 style="font-size: 13px; font-weight: 600; margin-bottom: 12px;">📊 Key Performance Indicators</h4>
+                <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;">
+                    <div style="background: white; padding: 12px; border-radius: 6px; border: 1px solid var(--border);">
+                        <div style="font-size: 10px; color: var(--gray);">Manufacturing Margin Ø</div>
+                        <div id="avg-manufacturing-margin" style="font-size: 20px; font-weight: bold; color: var(--primary);">0%</div>
+                    </div>
+                    <div style="background: white; padding: 12px; border-radius: 6px; border: 1px solid var(--border);">
+                        <div style="font-size: 10px; color: var(--gray);">EBIT Margin Ø</div>
+                        <div id="avg-ebit-margin" style="font-size: 20px; font-weight: bold; color: var(--success);">0%</div>
+                    </div>
+                    <div style="background: white; padding: 12px; border-radius: 6px; border: 1px solid var(--border);">
+                        <div style="font-size: 10px; color: var(--gray);">Break-Even</div>
+                        <div id="break-even-year" style="font-size: 20px; font-weight: bold; color: var(--warning);">-</div>
+                    </div>
+                    <div style="background: white; padding: 12px; border-radius: 6px; border: 1px solid var(--border);">
+                        <div style="font-size: 10px; color: var(--gray);">NPV (8% WACC)</div>
+                        <div id="npv-result" style="font-size: 20px; font-weight: bold; color: var(--info);">0T€</div>
+                    </div>
+                    <div style="background: white; padding: 12px; border-radius: 6px; border: 1px solid var(--border);">
+                        <div style="font-size: 10px; color: var(--gray);">IRR</div>
+                        <div id="irr-result" style="font-size: 20px; font-weight: bold; color: var(--purple);">0%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Helper-Funktionen für die Berechnung
+function generateRevenueRow() {
+    const jahre = [2024, 2025, 2026, 2027, 2028, 2029, 2030];
+    let html = '';
+    let total = 0;
+    
+    jahre.forEach(jahr => {
+        const value = getRevenueForYear(jahr);
+        total += value;
+        html += `<td style="padding: 8px; text-align: right; font-weight: bold;">
+                    <span id="revenue-${jahr}">${formatNumber(value)}</span>
+                 </td>`;
+    });
+    
+    html += `<td style="padding: 8px; text-align: right; font-weight: bold; background: #f1f5f9;">
+                <span id="revenue-total">${formatNumber(total)}</span>
+             </td>`;
+    
+    return html;
+}
+
+function generateEditableRow(prefix) {
+    const jahre = [2024, 2025, 2026, 2027, 2028, 2029, 2030];
+    let html = '';
+    
+    jahre.forEach(jahr => {
+        html += `<td style="padding: 6px;">
+                    <input type="number" id="${prefix}-${jahr}" value="0" 
+                           onchange="updateWirtschaftlichkeit()"
+                           style="width: 60px; padding: 2px; border: 1px solid var(--border); 
+                                  border-radius: 2px; text-align: right; font-size: 10px;">
+                 </td>`;
+    });
+    
+    html += `<td style="padding: 6px; text-align: right; background: #f1f5f9;">
+                <span id="${prefix}-total">0</span>
+             </td>`;
+    
+    return html;
+}
+
+// Helper-Funktionen für Wirtschaftlichkeit (nach Zeile 3950 einfügen)
+
+function generateCostRow(prefix, negative = false) {
+    const jahre = [2024, 2025, 2026, 2027, 2028, 2029, 2030];
+    let html = '';
+    
+    jahre.forEach(jahr => {
+        html += `<td style="padding: 6px; text-align: right; color: ${negative ? 'var(--danger)' : 'inherit'};">
+                    <span id="${prefix}-${jahr}">0</span>
+                 </td>`;
+    });
+    
+    html += `<td style="padding: 6px; text-align: right; background: #f1f5f9; color: ${negative ? 'var(--danger)' : 'inherit'};">
+                <span id="${prefix}-total">0</span>
+             </td>`;
+    
+    return html;
+}
+
+function generateResultRow(prefix, color = 'inherit') {
+    const jahre = [2024, 2025, 2026, 2027, 2028, 2029, 2030];
+    let html = '';
+    
+    jahre.forEach(jahr => {
+        html += `<td style="padding: 8px; text-align: right; font-weight: bold; color: ${color};">
+                    <span id="${prefix}-${jahr}">0</span>
+                 </td>`;
+    });
+    
+    html += `<td style="padding: 8px; text-align: right; font-weight: bold; background: #1e293b; color: white;">
+                <span id="${prefix}-total">0</span>
+             </td>`;
+    
+    return html;
+}
+
+function generatePercentageResultRow(prefix) {
+    const jahre = [2024, 2025, 2026, 2027, 2028, 2029, 2030];
+    let html = '';
+    
+    jahre.forEach(jahr => {
+        html += `<td style="padding: 4px 8px; text-align: right; font-size: 10px; color: var(--gray);">
+                    <span id="${prefix}-${jahr}">0%</span>
+                 </td>`;
+    });
+    
+    html += `<td style="padding: 4px 8px; text-align: right; background: #f1f5f9;">
+                <span id="${prefix}-avg">0%</span>
+             </td>`;
+    
+    return html;
+}
+
+function generateProjectCostRow(type) {
+    const jahre = [2024, 2025, 2026, 2027, 2028, 2029, 2030];
+    let html = '';
+    
+    jahre.forEach(jahr => {
+        html += `<td style="padding: 6px; text-align: right; color: var(--danger);">
+                    <span id="${type}-${jahr}">0</span>
+                 </td>`;
+    });
+    
+    html += `<td style="padding: 6px; text-align: right; background: #f1f5f9; color: var(--danger);">
+                <span id="${type}-total">0</span>
+             </td>`;
+    
+    return html;
+}
+
+function getRevenueForYear(jahr) {
+    // Später aus Artikel-Tab holen
+    const defaultRevenues = {
+        2024: 0,
+        2025: 2900,
+        2026: 10800,
+        2027: 24200,
+        2028: 42300,
+        2029: 47000,
+        2030: 48800
+    };
+    return defaultRevenues[jahr] || 0;
+}
+
+function formatNumber(value, decimals = 0) {
+    if (!value || isNaN(value)) return '0';
+    return value.toFixed(decimals).replace('.', ',');
+}
+
+function updateWirtschaftlichkeit() {
+    // Platzhalter - wird später implementiert
+    console.log('Wirtschaftlichkeit wird berechnet...');
+}
+
+function updateViewLevel() {
+    const level = document.getElementById('view-level')?.value;
+    if (!level) return;
+    
+    // Alle Sections verstecken
+    const sections = [
+        '.db2-section',
+        '.db3-section', 
+        '.db4-section',
+        '.db5-section',
+        '.trading-section',
+        '.ebit-section'
+    ];
+    
+    sections.forEach(selector => {
+        document.querySelectorAll(selector).forEach(row => {
+            row.style.display = 'none';
+        });
+    });
+    
+    // Je nach Level die entsprechenden Zeilen zeigen
+    switch(level) {
+        case 'db2':
+            // Nur DB1 und DB2 zeigen
+            document.querySelectorAll('.db2-section').forEach(row => {
+                row.style.display = 'table-row';
+            });
+            break;
+            
+        case 'db5':
+            // Bis DB5 zeigen
+            document.querySelectorAll('.db2-section, .db3-section, .db4-section, .db5-section').forEach(row => {
+                row.style.display = 'table-row';
+            });
+            break;
+            
+        case 'ebit':
+            // Bis EBIT zeigen (ohne alle Details)
+            document.querySelectorAll('.db2-section, .db3-section').forEach(row => {
+                row.style.display = 'table-row';
+            });
+            document.querySelectorAll('.trading-section, .ebit-section').forEach(row => {
+                row.style.display = 'table-row';
+            });
+            break;
+            
+        case 'all':
+        default:
+            // Alles zeigen
+            sections.forEach(selector => {
+                document.querySelectorAll(selector).forEach(row => {
+                    row.style.display = 'table-row';
+                });
+            });
+            break;
+    }
 }
 
 function initializeAI() {
@@ -3405,35 +4810,6 @@ function initDB3KumuliertChart() {
             }
         }
     });
-}
-function switchDetailTab_OLD(tabName) {
-    // Remove active styles from all tabs
-    document.querySelectorAll('.detail-tab').forEach(tab => {
-        tab.style.color = 'var(--gray)';
-        tab.style.borderBottomColor = 'transparent';
-    });
-    
-    // Set active tab
-    event.target.style.color = 'var(--primary)';
-    event.target.style.borderBottomColor = 'var(--primary)';
-    
-    // Get content container
-    const contentDiv = document.getElementById('detail-tab-content');
-    if (!contentDiv) return;
-    
-    // Switch content based on tab
-    switch(tabName) {
-        case 'artikel':
-            contentDiv.innerHTML = getArtikelTabContent();
-            loadArtikelData();
-            break;
-        case 'projekte':
-            contentDiv.innerHTML = getProjekteTabContent();
-            break;
-        case 'wirtschaft':
-            contentDiv.innerHTML = getWirtschaftlichkeitTabContent();
-            break;
-    }
 }
 
 // Dashboard control functions
@@ -3914,10 +5290,7 @@ function switchArtikelDetailTab(tabName) {
             break;
             
         case 'projekte':
-            if (!cfoDashboard.artikelDetailTabs.projekte) {
-                cfoDashboard.artikelDetailTabs.projekte = getProjekteTabContent();
-            }
-            contentDiv.innerHTML = cfoDashboard.artikelDetailTabs.projekte;
+            contentDiv.innerHTML = getProjekteTabContent();
             break;
             
         case 'wirtschaft':
@@ -3925,15 +5298,39 @@ function switchArtikelDetailTab(tabName) {
                 cfoDashboard.artikelDetailTabs.wirtschaft = getWirtschaftlichkeitTabContent();
             }
             contentDiv.innerHTML = cfoDashboard.artikelDetailTabs.wirtschaft;
+            // Filter initial setzen
+            setTimeout(() => {
+                updateViewLevel();
+                updateWirtschaftlichkeit();
+            }, 50);
             break;
     }
+    
+    // State speichern bei Tab-Wechsel innerhalb Artikel
+    cfoDashboard.currentDetailTab = tabName;
+    saveNavigationState();
+
 }
 
-// Initialize everything when DOM is ready
+// Setze initiales Tab basierend auf gespeichertem State BEVOR Seite geladen wird
+(function() {
+    const savedState = localStorage.getItem('cfo-dashboard-state');
+    if (savedState) {
+        try {
+            const state = JSON.parse(savedState);
+            // Wir können hier noch nicht auf DOM zugreifen, aber CSS-Klassen vorbereiten
+            document.documentElement.setAttribute('data-initial-tab', state.mainTab || 'dashboard');
+        } catch(e) {}
+    }
+})();
+
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize charts and AI
+    // ERST Charts und AI initialisieren
     initializeCharts();
     initializeAI();
+
+    // Navigation SOFORT wiederherstellen - ohne Verzögerung!
+    restoreNavigationState();    
     
     // Set up periodic AI insights
     setInterval(() => {
@@ -4221,8 +5618,6 @@ window.berechneModelle = function() {
     // Tabellen-Header aktualisieren
     updateTabellenSpalten();
 
-    // NEU: KPIs nach Modell-Berechnung aktualisieren
-    berechneArtikelKPIs();
 }
 
 function berechneMengen(start, modell) {
@@ -4384,60 +5779,6 @@ function resetModelle() {
     };
     
     berechneModelle();
-}
-
-// KPI Berechnungsfunktion für Artikel-Details
-function berechneArtikelKPIs() {
-    const tableData = [];
-    
-    // Sammle Daten aus der Tabelle
-    for (let i = 1; i <= currentHorizont; i++) {
-        const mengeInput = document.getElementById(`menge-jahr-${i}`);
-        const preisInput = document.getElementById(`preis-jahr-${i}`);
-        const hkInput = document.getElementById(`hk-jahr-${i}`);
-        
-        if (mengeInput && preisInput && hkInput) {
-            const menge = parseFormattedNumber(mengeInput.value || '0');
-            const preis = parseFormattedNumber(preisInput.value || '0');
-            const hk = parseFormattedNumber(hkInput.value || '0');
-            
-            if (menge > 0 && preis > 0) {
-                tableData.push({
-                    menge: menge,
-                    preis: preis,
-                    hk: hk,
-                    umsatz: menge * preis,
-                    db2: menge * (preis - hk),
-                    marge: preis > 0 ? ((preis - hk) / preis * 100) : 0
-                });
-            }
-        }
-    }
-    
-    // Berechne KPIs
-    const totalRevenue = tableData.reduce((sum, year) => sum + year.umsatz, 0);
-    const avgMarge = tableData.length > 0 ? 
-        tableData.reduce((sum, year) => sum + year.marge, 0) / tableData.length : 0;
-    const peakAbsatz = tableData.length > 0 ? 
-        Math.max(...tableData.map(year => year.menge)) : 0;
-    
-    // Update die Anzeige in der unteren KPI-Leiste
-    const revenueElem = document.querySelector('div[style*="font-size: 24px"][style*="color: var(--primary)"]');
-    if (revenueElem && revenueElem.parentElement.textContent.includes('TOTAL REVENUE')) {
-        revenueElem.textContent = formatRevenue(totalRevenue);
-    }
-    
-    const margeElem = document.querySelector('div[style*="font-size: 24px"][style*="color: var(--success)"]');
-    if (margeElem && margeElem.parentElement.textContent.includes('DB2-MARGE')) {
-        margeElem.textContent = avgMarge.toFixed(1) + '%';
-    }
-    
-    const peakElem = document.querySelector('div[style*="font-size: 24px"][style*="color: var(--warning)"]');
-    if (peakElem && peakElem.parentElement.textContent.includes('PEAK ABSATZ')) {
-        peakElem.textContent = formatThousands(peakAbsatz);
-    }
-    
-    return { totalRevenue, avgMarge, peakAbsatz };
 }
 
 // Initial beim Laden - KORREKTUR
