@@ -5659,6 +5659,44 @@ function addNewProjekt() {
                     <textarea id="new-projekt-beschreibung" placeholder="Kurze Projektbeschreibung..." 
                               style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; min-height: 80px; resize: vertical;"></textarea>
                 </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text);">
+                        Business Unit / Division <span style="color: var(--danger);">*</span>
+                    </label>
+                    <select id="new-projekt-division" 
+                            style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;">
+                        <option value="">-- Bitte wählen --</option>
+                        <option value="automation">Automation & Robotics</option>
+                        <option value="digitalization">Digitalization</option>
+                        <option value="cybersecurity">Cyber Security</option>
+                        <option value="consulting">Consulting Services</option>
+                        <option value="r&d">Research & Development</option>
+                        <option value="other">Andere</option>
+                    </select>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text);">
+                        Projekt-Status <span style="color: var(--danger);">*</span>
+                    </label>
+                    <select id="new-projekt-status" 
+                            style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;">
+                        <option value="konzept">Konzeptphase</option>
+                        <option value="genehmigt">Genehmigt</option>
+                        <option value="aktiv" selected>In Umsetzung</option>
+                        <option value="on-hold">On Hold</option>
+                        <option value="abgeschlossen">Abgeschlossen</option>
+                    </select>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text);">
+                        Projektleiter / Owner <span style="color: var(--danger);">*</span>
+                    </label>
+                    <input type="text" id="new-projekt-owner" placeholder="z.B. Max Mustermann" 
+                           style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;">
+                </div>
                 
                 <div style="margin-bottom: 20px;">
                     <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text);">
@@ -5696,9 +5734,12 @@ function closeNewProjektModal() {
 function saveNewProjekt() {
     const name = document.getElementById('new-projekt-name').value.trim();
     const beschreibung = document.getElementById('new-projekt-beschreibung').value.trim();
+    const division = document.getElementById('new-projekt-division').value;
+    const status = document.getElementById('new-projekt-status').value;
+    const owner = document.getElementById('new-projekt-owner').value.trim();
     const startDatum = document.getElementById('new-projekt-start').value;
     
-    if (!name || !startDatum) {
+    if (!name || !division || !owner || !startDatum) {
         alert('Bitte alle Pflichtfelder ausfüllen!');
         return;
     }
@@ -5711,8 +5752,10 @@ function saveNewProjekt() {
         id: projektId,
         name: name,
         beschreibung: beschreibung || 'Keine Beschreibung',
-        artikel: [],  // Leer bei Erstellung
-        status: 'aktiv',
+        division: division,
+        status: status,
+        owner: owner,
+        artikel: [],
         startDatum: startDatum
     };
     
