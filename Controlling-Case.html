@@ -865,6 +865,19 @@
 .tab-content.active {
     display: block !important;
 }
+/* Initial Tab Setup */
+[data-initial-tab="assumptions"] #tab-assumptions {
+    display: block !important;
+}
+[data-initial-tab="assumptions"] #tab-dashboard {
+    display: none !important;
+}
+[data-initial-tab="analysis"] #tab-analysis {
+    display: block !important;
+}
+[data-initial-tab="analysis"] #tab-dashboard {
+    display: none !important;
+}
     </style>
 </head>
 <body>
@@ -905,7 +918,7 @@
                 
                 <!-- Tab Navigation -->
                 <div class="tab-navigation">
-                    <button class="tab-btn active" onclick="switchTab('dashboard')">
+                    <button class="tab-btn" onclick="switchTab('dashboard')">
                         📊 Dashboard
                     </button>
                     <button class="tab-btn" onclick="switchTab('assumptions')">
@@ -920,7 +933,7 @@
                 </div>
                 
                 <!-- Tab Content: Dashboard -->
-                <div class="tab-content active" id="tab-dashboard">
+                <div class="tab-content" id="tab-dashboard">
                     <!-- Quick Controls -->
                     <div class="quick-controls">
                         <div class="control-section">
@@ -5357,6 +5370,18 @@ function switchArtikelDetailTab(tabName) {
     saveNavigationState();
 
 }
+
+// Setze initiales Tab basierend auf gespeichertem State BEVOR Seite geladen wird
+(function() {
+    const savedState = localStorage.getItem('cfo-dashboard-state');
+    if (savedState) {
+        try {
+            const state = JSON.parse(savedState);
+            // Wir können hier noch nicht auf DOM zugreifen, aber CSS-Klassen vorbereiten
+            document.documentElement.setAttribute('data-initial-tab', state.mainTab || 'dashboard');
+        } catch(e) {}
+    }
+})();
 
 document.addEventListener('DOMContentLoaded', function() {
     // ERST Charts und AI initialisieren
