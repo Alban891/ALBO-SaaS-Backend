@@ -1557,20 +1557,8 @@ function openArtikelDetail(artikelName) {
     cfoDashboard.currentDetailTab = 'artikel';
     cfoDashboard.currentMainTab = 'assumptions';
 
-    // Debug - prüfen was gespeichert wird
-    console.log('VOR saveNavigationState:', {
-    artikel: cfoDashboard.currentArtikel,
-    view: cfoDashboard.currentView,
-    tab: cfoDashboard.currentDetailTab,
-    mainTab: cfoDashboard.currentMainTab
-    });
-
     // State speichern wenn Artikel geöffnet wird
     saveNavigationState();
-
-    // Nochmal prüfen
-    const saved = localStorage.getItem('cfo-dashboard-state');
-    console.log('NACH saveNavigationState:', saved);
     
     // Lade ersten Tab (falls switchArtikelDetailTab existiert)
     if (typeof switchArtikelDetailTab === 'function') {
@@ -1728,9 +1716,6 @@ function saveNavigationState() {
     }
     
     window.history.replaceState(state, null, hashUrl);
-    
-    // Debug
-    console.log('State gespeichert:', state, 'URL:', hashUrl);
 }
 // Neue Hilfsfunktion
 function getCurrentMainTab() {
