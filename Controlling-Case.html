@@ -5772,6 +5772,31 @@ function saveNewProjekt() {
         text: `"${name}" wurde zum Portfolio hinzugefügt. Sie können nun Artikel zu diesem Projekt hinzufügen.`,
         timestamp: 'Projekt erstellt'
     });
+
+        // Speichere in Supabase Datenbank
+    if (window.supabaseClient) {
+        const projektName = document.querySelector('[placeholder*="Projekt"]')?.value || 
+                           document.getElementById('project-name-input')?.value;
+        const beschreibung = document.querySelector('textarea')?.value || '';
+        
+        window.supabaseClient
+            .from('ALBO_Projects')
+            .insert([{
+                project_name: projektName,
+                description: beschreibung,
+                project_status: 'In Umsetzung',
+                company_name: 'Demo GmbH',
+                business_unit: 'Entwicklung'
+            }])
+            .select()
+            .then(({ data, error }) => {
+                if (error) {
+                    console.error('Datenbank-Fehler:', error);
+                } else {
+                    console.log('✅ Projekt in Datenbank gespeichert:', data);
+                }
+            });
+    }
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -6298,10 +6323,46 @@ async function testSupabaseConnection() {
     }
 }
 
-// Funktion zum Speichern eines Projekts (wird später mit Button verknüpft)
+// Funktion zum Speichern eines Projekts
 window.saveProjectToDatabase = async function() {
-    console.log('Speichere Projekt...');
-    // Hier später der Code zum Speichern
+    // Hole die Werte aus deinem Formular
+    // WICHTIG: Die IDs musst du an deine HTML anpassen!
+    const projektName = document.querySelector('[placeholder*="Projekt"]')?.value;
+    const beschreibung = document.querySelector('textarea[placeholder*="Beschreibung"]')?.value || '';
+    const businessUnit = document.querySelector('select')?.value || 'Entwicklung';
+    const status = 'In Umsetzung';
+    
+    if (!projektName) {
+        alert('Bitte Projektname eingeben!');
+        return;
+    }
+    
+    console.log('💾 Speichere Projekt:', projektName);
+    
+    const { data, error } = await window.supabaseClient
+        .from('ALBO_Projects')
+        .insert([{
+            project_name: projektName,
+            description: beschreibung,
+            business_unit: businessUnit,
+            project_status: status,
+            company_name: 'Demo GmbH'
+        }])
+        .select();
+    
+    if (error) {
+        console.error('❌ Fehler:', error);
+        alert('Fehler beim Speichern!');
+    } else {
+        console.log('✅ Projekt gespeichert:', data);
+        alert('✅ Projekt "' + projektName + '" wurde erfolgreich gespeichert!');
+        
+        // Optional: Formular schließen
+        // document.querySelector('.modal').style.display = 'none';
+        
+        // Optional: Seite neu laden um Projekt anzuzeigen
+        // location.reload();
+    }
 }
 </script>
 
