@@ -5637,7 +5637,98 @@ function backToProjektOverview() {
 }
 
 function addNewProjekt() {
-    alert('Neues Projekt anlegen - wird implementiert');
+    const modalHTML = `
+        <div id="new-projekt-modal" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); z-index: 9999; display: flex; align-items: center; justify-content: center;">
+            <div style="background: white; border-radius: 12px; padding: 30px; max-width: 500px; width: 90%; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);">
+                <h2 style="margin: 0 0 24px 0; color: var(--primary); font-size: 24px; font-weight: 600;">
+                    📁 Neues Projekt anlegen
+                </h2>
+                
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text);">
+                        Projekt-Name <span style="color: var(--danger);">*</span>
+                    </label>
+                    <input type="text" id="new-projekt-name" placeholder="z.B. IoT-Sensoren Entwicklung" 
+                           style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;">
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text);">
+                        Beschreibung
+                    </label>
+                    <textarea id="new-projekt-beschreibung" placeholder="Kurze Projektbeschreibung..." 
+                              style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; min-height: 80px; resize: vertical;"></textarea>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text);">
+                        Start-Datum <span style="color: var(--danger);">*</span>
+                    </label>
+                    <input type="month" id="new-projekt-start" value="2025-01"
+                           style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;">
+                </div>
+                
+                <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                    <button onclick="closeNewProjektModal()" 
+                            style="padding: 10px 20px; border: 1px solid var(--border); background: white; color: var(--gray); border-radius: 6px; cursor: pointer;">
+                        Abbrechen
+                    </button>
+                    <button onclick="saveNewProjekt()" 
+                            style="padding: 10px 20px; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500;">
+                        💾 Projekt anlegen
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    document.getElementById('new-projekt-name').focus();
+}
+
+function closeNewProjektModal() {
+    const modal = document.getElementById('new-projekt-modal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+function saveNewProjekt() {
+    const name = document.getElementById('new-projekt-name').value.trim();
+    const beschreibung = document.getElementById('new-projekt-beschreibung').value.trim();
+    const startDatum = document.getElementById('new-projekt-start').value;
+    
+    if (!name || !startDatum) {
+        alert('Bitte alle Pflichtfelder ausfüllen!');
+        return;
+    }
+    
+    // Generiere eindeutige ID
+    const projektId = 'projekt-' + Date.now();
+    
+    // Speichere neues Projekt
+    cfoDashboard.projektData[projektId] = {
+        id: projektId,
+        name: name,
+        beschreibung: beschreibung || 'Keine Beschreibung',
+        artikel: [],  // Leer bei Erstellung
+        status: 'aktiv',
+        startDatum: startDatum
+    };
+    
+    // Schließe Modal
+    closeNewProjektModal();
+    
+    // Render Views neu
+    renderProjektOverview();
+    
+    // KI-Feedback
+    cfoDashboard.aiController.addAIMessage({
+        level: 'success',
+        title: '✅ Projekt erfolgreich angelegt',
+        text: `"${name}" wurde zum Portfolio hinzugefügt. Sie können nun Artikel zu diesem Projekt hinzufügen.`,
+        timestamp: 'Projekt erstellt'
+    });
 }
 
 document.addEventListener('DOMContentLoaded', function() {
