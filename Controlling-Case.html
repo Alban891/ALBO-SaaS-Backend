@@ -1461,6 +1461,110 @@
     </div>
 
     <script>
+// ============================================
+// STATE MANAGEMENT & NAVIGATION PERSISTENCE
+// ============================================
+
+// Globale Variablen für Dashboard (falls noch nicht vorhanden)
+const cfoDashboard = {
+    currentView: 'dashboard',
+    currentArtikel: null,
+    currentDetailTab: null,
+    artikelDetailTabs: {}
+};
+
+// Speichere aktuellen Zustand
+function saveNavigationState() {
+    const state = {
+        view: cfoDashboard.currentView || 'dashboard',
+        artikel: cfoDashboard.currentArtikel,
+        tab: cfoDashboard.currentDetailTab || 'artikel',
+        timestamp: new Date().toISOString()
+    };
+    
+    localStorage.setItem('cfo-dashboard-state', JSON.stringify(state));
+    
+    if (state.view === 'detail' && state.artikel) {
+        window.history.replaceState(null, null, `#artikel/${state.artikel}/${state.tab}`);
+    } else {
+        window.history.replaceState(null, null, '#dashboard');
+    }
+}
+
+// Lade gespeicherten Zustand
+function restoreNavigationState() {
+    const hash = window.location.hash;
+    
+    if (hash.startsWith('#artikel/')) {
+        const parts = hash.split('/');
+        const artikelName = decodeURIComponent(parts[1] || '');
+        const tabName = parts[2] || 'artikel';
+        
+        if (artikelName) {
+            setTimeout(() => {
+                openArtikelDetail(artikelName);
+                if (tabName !== 'artikel') {
+                    setTimeout(() => {
+                        switchArtikelDetailTab(tabName);
+                    }, 100);
+                }
+            }, 200);
+        }
+    }
+}
+
+// Browser Zurück-Button Support
+window.addEventListener('popstate', function(event) {
+    restoreNavigationState();
+});
+
+// Funktion zum Öffnen der Artikel-Detailansicht
+function openArtikelDetail(artikelName) {
+    // Verstecke Artikel-Übersicht
+    document.getElementById('artikel-overview').style.display = 'none';
+    
+    // Zeige Detail-View
+    document.getElementById('artikel-detail-view').style.display = 'block';
+    
+    // Speichere aktuellen Artikel
+    cfoDashboard.currentArtikel = artikelName;
+    cfoDashboard.currentView = 'detail';
+    cfoDashboard.currentDetailTab = 'artikel';
+    
+    // Lade ersten Tab (falls switchArtikelDetailTab existiert)
+    if (typeof switchArtikelDetailTab === 'function') {
+        switchArtikelDetailTab('artikel');
+    }
+    
+    // State speichern
+    saveNavigationState();
+}
+
+// Am Ende der Datei, im DOMContentLoaded Event hinzufügen:
+document.addEventListener('DOMContentLoaded', function() {
+    // Ihre bestehende Initialisierung...
+    
+    // Navigation State wiederherstellen
+    restoreNavigationState();
+});
+
+// Zurück zur Artikel-Übersicht Funktion
+function backToArtikelOverview() {
+    // Verstecke Detail-View
+    document.getElementById('artikel-detail-view').style.display = 'none';
+    
+    // Zeige Artikel-Übersicht wieder
+    document.getElementById('artikel-overview').style.display = 'block';
+    
+    // State zurücksetzen
+    cfoDashboard.currentView = 'overview';
+    cfoDashboard.currentArtikel = null;
+    cfoDashboard.currentDetailTab = null;
+    
+    // State speichern (URL zurücksetzen)
+    saveNavigationState();
+}
+
 // Enhanced Global dashboard data with KI intelligence
 let cfoDashboard = {
     currentArtikel: null,
@@ -1560,6 +1664,61 @@ let cfoDashboard = {
         }
     }
 };
+
+// ============================================
+// STATE MANAGEMENT & NAVIGATION PERSISTENCE
+// ============================================
+
+// Speichere aktuellen Zustand in URL und localStorage
+function saveNavigationState() {
+    const state = {
+        view: cfoDashboard.currentView || 'dashboard',
+        artikel: cfoDashboard.currentArtikel,
+        tab: cfoDashboard.currentDetailTab || 'artikel',
+        timestamp: new Date().toISOString()
+    };
+    
+    // In localStorage speichern
+    localStorage.setItem('cfo-dashboard-state', JSON.stringify(state));
+    
+    // URL-Hash aktualisieren (ohne Seiten-Reload)
+    if (state.view === 'detail' && state.artikel) {
+        window.history.replaceState(null, null, `#artikel/${state.artikel}/${state.tab}`);
+    } else {
+        window.history.replaceState(null, null, '#dashboard');
+    }
+}
+
+// Lade gespeicherten Zustand beim Seitenaufruf
+function restoreNavigationState() {
+    // Prüfe URL-Hash zuerst
+    const hash = window.location.hash;
+    
+    if (hash.startsWith('#artikel/')) {
+        // Parse: #artikel/[artikelName]/[tabName]
+        const parts = hash.split('/');
+        const artikelName = decodeURIComponent(parts[1] || '');
+        const tabName = parts[2] || 'artikel';
+        
+        if (artikelName) {
+            // Direkt zur Artikel-Detailansicht springen
+            setTimeout(() => {
+                openArtikelDetail(artikelName);
+                setTimeout(() => {
+                    if (tabName !== 'artikel') {
+                        switchArtikelDetailTab(tabName);
+                    }
+                }, 100);
+            }, 200);
+            return;
+        }
+    }
+}
+
+// Browser Zurück-Button Support
+window.addEventListener('popstate', function(event) {
+    restoreNavigationState();
+});
 
 // NEUE FUNKTION: View Switching für Artikel
 function switchArtikelView(viewType) {
@@ -2941,6 +3100,7 @@ function getArtikelTabContent() {
         </div>
     `;
 }
+
 
 // ============================================
 // PROJEKT-KOSTEN KI-REGEL ENGINE (ERWEITERT)
@@ -5099,6 +5259,8 @@ function switchArtikelDetailTab(tabName) {
 
 // Initialize everything when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
+    // Navigation State wiederherstellen
+    restoreNavigationState();
     // Initialize charts and AI
     initializeCharts();
     initializeAI();
