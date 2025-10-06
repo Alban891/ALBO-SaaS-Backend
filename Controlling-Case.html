@@ -5859,7 +5859,38 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeCharts();
     initializeAI();
     
-    // PROJEKT-ÜBERSICHT rendern und anzeigen
+    // DANN Projekte aus Datenbank laden
+    if (window.supabaseClient) {
+        try {
+            console.log('Lade Projekte aus Datenbank...');
+            const { data, error } = await window.supabaseClient
+                .from('ALBO_Projects')
+                .select('*');
+            
+            if (!error && data) {
+                console.log('Geladene Projekte:', data);
+                
+                // Füge jedes Projekt aus der DB hinzu
+                data.forEach(dbProjekt => {
+                    const projektId = 'projekt-' + dbProjekt.id.substring(0, 8);
+                    cfoDashboard.projektData[projektId] = {
+                        id: projektId,
+                        name: dbProjekt.project_name,
+                        beschreibung: dbProjekt.description || '',
+                        division: dbProjekt.business_unit,
+                        status: dbProjekt.project_status,
+                        owner: dbProjekt.project_owner,
+                        artikel: [],
+                        startDatum: dbProjekt.start_date
+                    };
+                });
+            }
+        } catch (err) {
+            console.error('Fehler beim Laden der Projekte:', err);
+        }
+    }
+
+    // Jetzt ERST rendern mit allen Projekten
     renderProjektOverview();
     
     // Initial: Projekt-Übersicht zeigen, Artikel-Übersicht verstecken
