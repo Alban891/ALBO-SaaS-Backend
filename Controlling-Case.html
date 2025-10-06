@@ -5734,20 +5734,32 @@ function closeNewProjektModal() {
 function saveNewProjekt() {
     const name = document.getElementById('new-projekt-name').value.trim();
     const beschreibung = document.getElementById('new-projekt-beschreibung').value.trim();
-    const division = document.getElementById('new-projekt-division').value;
-    const status = document.getElementById('new-projekt-status').value;
-    const owner = document.getElementById('new-projekt-owner').value.trim();
-    const startDatum = document.getElementById('new-projekt-start').value;
     
-    if (!name || !division || !owner || !startDatum) {
-        alert('Bitte alle Pflichtfelder ausfüllen!');
+    // ACHTUNG: Prüfe welche ID das Business Unit Feld wirklich hat!
+    // Möglicherweise heißt es 'new-projekt-unit' oder 'new-projekt-business-unit'
+    let division = '';
+    try {
+        division = document.getElementById('new-projekt-division')?.value || 
+                   document.getElementById('new-projekt-unit')?.value || 
+                   document.querySelector('select')?.value || 
+                   'Entwicklung';
+    } catch(e) {
+        division = 'Entwicklung'; // Fallback Wert
+    }
+    
+    const status = document.getElementById('new-projekt-status')?.value || 'In Umsetzung';
+    const owner = document.getElementById('new-projekt-owner')?.value.trim() || 'Nicht zugewiesen';
+    const startDatum = document.getElementById('new-projekt-start')?.value || null;
+    
+    if (!name) {
+        alert('Bitte Projektname eingeben!');
         return;
     }
     
     // Generiere eindeutige ID
     const projektId = 'projekt-' + Date.now();
     
-    // Speichere neues Projekt
+    // Speichere neues Projekt lokal
     cfoDashboard.projektData[projektId] = {
         id: projektId,
         name: name,
@@ -5758,20 +5770,22 @@ function saveNewProjekt() {
         artikel: [],
         startDatum: startDatum
     };
-
-    // HIER: Speichere AUCH in Supabase mit den BEREITS geholten Variablen
+    
+    // Speichere in Supabase
     if (window.supabaseClient) {
-        console.log('Speichere in Supabase:', name);
+        console.log('Speichere in Supabase:', {
+            name, beschreibung, division, status, owner, startDatum
+        });
         
         window.supabaseClient
             .from('ALBO_Projects')
             .insert([{
-                project_name: name,  // Verwende die Variable von oben!
-                description: beschreibung || '',  // Verwende die Variable von oben!
-                business_unit: division,  // Verwende die Variable von oben!
-                project_status: status,  // Verwende die Variable von oben!
-                project_owner: owner,  // Verwende die Variable von oben!
-                start_date: startDatum ? startDatum : null  // Verwende die Variable von oben!
+                project_name: name,
+                description: beschreibung || '',
+                business_unit: division,
+                project_status: status,
+                project_owner: owner,
+                start_date: startDatum || null
             }])
             .select()
             .then(({ data, error }) => {
