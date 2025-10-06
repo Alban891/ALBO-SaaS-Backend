@@ -925,6 +925,21 @@
 .status-badge[data-status="abgeschlossen"] { background: #f1f5f9; color: #64748b; }
 .status-badge[data-status="kritisch"] { background: #fee2e2; color: #dc2626; }
 
+/* Verhindere Flash beim initialen Laden */
+.tab-content {
+    opacity: 0;
+    transition: opacity 0.15s ease-in;
+}
+
+.tab-content.active {
+    opacity: 1;
+}
+
+/* Initial: Nichts anzeigen bis JavaScript den Tab setzt */
+body:not(.js-loaded) .tab-content {
+    display: none !important;
+}
+
 /* ==========================================
    Einheitliche Tabellenbuttons
    ========================================== */
@@ -1026,7 +1041,7 @@
                 
                 <!-- Tab Navigation -->
                 <div class="tab-navigation">
-                    <button class="tab-btn active" onclick="switchTab('dashboard')">
+                    <button class="tab-btn" onclick="switchTab('dashboard')">
                         📊 Dashboard
                     </button>
                     <button class="tab-btn" onclick="switchTab('assumptions')">
@@ -1041,7 +1056,7 @@
                 </div>
                 
                 <!-- Tab Content: Dashboard -->
-                <div class="tab-content active" id="tab-dashboard">
+                <div class="tab-content" id="tab-dashboard">
                     <!-- Quick Controls -->
                     <div class="quick-controls">
                         <div class="control-section">
