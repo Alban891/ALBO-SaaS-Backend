@@ -5803,6 +5803,57 @@ function saveNewProjekt() {
     });
 }
 
+// Funktion zum Laden der Projekte aus der Datenbank
+async function loadProjectsFromDatabase() {
+    if (!window.supabaseClient) return;
+    
+    try {
+        const { data, error } = await window.supabaseClient
+            .from('ALBO_Projects')
+            .select('*')
+            .order('created_at', { ascending: false });
+        
+        if (error) {
+            console.error('Fehler beim Laden:', error);
+            return;
+        }
+        
+        console.log('📥 Geladene Projekte aus Datenbank:', data);
+        
+        // Füge die Projekte zu cfoDashboard.projektData hinzu
+        data.forEach(dbProjekt => {
+            const projektId = 'projekt-db-' + dbProjekt.id;
+            
+            // Nur hinzufügen wenn nicht schon vorhanden
+            if (!cfoDashboard.projektData[projektId]) {
+                cfoDashboard.projektData[projektId] = {
+                    id: projektId,
+                    name: dbProjekt.project_name,
+                    beschreibung: dbProjekt.description || '',
+                    division: dbProjekt.business_unit,
+                    status: dbProjekt.project_status,
+                    owner: dbProjekt.project_owner,
+                    artikel: [],
+                    startDatum: dbProjekt.start_date
+                };
+            }
+        });
+        
+        // Aktualisiere die Anzeige
+        if (typeof renderProjektOverview === 'function') {
+            renderProjektOverview();
+        }
+        
+    } catch (err) {
+        console.error('Fehler:', err);
+    }
+}
+
+// Lade Projekte beim Start (warte bis alles bereit ist)
+setTimeout(() => {
+    loadProjectsFromDatabase();
+}, 2000);
+
 document.addEventListener('DOMContentLoaded', function() {
     // ERST Charts und AI initialisieren
     initializeCharts();
