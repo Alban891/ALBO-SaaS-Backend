@@ -1245,7 +1245,7 @@
                     <div class="assumptions-container">
                         
     <!-- PROJEKT PORTFOLIO OVERVIEW (NEUE HAUPTEBENE) -->
-    <div class="assumptions-section" id="projekt-overview">
+    <div class="assumptions-section" id="projekt-overview" style="display: block;"></div>
     
     <!-- QUICK STATS PANEL - HORVATH STYLE -->
     <div style="background: white; padding: 12px 20px; border-radius: 8px; margin-bottom: 16px; border-left: 4px solid var(--primary); box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
@@ -1413,7 +1413,7 @@
                         </div>
 
                         <!-- Artikel Portfolio Overview (Hauptebene) -->
-                        <div class="assumptions-section" id="artikel-overview">
+                        <div class="assumptions-section" id="artikel-overview" style="display: none;">
                             <!-- Header mit View Switcher -->
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                                 <div class="section-title" style="margin: 0; padding: 0; border: none;">
@@ -5719,15 +5719,23 @@ function switchProjektView(viewType) {
 }
 
 function openProjektArtikel(projektId) {
+    console.log('📂 Öffne Projekt:', projektId);
+    
     cfoDashboard.currentProjekt = projektId;
     
-    // Verstecke Projekt-Übersicht
-    document.getElementById('projekt-overview').style.display = 'none';
+    // 1. Verstecke Projekt-Übersicht
+    const projektOverview = document.getElementById('projekt-overview');
+    if (projektOverview) {
+        projektOverview.style.display = 'none';
+    }
     
-    // Zeige Artikel-Übersicht
-    document.getElementById('artikel-overview').style.display = 'block';
+    // 2. Zeige Artikel-Übersicht
+    const artikelOverview = document.getElementById('artikel-overview');
+    if (artikelOverview) {
+        artikelOverview.style.display = 'block';
+    }
     
-    // Filtere Artikel nach Projekt und rendere
+    // 3. Filtere und rendere Artikel für dieses Projekt
     filterArtikelByProjekt(projektId);
 }
 
@@ -5760,13 +5768,21 @@ function filterArtikelByProjekt(projektId) {
 }
 
 function backToProjektOverview() {
+    console.log('🔙 Zurück zur Projekt-Übersicht');
+    
     cfoDashboard.currentProjekt = null;
     
-    // Verstecke Artikel-Übersicht
-    document.getElementById('artikel-overview').style.display = 'none';
+    // 1. Verstecke Artikel-Übersicht
+    const artikelOverview = document.getElementById('artikel-overview');
+    if (artikelOverview) {
+        artikelOverview.style.display = 'none';
+    }
     
-    // Zeige Projekt-Übersicht
-    document.getElementById('projekt-overview').style.display = 'block';
+    // 2. Zeige Projekt-Übersicht
+    const projektOverview = document.getElementById('projekt-overview');
+    if (projektOverview) {
+        projektOverview.style.display = 'block';
+    }
     
     // KI-Feedback
     cfoDashboard.aiController.addAIMessage({
@@ -6484,81 +6500,94 @@ function closeBulkDeleteModal() {
 }
 
 document.addEventListener('DOMContentLoaded', async function() {
+    console.log('🚀 Dashboard wird initialisiert...');
+    
+    // Charts und AI initialisieren
     initializeCharts();
     initializeAI();
 
-    // 🧩 View-Zustände beim Start festlegen
+    // ✅ WICHTIG: Initial-Zustand SOFORT setzen (verhindert Flackern)
     const projektOverview = document.getElementById('projekt-overview');
     const artikelOverview = document.getElementById('artikel-overview');
-
-    if (projektOverview) projektOverview.style.display = 'block';
-    if (artikelOverview) artikelOverview.style.display = 'none';
-
-    console.log('Initial View gesetzt: Projekte sichtbar, Artikel versteckt.');
     
-  if (window.supabaseClient) {
-    try {
-        // 🔄 Ladeanzeige anzeigen, bevor Supabase-Daten geholt werden
-        const loadingDiv = document.getElementById('projekt-loading-indicator');
-        const tbody = document.getElementById('projekt-list-tbody');
-        if (loadingDiv && tbody) {
-            tbody.innerHTML = ''; // falls alte Daten drin sind
-            tbody.style.display = 'none';
-            loadingDiv.style.display = 'block';
-        }
-
-        console.log('Lade Projekte aus Datenbank...');
-        const { data, error } = await window.supabaseClient
-            .from('ALBO_Projects')
-            .select('*');
-
-        if (error) throw error;
-
-        if (data && data.length > 0) {
-            console.log('Geladene Projekte:', data);
-
-            data.forEach(dbProjekt => {
-                const projektId = 'projekt-db-' + dbProjekt.id;
-                cfoDashboard.projektData[projektId] = {
-                    id: projektId,
-                    name: dbProjekt.project_name,
-                    beschreibung: dbProjekt.description || '',
-                    division: dbProjekt.business_unit || '-',
-                    status: dbProjekt.project_status || 'aktiv',
-                    owner: dbProjekt.project_owner || '-',
-                    artikel: [],
-                    startDatum: dbProjekt.start_date,
-                    endDatum: dbProjekt.end_date
-                };
-            });
-
-            console.log('✅ Projekte geladen:', Object.keys(cfoDashboard.projektData));
-        } else {
-            console.warn('⚠️ Keine Projekte gefunden – möglicherweise leere Tabelle.');
-        }
-
-    } catch (err) {
-        console.error('❌ Fehler beim Laden:', err);
-    } finally {
-        // ✅ Ladeanzeige **immer** ausblenden, auch bei Fehlern
-        const loadingDiv = document.getElementById('projekt-loading-indicator');
-        const tbody = document.getElementById('projekt-list-tbody');
-        if (loadingDiv && tbody) {
-            loadingDiv.style.display = 'none';
-            tbody.style.display = '';
-        }
+    if (projektOverview) {
+        projektOverview.style.display = 'block';
+        console.log('✅ Projekt-Übersicht aktiviert');
     }
-}
-    
-    // Render nach dem Laden
+    if (artikelOverview) {
+        artikelOverview.style.display = 'none';
+        console.log('✅ Artikel-Übersicht versteckt');
+    }
+
+    // Loading-Indicator vorbereiten
+    const loadingDiv = document.getElementById('projekt-loading-indicator');
+    const tbody = document.getElementById('projekt-list-tbody');
+
+    if (loadingDiv && tbody) {
+        tbody.innerHTML = ''; // Leere alte Daten
+        tbody.style.display = 'none';
+        loadingDiv.style.display = 'flex';
+        loadingDiv.style.opacity = '1';
+    }
+
+    // ⏳ Projekte aus Supabase laden
+    if (window.supabaseClient) {
+        console.log('🔄 Lade Projekte aus Datenbank...');
+        try {
+            const { data, error } = await window.supabaseClient
+                .from('ALBO_Projects')
+                .select('*');
+
+            if (error) throw error;
+
+            if (data && data.length > 0) {
+                console.log(`✅ ${data.length} Projekte geladen`);
+                
+                data.forEach(p => {
+                    const id = 'projekt-db-' + p.id;
+                    cfoDashboard.projektData[id] = {
+                        id,
+                        name: p.project_name,
+                        beschreibung: p.description || '',
+                        division: p.business_unit || '-',
+                        status: p.project_status || 'aktiv',
+                        owner: p.project_owner || '-',
+                        artikel: [], // LEER - keine Artikel beim Laden
+                        startDatum: p.start_date,
+                        endDatum: p.end_date,
+                        isDemo: false
+                    };
+                });
+            } else {
+                console.log('ℹ️ Keine Projekte in Datenbank');
+            }
+
+        } catch (err) {
+            console.error('❌ Fehler beim Laden:', err);
+        }
+    } else {
+        console.warn('⚠️ Supabase nicht verfügbar');
+    }
+
+    // 🎨 Render nach kurzer Verzögerung
     setTimeout(() => {
-        renderProjektOverview();
-    }, 200);
-    
-    // AUSKOMMENTIEREN:
-    restoreNavigationState();
-    
-    // AI Insights
+        if (loadingDiv) {
+            loadingDiv.style.opacity = '0';
+            setTimeout(() => loadingDiv.style.display = 'none', 300);
+        }
+        if (tbody) tbody.style.display = '';
+        
+        // NUR Projekt-Übersicht rendern
+        renderProjektList();
+        updateProjektStats();
+        
+        console.log('✅ Dashboard bereit');
+    }, 800);
+
+    // ❌ NICHT automatisch Navigation State wiederherstellen
+    // restoreNavigationState(); // <-- AUSKOMMENTIERT
+
+    // AI Insights (optional)
     setInterval(() => {
         const insights = [
             { title: '📊 Markt-Insight', text: 'DB2-Marge liegt über Industrie-Benchmark.', level: 'success' },
@@ -6572,6 +6601,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     }, 45000);
 });
+
 // KI-Validierungs-Funktionen für flexible Eingaben
 function handleCategoryChange(select) {
     const andereInput = document.getElementById('kategorie-andere');
