@@ -133,6 +133,9 @@
             0%, 100% { opacity: 1; }
             50% { opacity: 0.5; }
         }
+        .loading-row {
+        animation: loadingPulse 1.5s infinite ease-in-out;
+        }
         
         .ai-metrics-panel {
             background: var(--white);
@@ -896,6 +899,93 @@
 [data-initial-tab="analysis"] #tab-dashboard {
     display: none !important;
 }
+/* Einheitliche Tabellenformatierung */
+#projekt-list-tbody tr {
+  display: table-row;
+  vertical-align: middle;
+}
+
+#projekt-list-tbody td {
+  vertical-align: middle;
+}
+
+/* Saubere Status-Badges */
+.status-badge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+.status-badge[data-status="aktiv"] { background: #dcfce7; color: #059669; }
+.status-badge[data-status="on-hold"] { background: #fef3c7; color: #d97706; }
+.status-badge[data-status="abgeschlossen"] { background: #f1f5f9; color: #64748b; }
+.status-badge[data-status="kritisch"] { background: #fee2e2; color: #dc2626; }
+
+/* ==========================================
+   Einheitliche Tabellenbuttons
+   ========================================== */
+.table-btn {
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 15px;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: white;
+  transition: all 0.2s ease;
+  margin: 0 2px;
+}
+
+/* Ansicht-Button */
+.table-btn.view {
+  color: var(--primary, #2563eb);
+}
+.table-btn.view:hover {
+  background: #eff6ff;
+  border-color: #2563eb;
+}
+
+/* Lösch-Button */
+.table-btn.delete {
+  color: var(--danger, #dc2626);
+  border-color: #dc2626;
+}
+.table-btn.delete:hover {
+  background: #fee2e2;
+}
+
+/* =====================================================
+   Tabellenlayout für Projektliste (stabil & responsive)
+   ===================================================== */
+#projekt-list-tbody td {
+  vertical-align: middle;
+  border-bottom: 1px solid #f1f5f9;
+  white-space: nowrap;
+}
+
+#projekt-list-tbody tr:hover {
+  background: #f8fafc;
+}
+
+/* Einheitliche Spaltenbreiten */
+#projekt-list-tbody td:nth-child(1) { width: 40px; text-align: center; }
+#projekt-list-tbody td:nth-child(2) { width: 22%; }
+#projekt-list-tbody td:nth-child(3) { width: 15%; }
+#projekt-list-tbody td:nth-child(4) { width: 15%; }
+#projekt-list-tbody td:nth-child(5),
+#projekt-list-tbody td:nth-child(6) { width: 10%; text-align: center; }
+#projekt-list-tbody td:nth-child(7) { width: 10%; text-align: center; }
+#projekt-list-tbody td:nth-child(8) { width: 12%; text-align: center; }
+
+/* Buttons schön bündig */
+#projekt-list-tbody .table-btn {
+  padding: 4px 6px;
+  font-size: 14px;
+}
+
     </style>
 </head>
 <body>
@@ -1291,6 +1381,13 @@
                                     <tbody id="projekt-list-tbody">
                                         <!-- Wird dynamisch gefüllt -->
                                     </tbody>
+
+                                    <!-- Ladeanzeige -->
+                                    <div id="projekt-loading-indicator" 
+                                        style="display:none; text-align:center; padding:40px; color:var(--gray); font-size:14px;">
+                                    <div style="font-size:40px; margin-bottom:10px;">⏳</div>
+                                    Projekte werden geladen...
+                                </div>
                                 </table>
                             </div>
                             
@@ -5365,19 +5462,54 @@ function formatDateSafe(dateString) {
     }
 }
 
-function renderProjektList() {
+async function renderProjektList() {
     const tbody = document.getElementById('projekt-list-tbody');
     if (!tbody) {
         console.error('FEHLER: projekt-list-tbody nicht gefunden!');
         return;
     }
-    
-    tbody.innerHTML = '';
-    
-    const projekte = Object.values(cfoDashboard.projektData);
-    console.log('Anzahl Projekte:', projekte.length);
-    
-    // Empty State
+
+    // 🔄 Ladezustand anzeigen
+    tbody.innerHTML = `
+        <tr class="loading-row">
+            <td colspan="8" style="text-align:center; padding:24px; color:var(--gray); font-size:14px;">
+                🔄 Projekte werden geladen...
+            </td>
+        </tr>
+    `;
+
+    // 🧠 Hole Projekte aus Cache oder DB
+    let projekte = Object.values(cfoDashboard.projektData || {});
+
+    if (projekte.length === 0 && window.supabaseClient) {
+        try {
+            const { data, error } = await window.supabaseClient
+                .from('ALBO_Projects')
+                .select('*');
+
+            if (error) throw error;
+
+            data.forEach(p => {
+                const id = 'projekt-db-' + p.id;
+                cfoDashboard.projektData[id] = {
+                    id,
+                    name: p.project_name,
+                    beschreibung: p.description || '',
+                    division: p.business_unit || '-',
+                    status: p.project_status || 'aktiv',
+                    owner: p.project_owner || '-',
+                    startDatum: p.start_date,
+                    endDatum: p.end_date
+                };
+            });
+
+            projekte = Object.values(cfoDashboard.projektData);
+        } catch (err) {
+            console.error('Fehler beim Laden der Projekte:', err);
+        }
+    }
+
+    // ⚠️ Keine Projekte vorhanden?
     if (projekte.length === 0) {
         tbody.innerHTML = `
             <tr>
@@ -5394,99 +5526,66 @@ function renderProjektList() {
                 </td>
             </tr>
         `;
-        updateProjektStats();
+        updateProjektStats?.();
         return;
     }
-    
-    // Rendere jedes Projekt
+
+    // 🧩 Wenn Projekte vorhanden sind → Tabelle rendern
+    tbody.innerHTML = ''; // Jetzt erst leeren, um Flackern zu vermeiden
+
     projekte.forEach(projekt => {
         try {
-            // Datum formatieren
-            let startDate = '-';
-            let endDate = '-';
-            
-            try {
-                const startValue = projekt.startDatum || projekt.start_date || projekt.startDate;
-                const endValue = projekt.endDatum || projekt.end_date || projekt.endDate;
-                
-                if (startValue) startDate = formatDateSafe(startValue);
-                if (endValue) endDate = formatDateSafe(endValue);
-            } catch(e) {
-                console.error('Datum-Fehler:', e);
-            }
-            
-            // Status-Farben
+            // 📅 Datumsfelder formatieren
+            const startDate = formatDateSafe(projekt.startDatum || projekt.start_date);
+            const endDate = formatDateSafe(projekt.endDatum || projekt.end_date);
+
             const statusKey = (projekt.status || 'aktiv').toLowerCase().replace(/\s/g, '-');
-            const statusColors = {
-                'aktiv': { bg: '#dcfce7', text: '#059669' },
-                'on-hold': { bg: '#fef3c7', text: '#d97706' },
-                'konzept': { bg: '#dbeafe', text: '#0284c7' },
-                'kritisch': { bg: '#fee2e2', text: '#dc2626' },
-                'abgeschlossen': { bg: '#f1f5f9', text: '#64748b' }
-            };
-            const statusColor = statusColors[statusKey] || statusColors['aktiv'];
-            
-            // Erstelle die komplette Zeile als String
-            const rowHTML = `
-                <tr class="projekt-row" data-projekt-id="${projekt.id}" 
-                    style="cursor: pointer; transition: background 0.2s; border-bottom: 1px solid #f1f5f9;"
-                    onmouseover="this.style.background='#f8fafc'" 
-                    onmouseout="this.style.background='transparent'">
-                    <td style="padding: 12px; text-align: center;" onclick="event.stopPropagation();">
-                        <input type="checkbox" class="projekt-checkbox" value="${projekt.id}" 
-                               onchange="updateBulkActions()" style="cursor: pointer;">
-                    </td>
-                    <td style="padding: 12px; font-weight: 500; color: var(--text); font-size: 13px;" 
-                        onclick="openProjektArtikel('${projekt.id}')">
-                        📁 ${projekt.name || 'Unbenannt'}
-                    </td>
-                    <td style="padding: 12px; font-size: 12px; color: var(--gray);">
-                        ${projekt.division || projekt.businessUnit || projekt.business_unit || '-'}
-                    </td>
-                    <td style="padding: 12px; font-size: 12px; color: var(--text);">
-                        ${projekt.owner || projekt.project_owner || '-'}
-                    </td>
-                    <td style="padding: 12px; text-align: center; font-size: 12px; color: var(--gray);">
-                        ${startDate}
-                    </td>
-                    <td style="padding: 12px; text-align: center; font-size: 12px; color: var(--gray);">
-                        ${endDate}
-                    </td>
-                    <td style="padding: 12px; text-align: center;">
-                        <span style="padding: 4px 10px; background: ${statusColor.bg}; color: ${statusColor.text}; 
-                              border-radius: 12px; font-size: 11px; font-weight: 500; display: inline-flex; 
-                              align-items: center; gap: 4px;">
-                            <span style="font-size: 8px;">●</span>
-                            ${projekt.status || 'Aktiv'}
-                        </span>
-                    </td>
-                    <td style="padding: 12px; text-align: center;" onclick="event.stopPropagation();">
-                        <button onclick="openProjektArtikel('${projekt.id}')" 
-                                style="padding: 4px 8px; border: 1px solid var(--border); background: white; 
-                                       border-radius: 4px; font-size: 16px; cursor: pointer; margin-right: 4px;"
-                                title="Projekt anzeigen">
-                            👁️
-                        </button>
-                        <button onclick="deleteProjekt('${projekt.id}')" 
-                                style="padding: 4px 8px; border: 1px solid var(--danger); background: white; 
-                                       color: var(--danger); border-radius: 4px; font-size: 16px; cursor: pointer;"
-                                title="Projekt löschen">
-                            🗑️
-                        </button>
-                    </td>
-                </tr>
+
+            const row = document.createElement('tr');
+            row.classList.add('projekt-row');
+            row.dataset.projektId = projekt.id;
+
+            row.innerHTML = `
+                <td style="padding:12px;text-align:center;">
+                    <input type="checkbox" class="projekt-checkbox" value="${projekt.id}"
+                           onchange="updateBulkActions()" style="cursor:pointer;">
+                </td>
+                <td style="padding:12px;font-weight:500;color:var(--text);font-size:13px;white-space:nowrap;"
+                    onclick="openProjektArtikel('${projekt.id}')">
+                    📁 ${projekt.name || 'Unbenannt'}
+                </td>
+                <td style="padding:12px;font-size:12px;color:var(--gray);white-space:nowrap;">
+                    ${projekt.division || '-'}
+                </td>
+                <td style="padding:12px;font-size:12px;color:var(--text);white-space:nowrap;">
+                    ${projekt.owner || '-'}
+                </td>
+                <td style="padding:12px;text-align:center;font-size:12px;color:var(--gray);white-space:nowrap;">
+                    ${startDate}
+                </td>
+                <td style="padding:12px;text-align:center;font-size:12px;color:var(--gray);white-space:nowrap;">
+                    ${endDate}
+                </td>
+                <td style="padding:12px;text-align:center;">
+                    <span class="status-badge" data-status="${statusKey}">
+                        ${projekt.status || 'Aktiv'}
+                    </span>
+                </td>
+                <td style="padding:12px;text-align:center;">
+                    <button onclick="openProjektArtikel('${projekt.id}')" class="table-btn view" title="Projekt anzeigen">👁️</button>
+                    <button onclick="deleteProjekt('${projekt.id}')" class="table-btn delete" title="Projekt löschen">🗑️</button>
+                </td>
             `;
-            
-            // Füge die Zeile ein
-            tbody.insertAdjacentHTML('beforeend', rowHTML);
-            
-        } catch(e) {
+
+            tbody.appendChild(row);
+        } catch (e) {
             console.error('Fehler beim Rendern von Projekt:', projekt.name, e);
         }
     });
-    
-    updateProjektStats();
+
+    updateProjektStats?.();
 }
+
 
 function renderProjektCards() {
     const container = document.getElementById('projekt-grid-container');
@@ -5891,10 +5990,19 @@ async function loadProjectsFromDatabase() {
     }
 }
 
-// Lade Projekte beim Start (warte bis alles bereit ist)
-setTimeout(() => {
-    loadProjectsFromDatabase();
-}, 2000);
+// Lade Projekte beim Start (direkt, aber synchronisiert)
+document.addEventListener('DOMContentLoaded', async () => {
+    if (window.supabaseClient) {
+        console.log('🔄 Lade Projekte aus Datenbank...');
+        await loadProjectsFromDatabase();  // ⬅️ wichtig: await!
+        console.log('✅ Projekte geladen, rendere Übersicht...');
+        renderProjektOverview();           // ⬅️ erst jetzt rendern!
+    } else {
+        console.warn('⚠️ Supabase Client nicht verfügbar, nutze lokale Daten');
+        renderProjektOverview();
+    }
+});
+
 
 // ============================================
 // HILFSFUNKTIONEN FÜR PROJEKT-TABELLE
@@ -6324,44 +6432,68 @@ function closeBulkDeleteModal() {
     if (modal) modal.remove();
 }
 
-ddocument.addEventListener('DOMContentLoaded', async function() {
+document.addEventListener('DOMContentLoaded', async function() {
     initializeCharts();
     initializeAI();
     
-    if (window.supabaseClient) {
-        try {
-            console.log('Lade Projekte aus Datenbank...');
-            const { data, error } = await window.supabaseClient
-                .from('ALBO_Projects')
-                .select('*');
-            
-            if (!error && data) {
-                console.log('Geladene Projekte:', data);
-                
-                data.forEach(dbProjekt => {
-                    const projektId = 'projekt-db-' + dbProjekt.id; // GEÄNDERT: kein substring
-                    cfoDashboard.projektData[projektId] = {
-                        id: projektId,
-                        name: dbProjekt.project_name,
-                        beschreibung: dbProjekt.description || '',
-                        division: dbProjekt.business_unit,
-                        status: dbProjekt.project_status,
-                        owner: dbProjekt.project_owner,
-                        artikel: [],
-                        startDatum: dbProjekt.start_date,
-                        endDatum: dbProjekt.end_date  // HINZUGEFÜGT
-                    };
-                });
-                
-                console.log('Projekte geladen:', Object.keys(cfoDashboard.projektData));
-            }
-        } catch (err) {
-            console.error('Fehler beim Laden:', err);
+  if (window.supabaseClient) {
+    try {
+        // 🔄 Ladeanzeige anzeigen, bevor Supabase-Daten geholt werden
+        const loadingDiv = document.getElementById('projekt-loading-indicator');
+        const tbody = document.getElementById('projekt-list-tbody');
+        if (loadingDiv && tbody) {
+            tbody.innerHTML = ''; // falls alte Daten drin sind
+            tbody.style.display = 'none';
+            loadingDiv.style.display = 'block';
+        }
+
+        console.log('Lade Projekte aus Datenbank...');
+        const { data, error } = await window.supabaseClient
+            .from('ALBO_Projects')
+            .select('*');
+
+        if (error) throw error;
+
+        if (data && data.length > 0) {
+            console.log('Geladene Projekte:', data);
+
+            data.forEach(dbProjekt => {
+                const projektId = 'projekt-db-' + dbProjekt.id;
+                cfoDashboard.projektData[projektId] = {
+                    id: projektId,
+                    name: dbProjekt.project_name,
+                    beschreibung: dbProjekt.description || '',
+                    division: dbProjekt.business_unit || '-',
+                    status: dbProjekt.project_status || 'aktiv',
+                    owner: dbProjekt.project_owner || '-',
+                    artikel: [],
+                    startDatum: dbProjekt.start_date,
+                    endDatum: dbProjekt.end_date
+                };
+            });
+
+            console.log('✅ Projekte geladen:', Object.keys(cfoDashboard.projektData));
+        } else {
+            console.warn('⚠️ Keine Projekte gefunden – möglicherweise leere Tabelle.');
+        }
+
+    } catch (err) {
+        console.error('❌ Fehler beim Laden:', err);
+    } finally {
+        // ✅ Ladeanzeige **immer** ausblenden, auch bei Fehlern
+        const loadingDiv = document.getElementById('projekt-loading-indicator');
+        const tbody = document.getElementById('projekt-list-tbody');
+        if (loadingDiv && tbody) {
+            loadingDiv.style.display = 'none';
+            tbody.style.display = '';
         }
     }
+}
     
     // Render nach dem Laden
-    renderProjektOverview();
+    setTimeout(() => {
+        renderProjektOverview();
+    }, 200);
     
     // Views einstellen
     const projektOverview = document.getElementById('projekt-overview');
@@ -6369,6 +6501,7 @@ ddocument.addEventListener('DOMContentLoaded', async function() {
     if (projektOverview) projektOverview.style.display = 'block';
     if (artikelOverview) artikelOverview.style.display = 'none';
     
+    // AUSKOMMENTIEREN:
     restoreNavigationState();
     
     // AI Insights
