@@ -6502,11 +6502,7 @@ function closeBulkDeleteModal() {
 document.addEventListener('DOMContentLoaded', async function() {
     console.log('🚀 Dashboard wird initialisiert...');
     
-    // Charts und AI initialisieren
-    initializeCharts();
-    initializeAI();
-
-    // ✅ WICHTIG: Initial-Zustand SOFORT setzen (verhindert Flackern)
+    // ✅ ZUERST: Views korrekt setzen (verhindert Flackern)
     const projektOverview = document.getElementById('projekt-overview');
     const artikelOverview = document.getElementById('artikel-overview');
     
@@ -6518,19 +6514,23 @@ document.addEventListener('DOMContentLoaded', async function() {
         artikelOverview.style.display = 'none';
         console.log('✅ Artikel-Übersicht versteckt');
     }
+    
+    // ✅ DANN: Charts und AI initialisieren (nachdem Views gesetzt sind)
+    initializeCharts();
+    initializeAI();
 
     // Loading-Indicator vorbereiten
     const loadingDiv = document.getElementById('projekt-loading-indicator');
     const tbody = document.getElementById('projekt-list-tbody');
 
     if (loadingDiv && tbody) {
-        tbody.innerHTML = ''; // Leere alte Daten
+        tbody.innerHTML = '';
         tbody.style.display = 'none';
         loadingDiv.style.display = 'flex';
         loadingDiv.style.opacity = '1';
     }
 
-    // ⏳ Projekte aus Supabase laden
+    // Projekte aus Supabase laden
     if (window.supabaseClient) {
         console.log('🔄 Lade Projekte aus Datenbank...');
         try {
@@ -6552,7 +6552,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                         division: p.business_unit || '-',
                         status: p.project_status || 'aktiv',
                         owner: p.project_owner || '-',
-                        artikel: [], // LEER - keine Artikel beim Laden
+                        artikel: [],
                         startDatum: p.start_date,
                         endDatum: p.end_date,
                         isDemo: false
@@ -6569,7 +6569,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         console.warn('⚠️ Supabase nicht verfügbar');
     }
 
-    // 🎨 Render nach kurzer Verzögerung
+    // Render nach kurzer Verzögerung
     setTimeout(() => {
         if (loadingDiv) {
             loadingDiv.style.opacity = '0';
@@ -6577,17 +6577,13 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
         if (tbody) tbody.style.display = '';
         
-        // NUR Projekt-Übersicht rendern
         renderProjektList();
         updateProjektStats();
         
         console.log('✅ Dashboard bereit');
     }, 800);
 
-    // ❌ NICHT automatisch Navigation State wiederherstellen
-    // restoreNavigationState(); // <-- AUSKOMMENTIERT
-
-    // AI Insights (optional)
+    // AI Insights
     setInterval(() => {
         const insights = [
             { title: '📊 Markt-Insight', text: 'DB2-Marge liegt über Industrie-Benchmark.', level: 'success' },
