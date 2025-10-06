@@ -5865,22 +5865,11 @@ async function loadProjectsFromDatabase() {
     try {
         const { data, error } = await window.supabaseClient
             .from('ALBO_Projects')
-            .select('*')
-            .order('created_at', { ascending: false });
+            .select('*');
         
-        if (error) {
-            console.error('Fehler beim Laden:', error);
-            return;
-        }
-        
-        console.log('📥 Geladene Projekte aus Datenbank:', data);
-        
-        // Füge die Projekte zu cfoDashboard.projektData hinzu
-        data.forEach(dbProjekt => {
-            const projektId = 'projekt-db-' + dbProjekt.id;
-            
-            // Nur hinzufügen wenn nicht schon vorhanden
-            if (!cfoDashboard.projektData[projektId]) {
+        if (!error && data) {
+            data.forEach(dbProjekt => {
+                const projektId = 'projekt-db-' + dbProjekt.id;
                 cfoDashboard.projektData[projektId] = {
                     id: projektId,
                     name: dbProjekt.project_name,
@@ -5889,16 +5878,14 @@ async function loadProjectsFromDatabase() {
                     status: dbProjekt.project_status,
                     owner: dbProjekt.project_owner,
                     artikel: [],
-                    startDatum: dbProjekt.start_date
+                    startDatum: dbProjekt.start_date,
+                    endDatum: dbProjekt.end_date
                 };
-            }
-        });
-        
-        // Aktualisiere die Anzeige
-        if (typeof renderProjektOverview === 'function') {
+            });
+            
+            // NEU: Render NACH dem Laden
             renderProjektOverview();
         }
-        
     } catch (err) {
         console.error('Fehler:', err);
     }
@@ -6337,12 +6324,10 @@ function closeBulkDeleteModal() {
     if (modal) modal.remove();
 }
 
-document.addEventListener('DOMContentLoaded', async function() {
-    // ERST Charts und AI initialisieren
+ddocument.addEventListener('DOMContentLoaded', async function() {
     initializeCharts();
     initializeAI();
     
-    // DANN Projekte aus Datenbank laden
     if (window.supabaseClient) {
         try {
             console.log('Lade Projekte aus Datenbank...');
@@ -6353,9 +6338,8 @@ document.addEventListener('DOMContentLoaded', async function() {
             if (!error && data) {
                 console.log('Geladene Projekte:', data);
                 
-                // Füge jedes Projekt aus der DB hinzu
                 data.forEach(dbProjekt => {
-                    const projektId = 'projekt-' + dbProjekt.id.substring(0, 8);
+                    const projektId = 'projekt-db-' + dbProjekt.id; // GEÄNDERT: kein substring
                     cfoDashboard.projektData[projektId] = {
                         id: projektId,
                         name: dbProjekt.project_name,
@@ -6364,53 +6348,42 @@ document.addEventListener('DOMContentLoaded', async function() {
                         status: dbProjekt.project_status,
                         owner: dbProjekt.project_owner,
                         artikel: [],
-                        startDatum: dbProjekt.start_date
+                        startDatum: dbProjekt.start_date,
+                        endDatum: dbProjekt.end_date  // HINZUGEFÜGT
                     };
                 });
+                
+                console.log('Projekte geladen:', Object.keys(cfoDashboard.projektData));
             }
         } catch (err) {
-            console.error('Fehler beim Laden der Projekte:', err);
+            console.error('Fehler beim Laden:', err);
         }
     }
-
-    // Jetzt ERST rendern mit allen Projekten
+    
+    // Render nach dem Laden
     renderProjektOverview();
     
-    // Initial: Projekt-Übersicht zeigen, Artikel-Übersicht verstecken
+    // Views einstellen
     const projektOverview = document.getElementById('projekt-overview');
     const artikelOverview = document.getElementById('artikel-overview');
     if (projektOverview) projektOverview.style.display = 'block';
     if (artikelOverview) artikelOverview.style.display = 'none';
-
-    // Navigation SOFORT wiederherstellen - ohne Verzögerung!
+    
     restoreNavigationState();
     
-    // Set up periodic AI insights
+    // AI Insights
     setInterval(() => {
         const insights = [
-            {
-                title: '📊 Markt-Insight',
-                text: 'DB2-Marge liegt über Industrie-Benchmark.',
-                level: 'success'
-            },
-            {
-                title: '⚠️ Risiko-Alert',
-                text: 'CAPEX-Auslastung bei 89%.',
-                level: 'warning'
-            },
-            {
-                title: '💡 Optimierung',
-                text: 'Preis-Premium möglich bei Premium-Positionierung.',
-                level: 'info'
-            }
+            { title: '📊 Markt-Insight', text: 'DB2-Marge liegt über Industrie-Benchmark.', level: 'success' },
+            { title: '⚠️ Risiko-Alert', text: 'CAPEX-Auslastung bei 89%.', level: 'warning' },
+            { title: '💡 Optimierung', text: 'Preis-Premium möglich bei Premium-Positionierung.', level: 'info' }
         ];
-        
         const randomInsight = insights[Math.floor(Math.random() * insights.length)];
         cfoDashboard.aiController.addAIMessage({
             ...randomInsight,
             timestamp: new Date().toLocaleTimeString('de-DE', {hour: '2-digit', minute: '2-digit'})
         });
-    }, 45000); // Every 45 seconds
+    }, 45000);
 });
 // KI-Validierungs-Funktionen für flexible Eingaben
 function handleCategoryChange(select) {
