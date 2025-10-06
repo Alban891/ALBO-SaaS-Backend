@@ -5481,6 +5481,13 @@ async function renderProjektList() {
     // 🧠 Hole Projekte aus Cache oder DB
     let projekte = Object.values(cfoDashboard.projektData || {});
 
+    // ⏳ Wenn gerade geladen wird → abbrechen, kein "Keine Projekte" anzeigen
+    const loadingDiv = document.getElementById('projekt-loading-indicator');
+    if (loadingDiv && loadingDiv.style.display === 'block') {
+        console.log('🔄 Projekte werden noch geladen – kein Leerstaat rendern');
+        return;
+    }
+
     if (projekte.length === 0 && window.supabaseClient) {
         try {
             const { data, error } = await window.supabaseClient
