@@ -5336,6 +5336,35 @@ function switchArtikelDetailTab(tabName) {
 // PROJEKT-ÜBERSICHT FUNKTIONEN
 // ============================================
 
+// Sichere Datums-Formatierung
+function formatDateSafe(dateString) {
+    if (!dateString || dateString === '-') return '-';
+    
+    try {
+        let dateToFormat = String(dateString).trim();
+        
+        // Handle "2026-01" format (ohne Tag)
+        if (dateToFormat.length === 7 && dateToFormat.includes('-')) {
+            dateToFormat = dateToFormat + '-01';
+        }
+        
+        const date = new Date(dateToFormat);
+        
+        // Check if valid date
+        if (isNaN(date.getTime())) {
+            return dateString;
+        }
+        
+        const months = ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 
+                        'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'];
+        
+        return `${months[date.getMonth()]} ${date.getFullYear()}`;
+    } catch(e) {
+        console.error('formatDateSafe Fehler:', e);
+        return '-';
+    }
+}
+
 function renderProjektList() {
     const tbody = document.getElementById('projekt-list-tbody');
     if (!tbody) {
