@@ -5734,26 +5734,19 @@ function closeNewProjektModal() {
 function saveNewProjekt() {
     const name = document.getElementById('new-projekt-name').value.trim();
     const beschreibung = document.getElementById('new-projekt-beschreibung').value.trim();
+    const division = document.getElementById('new-projekt-division').value;
+    const status = document.getElementById('new-projekt-status').value;
+    const owner = document.getElementById('new-projekt-owner').value.trim();
+    let startDatum = document.getElementById('new-projekt-start').value;
     
-    // ACHTUNG: Prüfe welche ID das Business Unit Feld wirklich hat!
-    // Möglicherweise heißt es 'new-projekt-unit' oder 'new-projekt-business-unit'
-    let division = '';
-    try {
-        division = document.getElementById('new-projekt-division')?.value || 
-                   document.getElementById('new-projekt-unit')?.value || 
-                   document.querySelector('select')?.value || 
-                   'Entwicklung';
-    } catch(e) {
-        division = 'Entwicklung'; // Fallback Wert
+    if (!name || !division || !owner || !startDatum) {
+        alert('Bitte alle Pflichtfelder ausfüllen!');
+        return;
     }
     
-    const status = document.getElementById('new-projekt-status')?.value || 'In Umsetzung';
-    const owner = document.getElementById('new-projekt-owner')?.value.trim() || 'Nicht zugewiesen';
-    const startDatum = document.getElementById('new-projekt-start')?.value || null;
-    
-    if (!name) {
-        alert('Bitte Projektname eingeben!');
-        return;
+    // Formatiere das Datum für die Datenbank
+    if (startDatum && startDatum.length === 7) { // Format: "2026-01"
+        startDatum = startDatum + '-01'; // Füge Tag hinzu: "2026-01-01"
     }
     
     // Generiere eindeutige ID
@@ -5773,9 +5766,7 @@ function saveNewProjekt() {
     
     // Speichere in Supabase
     if (window.supabaseClient) {
-        console.log('Speichere in Supabase:', {
-            name, beschreibung, division, status, owner, startDatum
-        });
+        console.log('Speichere in Supabase:', name);
         
         window.supabaseClient
             .from('ALBO_Projects')
@@ -5785,7 +5776,7 @@ function saveNewProjekt() {
                 business_unit: division,
                 project_status: status,
                 project_owner: owner,
-                start_date: startDatum || null
+                start_date: startDatum // Jetzt im Format "2026-01-01"
             }])
             .select()
             .then(({ data, error }) => {
