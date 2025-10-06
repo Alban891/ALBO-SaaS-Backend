@@ -6486,6 +6486,15 @@ function closeBulkDeleteModal() {
 document.addEventListener('DOMContentLoaded', async function() {
     initializeCharts();
     initializeAI();
+
+    // 🧩 View-Zustände beim Start festlegen
+    const projektOverview = document.getElementById('projekt-overview');
+    const artikelOverview = document.getElementById('artikel-overview');
+
+    if (projektOverview) projektOverview.style.display = 'block';
+    if (artikelOverview) artikelOverview.style.display = 'none';
+
+    console.log('Initial View gesetzt: Projekte sichtbar, Artikel versteckt.');
     
   if (window.supabaseClient) {
     try {
