@@ -1876,15 +1876,29 @@ function switchArtikelView(viewType) {
 
 // Tab switching functionality
 window.switchTab = function(tabName) {
-    // Remove active class from all tabs and content
+    // 1. Entferne active von ALLEN Tab-Buttons
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
     
-    // Activate selected tab
-    document.querySelector(`[onclick="switchTab('${tabName}')"]`).classList.add('active');
-    document.getElementById(`tab-${tabName}`).classList.add('active');
+    // 2. Entferne active von ALLEN Tab-Contents UND verstecke sie
+    document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.remove('active');
+        content.style.display = 'none';  // ← WICHTIG: Explizit verstecken
+    });
     
-    // Add KI message about tab switch
+    // 3. Aktiviere den ausgewählten Tab-Button
+    const activeButton = document.querySelector(`[onclick="switchTab('${tabName}')"]`);
+    if (activeButton) {
+        activeButton.classList.add('active');
+    }
+    
+    // 4. Zeige den ausgewählten Tab-Content
+    const activeContent = document.getElementById(`tab-${tabName}`);
+    if (activeContent) {
+        activeContent.classList.add('active');
+        activeContent.style.display = 'flex';  // ← WICHTIG: Explizit anzeigen
+    }
+    
+    // 5. AI-Feedback (wie vorher)
     const aiMessages = {
         'dashboard': {
             title: '📊 Dashboard-Ansicht',
@@ -1893,7 +1907,7 @@ window.switchTab = function(tabName) {
         },
         'assumptions': {
             title: '⚙️ Annahmen-Modus',
-            text: 'Artikel-Portfolio bereit zur Bearbeitung. Parameter-Anpassungen werden in Echtzeit berechnet.',
+            text: 'Projekt-Portfolio bereit zur Bearbeitung. Parameter-Anpassungen werden in Echtzeit berechnet.',
             level: 'success'
         },
         'analysis': {
@@ -1910,7 +1924,7 @@ window.switchTab = function(tabName) {
         });
     }
 
-    // State speichern bei Tab-Wechsel (NEUE ZEILE HIER EINFÜGEN)
+    // 6. State speichern
     saveNavigationState();
 }
 
