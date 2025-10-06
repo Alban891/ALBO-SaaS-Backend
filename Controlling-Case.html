@@ -1586,25 +1586,85 @@ const cfoDashboard = {
     artikelDetailTabs: {}
 };
 
-// Speichere aktuellen Zustand
+// Speichere Zustand
 function saveNavigationState() {
+    const currentMainTab = getCurrentMainTab();
+    
     const state = {
-        view: cfoDashboard.currentView || 'dashboard',
-        artikel: cfoDashboard.currentArtikel,
-        tab: cfoDashboard.currentDetailTab || 'artikel',
+        mainTab: currentMainTab,
+        view: cfoDashboard.currentView || 'overview',
+        artikel: cfoDashboard.currentArtikel || null,
+        detailTab: cfoDashboard.currentDetailTab || 'artikel',
         timestamp: new Date().toISOString()
     };
     
+    // Korrektur für falsches view
+    if (state.mainTab === 'assumptions' && state.view === 'dashboard') {
+        state.view = 'overview';
+    }
+    
     localStorage.setItem('cfo-dashboard-state', JSON.stringify(state));
     
+    let hashUrl = '#' + state.mainTab;
     if (state.view === 'detail' && state.artikel) {
-        window.history.replaceState(null, null, `#artikel/${state.artikel}/${state.tab}`);
-    } else {
-        window.history.replaceState(null, null, '#dashboard');
+        hashUrl += `/artikel/${state.artikel}/${state.detailTab}`;
+    }
+    
+    window.history.replaceState(state, null, hashUrl);
+}
+
+// Lade gespeicherten Zustand
+function restoreNavigationState() {
+    const savedState = localStorage.getItem('cfo-dashboard-state');
+    if (!savedState) return;
+    
+    try {
+        const state = JSON.parse(savedState);
+        console.log('🔄 Restore State:', state);
+        
+        // Verhindere Endlosschleife: Prüfe ob bereits im richtigen Tab
+        const currentTab = getCurrentMainTab();
+        if (currentTab === state.mainTab) {
+            console.log('✅ Bereits im richtigen Tab');
+            return;
+        }
+        
+        // Tab wiederherstellen
+        if (state.mainTab) {
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            const tabBtn = document.querySelector(`[onclick="switchTab('${state.mainTab}')"]`);
+            const tabContent = document.getElementById(`tab-${state.mainTab}`);
+            
+            if (tabBtn) tabBtn.classList.add('active');
+            if (tabContent) tabContent.classList.add('active');
+        }
+        
+        // Artikel-Detail wiederherstellen
+        if (state.view === 'detail' && state.artikel && state.mainTab === 'assumptions') {
+            setTimeout(() => {
+                openArtikelDetail(state.artikel);
+                
+                if (state.detailTab && state.detailTab !== 'artikel') {
+                    setTimeout(() => {
+                        if (typeof switchArtikelDetailTab === 'function') {
+                            switchArtikelDetailTab(state.detailTab);
+                        }
+                    }, 100);
+                }
+            }, 100);
+        }
+    } catch (e) {
+        console.error('❌ Fehler beim Wiederherstellen:', e);
     }
 }
 
-// Browser Zurück-Button Support
+// Browser Zurück-Button
 window.addEventListener('popstate', function(event) {
     restoreNavigationState();
 });
