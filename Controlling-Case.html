@@ -6502,24 +6502,42 @@ function closeBulkDeleteModal() {
 document.addEventListener('DOMContentLoaded', async function() {
     console.log('🚀 Dashboard wird initialisiert...');
     
-    // ✅ ZUERST: Views korrekt setzen (verhindert Flackern)
+    // WICHTIG: ZUERST State wiederherstellen, BEVOR irgendwas anderes passiert
+    const savedState = localStorage.getItem('cfo-dashboard-state');
+    let targetTab = 'dashboard'; // Default
+    
+    if (savedState) {
+        try {
+            const state = JSON.parse(savedState);
+            targetTab = state.mainTab || 'dashboard';
+            console.log('📍 Wiederhergestellter Tab:', targetTab);
+        } catch(e) {
+            console.error('State Parse Error:', e);
+        }
+    }
+    
+    // Setze korrekten Tab SOFORT
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+    
+    const targetButton = document.querySelector(`[onclick="switchTab('${targetTab}')"]`);
+    const targetContent = document.getElementById(`tab-${targetTab}`);
+    
+    if (targetButton) targetButton.classList.add('active');
+    if (targetContent) targetContent.classList.add('active');
+    
+    // Views korrekt setzen
     const projektOverview = document.getElementById('projekt-overview');
     const artikelOverview = document.getElementById('artikel-overview');
     
-    if (projektOverview) {
-        projektOverview.style.display = 'block';
-        console.log('✅ Projekt-Übersicht aktiviert');
-    }
-    if (artikelOverview) {
-        artikelOverview.style.display = 'none';
-        console.log('✅ Artikel-Übersicht versteckt');
-    }
+    if (projektOverview) projektOverview.style.display = 'block';
+    if (artikelOverview) artikelOverview.style.display = 'none';
     
-    // ✅ DANN: Charts und AI initialisieren (nachdem Views gesetzt sind)
+    // DANN Charts und AI initialisieren
     initializeCharts();
     initializeAI();
 
-    // Loading-Indicator vorbereiten
+    // Loading-Indicator
     const loadingDiv = document.getElementById('projekt-loading-indicator');
     const tbody = document.getElementById('projekt-list-tbody');
 
@@ -6558,18 +6576,13 @@ document.addEventListener('DOMContentLoaded', async function() {
                         isDemo: false
                     };
                 });
-            } else {
-                console.log('ℹ️ Keine Projekte in Datenbank');
             }
-
         } catch (err) {
             console.error('❌ Fehler beim Laden:', err);
         }
-    } else {
-        console.warn('⚠️ Supabase nicht verfügbar');
     }
 
-    // Render nach kurzer Verzögerung
+    // Render nach Verzögerung
     setTimeout(() => {
         if (loadingDiv) {
             loadingDiv.style.opacity = '0';
@@ -6580,15 +6593,14 @@ document.addEventListener('DOMContentLoaded', async function() {
         renderProjektList();
         updateProjektStats();
         
-        console.log('✅ Dashboard bereit');
+        console.log('✅ Dashboard bereit - Aktiver Tab:', targetTab);
     }, 800);
 
-    // AI Insights
+    // AI Insights Timer
     setInterval(() => {
         const insights = [
-            { title: '📊 Markt-Insight', text: 'DB2-Marge liegt über Industrie-Benchmark.', level: 'success' },
-            { title: '⚠️ Risiko-Alert', text: 'CAPEX-Auslastung bei 89%.', level: 'warning' },
-            { title: '💡 Optimierung', text: 'Preis-Premium möglich bei Premium-Positionierung.', level: 'info' }
+            { title: '📊 Markt-Insight', text: 'DB2-Marge liegt über Benchmark.', level: 'success' },
+            { title: '⚠️ Risiko', text: 'CAPEX-Auslastung bei 89%.', level: 'warning' }
         ];
         const randomInsight = insights[Math.floor(Math.random() * insights.length)];
         cfoDashboard.aiController.addAIMessage({
