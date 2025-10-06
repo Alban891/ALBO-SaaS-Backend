@@ -5469,15 +5469,6 @@ async function renderProjektList() {
         return;
     }
 
-    // 🔄 Ladezustand anzeigen
-    tbody.innerHTML = `
-        <tr class="loading-row">
-            <td colspan="8" style="text-align:center; padding:24px; color:var(--gray); font-size:14px;">
-                🔄 Projekte werden geladen...
-            </td>
-        </tr>
-    `;
-
     // 🧠 Hole Projekte aus Cache oder DB
     let projekte = Object.values(cfoDashboard.projektData || {});
 
@@ -5999,16 +5990,64 @@ async function loadProjectsFromDatabase() {
 
 // Lade Projekte beim Start (direkt, aber synchronisiert)
 document.addEventListener('DOMContentLoaded', async () => {
-    if (window.supabaseClient) {
-        console.log('🔄 Lade Projekte aus Datenbank...');
-        await loadProjectsFromDatabase();  // ⬅️ wichtig: await!
-        console.log('✅ Projekte geladen, rendere Übersicht...');
-        renderProjektOverview();           // ⬅️ erst jetzt rendern!
-    } else {
-        console.warn('⚠️ Supabase Client nicht verfügbar, nutze lokale Daten');
-        renderProjektOverview();
+    initializeCharts();
+    initializeAI();
+
+    const loadingDiv = document.getElementById('projekt-loading-indicator');
+    const tbody = document.getElementById('projekt-list-tbody');
+
+    // Nur Ladeanzeige zeigen – noch NICHT rendern
+    if (loadingDiv) {
+        loadingDiv.style.display = 'flex';
+        loadingDiv.style.opacity = '1';
     }
+    if (tbody) tbody.style.display = 'none';
+
+    if (window.supabaseClient) {
+        console.log('🔄 Lade Projekte aus Supabase...');
+        try {
+            const { data, error } = await window.supabaseClient
+                .from('ALBO_Projects')
+                .select('*');
+
+            if (error) throw error;
+
+            // Fülle Cache mit Daten
+            data.forEach(p => {
+                const id = 'projekt-db-' + p.id;
+                cfoDashboard.projektData[id] = {
+                    id,
+                    name: p.project_name,
+                    beschreibung: p.description || '',
+                    division: p.business_unit || '-',
+                    status: p.project_status || 'aktiv',
+                    owner: p.project_owner || '-',
+                    artikel: [],
+                    startDatum: p.start_date,
+                    endDatum: p.end_date
+                };
+            });
+
+            console.log('✅ Projekte erfolgreich geladen:', data.length);
+
+        } catch (err) {
+            console.error('❌ Fehler beim Laden der Projekte:', err);
+        }
+    } else {
+        console.warn('⚠️ Kein Supabase Client verfügbar');
+    }
+
+    // 🔥 Jetzt (und nur jetzt) rendern
+    setTimeout(() => {
+        if (loadingDiv) {
+            loadingDiv.style.opacity = '0';
+            setTimeout(() => loadingDiv.style.display = 'none', 300);
+        }
+        if (tbody) tbody.style.display = '';
+        renderProjektOverview();
+    }, 1000); // künstliche Verzögerung von 1 Sekunde (optional, angenehm fürs Auge)
 });
+
 
 
 // ============================================
