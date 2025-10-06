@@ -1604,31 +1604,6 @@ function saveNavigationState() {
     }
 }
 
-function restoreNavigationState() {
-    const savedState = localStorage.getItem('cfo-dashboard-state');
-    
-    // Wenn kein State gespeichert ist, bleibe bei Dashboard (ist schon active)
-    if (!savedState) return;
-    
-    try {
-        const state = JSON.parse(savedState);
-        
-        // Nur wenn NICHT Dashboard gespeichert ist, wechseln
-        if (state.mainTab && state.mainTab !== 'dashboard') {
-            switchTab(state.mainTab);
-        }
-        
-        // Artikel-Detail wiederherstellen
-        if (state.view === 'detail' && state.artikel && state.mainTab === 'assumptions') {
-            setTimeout(() => {
-                openArtikelDetail(state.artikel);
-            }, 100);
-        }
-    } catch (e) {
-        console.error('Fehler:', e);
-    }
-}
-
 // Browser Zurück-Button Support
 window.addEventListener('popstate', function(event) {
     restoreNavigationState();
@@ -1801,15 +1776,15 @@ function restoreNavigationState() {
     try {
         const state = JSON.parse(savedState);
         
-        // Direkt zum gespeicherten Tab wechseln
-        if (state.mainTab && state.mainTab !== 'dashboard') {
+        // IMMER zum gespeicherten Tab wechseln (auch bei Dashboard!)
+        if (state.mainTab) {
             const tabBtn = document.querySelector(`[onclick="switchTab('${state.mainTab}')"]`);
             if (tabBtn) {
                 tabBtn.click();
             }
         }
         
-        // Wenn wir in einem Artikel waren - VEREINFACHT!
+        // Wenn wir in einem Artikel waren
         if (state.view === 'detail' && state.artikel) {
             setTimeout(() => {
                 openArtikelDetail(state.artikel);
