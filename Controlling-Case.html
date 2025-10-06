@@ -986,6 +986,16 @@
   font-size: 14px;
 }
 
+/* Sicherstellen dass inaktive Tabs wirklich versteckt sind */
+.tab-content:not(.active) {
+    display: none !important;
+}
+
+.tab-content.active {
+    display: flex !important;
+    flex-direction: column;
+}
+
     </style>
 </head>
 <body>
