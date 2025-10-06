@@ -4701,6 +4701,11 @@ function initializeCharts() {
 
 function initUmsatzChart() {
     const ctx = document.getElementById('umsatz-chart').getContext('2d');
+    // Prüfe, ob bereits ein Chart existiert → wenn ja, zerstören
+    if (window.umsatzChartInstance) {
+    window.umsatzChartInstance.destroy();
+    }
+
     new Chart(ctx, {
         type: 'bar',
         data: {
