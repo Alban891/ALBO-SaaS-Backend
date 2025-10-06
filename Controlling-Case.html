@@ -1586,85 +1586,25 @@ const cfoDashboard = {
     artikelDetailTabs: {}
 };
 
-// Speichere Zustand
+// Speichere aktuellen Zustand
 function saveNavigationState() {
-    const currentMainTab = getCurrentMainTab();
-    
     const state = {
-        mainTab: currentMainTab,
-        view: cfoDashboard.currentView || 'overview',
-        artikel: cfoDashboard.currentArtikel || null,
-        detailTab: cfoDashboard.currentDetailTab || 'artikel',
+        view: cfoDashboard.currentView || 'dashboard',
+        artikel: cfoDashboard.currentArtikel,
+        tab: cfoDashboard.currentDetailTab || 'artikel',
         timestamp: new Date().toISOString()
     };
     
-    // Korrektur für falsches view
-    if (state.mainTab === 'assumptions' && state.view === 'dashboard') {
-        state.view = 'overview';
-    }
-    
     localStorage.setItem('cfo-dashboard-state', JSON.stringify(state));
     
-    let hashUrl = '#' + state.mainTab;
     if (state.view === 'detail' && state.artikel) {
-        hashUrl += `/artikel/${state.artikel}/${state.detailTab}`;
-    }
-    
-    window.history.replaceState(state, null, hashUrl);
-}
-
-// Lade gespeicherten Zustand
-function restoreNavigationState() {
-    const savedState = localStorage.getItem('cfo-dashboard-state');
-    if (!savedState) return;
-    
-    try {
-        const state = JSON.parse(savedState);
-        console.log('🔄 Restore State:', state);
-        
-        // Verhindere Endlosschleife: Prüfe ob bereits im richtigen Tab
-        const currentTab = getCurrentMainTab();
-        if (currentTab === state.mainTab) {
-            console.log('✅ Bereits im richtigen Tab');
-            return;
-        }
-        
-        // Tab wiederherstellen
-        if (state.mainTab) {
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.remove('active');
-            });
-            
-            const tabBtn = document.querySelector(`[onclick="switchTab('${state.mainTab}')"]`);
-            const tabContent = document.getElementById(`tab-${state.mainTab}`);
-            
-            if (tabBtn) tabBtn.classList.add('active');
-            if (tabContent) tabContent.classList.add('active');
-        }
-        
-        // Artikel-Detail wiederherstellen
-        if (state.view === 'detail' && state.artikel && state.mainTab === 'assumptions') {
-            setTimeout(() => {
-                openArtikelDetail(state.artikel);
-                
-                if (state.detailTab && state.detailTab !== 'artikel') {
-                    setTimeout(() => {
-                        if (typeof switchArtikelDetailTab === 'function') {
-                            switchArtikelDetailTab(state.detailTab);
-                        }
-                    }, 100);
-                }
-            }, 100);
-        }
-    } catch (e) {
-        console.error('❌ Fehler beim Wiederherstellen:', e);
+        window.history.replaceState(null, null, `#artikel/${state.artikel}/${state.tab}`);
+    } else {
+        window.history.replaceState(null, null, '#dashboard');
     }
 }
 
-// Browser Zurück-Button
+// Browser Zurück-Button Support
 window.addEventListener('popstate', function(event) {
     restoreNavigationState();
 });
@@ -1829,35 +1769,40 @@ function getCurrentMainTab() {
     return 'dashboard';
 }
 // Lade gespeicherten Zustand beim Seitenaufruf
-function saveNavigationState() {
-    const currentMainTab = getCurrentMainTab();
+function restoreNavigationState() {
+    const savedState = localStorage.getItem('cfo-dashboard-state');
+    if (!savedState) return;
     
-    // State sammeln
-    const state = {
-        mainTab: currentMainTab,
-        view: cfoDashboard.currentView || 'overview',
-        artikel: cfoDashboard.currentArtikel || null,
-        detailTab: cfoDashboard.currentDetailTab || 'artikel',
-        timestamp: new Date().toISOString()
-    };
-    
-    // WICHTIG: Korrektur für falsches 'view' Property
-    if (state.mainTab === 'assumptions' && state.view === 'dashboard') {
-        state.view = 'overview';
+    try {
+        const state = JSON.parse(savedState);
+        
+        // IMMER zum gespeicherten Tab wechseln (auch bei Dashboard!)
+        if (state.mainTab) {
+            const tabBtn = document.querySelector(`[onclick="switchTab('${state.mainTab}')"]`);
+            if (tabBtn) {
+                tabBtn.click();
+            }
+        }
+        
+        // Wenn wir in einem Artikel waren
+        if (state.view === 'detail' && state.artikel) {
+            setTimeout(() => {
+                openArtikelDetail(state.artikel);
+                
+                // Sub-Tab wiederherstellen falls nötig
+                if (state.detailTab && state.detailTab !== 'artikel') {
+                    setTimeout(() => {
+                        if (typeof switchArtikelDetailTab === 'function') {
+                            switchArtikelDetailTab(state.detailTab);
+                        }
+                    }, 100);
+                }
+            }, 100);
+        }
+    } catch (e) {
+        console.error('Fehler beim Wiederherstellen:', e);
     }
-    
-    // Speichern
-    localStorage.setItem('cfo-dashboard-state', JSON.stringify(state));
-    
-    // URL-Hash
-    let hashUrl = '#' + state.mainTab;
-    if (state.view === 'detail' && state.artikel) {
-        hashUrl += `/artikel/${state.artikel}/${state.detailTab}`;
-    }
-    
-    window.history.replaceState(state, null, hashUrl);
 }
-
 // Browser Zurück-Button Support
 window.addEventListener('popstate', function(event) {
     restoreNavigationState();
@@ -1941,18 +1886,6 @@ window.switchTab = function(tabName) {
     }
 
     // State speichern bei Tab-Wechsel (NEUE ZEILE HIER EINFÜGEN)
-    saveNavigationState();
-}
-
-window.switchTab = function(tabName) {
-    // ... dein bestehender Code ...
-    
-    // State explizit zurücksetzen
-    cfoDashboard.currentView = 'overview';
-    cfoDashboard.currentArtikel = null;
-    cfoDashboard.currentMainTab = tabName;
-    
-    // State speichern
     saveNavigationState();
 }
 
