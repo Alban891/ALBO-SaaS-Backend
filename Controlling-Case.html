@@ -1243,48 +1243,7 @@
                                         </tr>
                                     </thead>
                                     <tbody id="artikel-list-tbody">
-                                        <tr onclick="openArtikelDetail('crimp')" style="cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='var(--gray-light)'" onmouseout="this.style.background='transparent'">
-                                            <td style="padding: 12px; font-weight: 500; color: var(--text); font-size: 13px;">Crimpautomat</td>
-                                            <td style="padding: 12px;">
-                                                <span style="padding: 2px 8px; background: #dbeafe; color: var(--primary); border-radius: 12px; font-size: 11px; font-weight: 500;">Neu-Produkt</span>
-                                            </td>
-                                            <td style="padding: 12px; text-align: center; font-size: 12px; color: var(--gray);">Dez 2024</td>
-                                            <td style="padding: 12px; text-align: right; font-size: 13px;">5,00€</td>
-                                            <td style="padding: 12px; text-align: right; font-size: 13px;">5.000</td>
-                                            <td style="padding: 12px; text-align: right; font-size: 13px; font-weight: 600; color: var(--success);">37%</td>
-                                            <td style="padding: 12px; text-align: right; font-size: 13px; font-weight: 600; color: var(--primary);">87,2M€</td>
-                                            <td style="padding: 12px; text-align: center;">
-                                                <button onclick="event.stopPropagation(); openArtikelDetail('crimp')" style="padding: 4px 8px; border: 1px solid var(--border); background: white; border-radius: 4px; font-size: 11px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">Bearbeiten</button>
-                                            </td>
-                                        </tr>
-                                        <tr onclick="openArtikelDetail('komax')" style="cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='var(--gray-light)'" onmouseout="this.style.background='transparent'">
-                                            <td style="padding: 12px; font-weight: 500; color: var(--text); font-size: 13px;">Mini-Komax ohne CORE</td>
-                                            <td style="padding: 12px;">
-                                                <span style="padding: 2px 8px; background: #dbeafe; color: var(--primary); border-radius: 12px; font-size: 11px; font-weight: 500;">Neu-Produkt</span>
-                                            </td>
-                                            <td style="padding: 12px; text-align: center; font-size: 12px; color: var(--gray);">Dez 2024</td>
-                                            <td style="padding: 12px; text-align: right; font-size: 13px;">1.000,00€</td>
-                                            <td style="padding: 12px; text-align: right; font-size: 13px;">115</td>
-                                            <td style="padding: 12px; text-align: right; font-size: 13px; font-weight: 600; color: var(--success);">31%</td>
-                                            <td style="padding: 12px; text-align: right; font-size: 13px; font-weight: 600; color: var(--primary);">24,8M€</td>
-                                            <td style="padding: 12px; text-align: center;">
-                                                <button onclick="event.stopPropagation(); openArtikelDetail('komax')" style="padding: 4px 8px; border: 1px solid var(--border); background: white; border-radius: 4px; font-size: 11px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">Bearbeiten</button>
-                                            </td>
-                                        </tr>
-                                        <tr onclick="openArtikelDetail('digital')" style="cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='var(--gray-light)'" onmouseout="this.style.background='transparent'">
-                                            <td style="padding: 12px; font-weight: 500; color: var(--text); font-size: 13px;">Digital Shopfloor Backend</td>
-                                            <td style="padding: 12px;">
-                                                <span style="padding: 2px 8px; background: #dcfce7; color: var(--success); border-radius: 12px; font-size: 11px; font-weight: 500;">Cross-Selling</span>
-                                            </td>
-                                            <td style="padding: 12px; text-align: center; font-size: 12px; color: var(--gray);">Jun 2025</td>
-                                            <td style="padding: 12px; text-align: right; font-size: 13px;">480,00€</td>
-                                            <td style="padding: 12px; text-align: right; font-size: 13px;">250</td>
-                                            <td style="padding: 12px; text-align: right; font-size: 13px; font-weight: 600; color: var(--success);">58%</td>
-                                            <td style="padding: 12px; text-align: right; font-size: 13px; font-weight: 600; color: var(--primary);">5,8M€</td>
-                                            <td style="padding: 12px; text-align: center;">
-                                                <button onclick="event.stopPropagation(); openArtikelDetail('digital')" style="padding: 4px 8px; border: 1px solid var(--border); background: white; border-radius: 4px; font-size: 11px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">Bearbeiten</button>
-                                            </td>
-                                        </tr>
+                                        <!-- Wird dynamisch gefüllt -->
                                     </tbody>
                                 </table>
                             </div>
@@ -1292,163 +1251,14 @@
                             <!-- Card View (initially hidden) -->
                             <div id="artikel-card-view" style="display: none;">
                                 <div class="artikel-grid" id="artikel-grid-container">
-                                    <!-- Crimpautomat -->
-                                    <div class="artikel-card" onclick="openArtikelDetail('crimp')">
-                                        <div class="artikel-header">
-                                            <div class="artikel-name">Crimpautomat</div>
-                                            <div class="artikel-effect neu-produkt">Neu-Produkt</div>
-                                        </div>
-                                        <div class="artikel-details">
-                                            <div class="detail-row">
-                                                <span class="detail-label">Release:</span>
-                                                <span class="detail-value">Dez 2024</span>
-                                            </div>
-                                            <div class="detail-row">
-                                                <span class="detail-label">Peak Menge:</span>
-                                                <span class="detail-value">5.000</span>
-                                            </div>
-                                            <div class="detail-row">
-                                                <span class="detail-label">Start-Preis:</span>
-                                                <span class="detail-value">5,00€</span>
-                                            </div>
-                                            <div class="detail-row">
-                                                <span class="detail-label">Preis-Steigerung:</span>
-                                                <span class="detail-value">+3% p.a.</span>
-                                            </div>
-                                            <div class="detail-row">
-                                                <span class="detail-label">DB2 (Ø):</span>
-                                                <span class="detail-value success">37%</span>
-                                            </div>
-                                            <div class="detail-row">
-                                                <span class="detail-label">Total Revenue:</span>
-                                                <span class="detail-value success">87,2M€</span>
-                                            </div>
-                                        </div>
-                                        <div class="artikel-assumptions">
-                                            <strong>Annahmen:</strong> Innovation durch neue Linie
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Mini-Komax -->
-                                    <div class="artikel-card" onclick="openArtikelDetail('komax')">
-                                        <div class="artikel-header">
-                                            <div class="artikel-name">Mini-Komax ohne CORE</div>
-                                            <div class="artikel-effect neu-produkt">Neu-Produkt</div>
-                                        </div>
-                                        <div class="artikel-details">
-                                            <div class="detail-row">
-                                                <span class="detail-label">Release:</span>
-                                                <span class="detail-value">Dez 2024</span>
-                                            </div>
-                                            <div class="detail-row">
-                                                <span class="detail-label">Peak Menge:</span>
-                                                <span class="detail-value">115</span>
-                                            </div>
-                                            <div class="detail-row">
-                                                <span class="detail-label">Start-Preis:</span>
-                                                <span class="detail-value">1.000,00€</span>
-                                            </div>
-                                            <div class="detail-row">
-                                                <span class="detail-label">Preis-Steigerung:</span>
-                                                <span class="detail-value">+2% p.a.</span>
-                                            </div>
-                                            <div class="detail-row">
-                                                <span class="detail-label">DB2 (Ø):</span>
-                                                <span class="detail-value success">31%</span>
-                                            </div>
-                                            <div class="detail-row">
-                                                <span class="detail-label">Total Revenue:</span>
-                                                <span class="detail-value success">24,8M€</span>
-                                            </div>
-                                        </div>
-                                        <div class="artikel-assumptions">
-                                            <strong>Annahmen:</strong> Premium-Segment erschließen
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Digital Shopfloor -->
-                                    <div class="artikel-card" onclick="openArtikelDetail('digital')">
-                                        <div class="artikel-header">
-                                            <div class="artikel-name">Digital Shopfloor Backend</div>
-                                            <div class="artikel-effect cross-selling">Cross-Selling</div>
-                                        </div>
-                                        <div class="artikel-details">
-                                            <div class="detail-row">
-                                                <span class="detail-label">Release:</span>
-                                                <span class="detail-value">Jun 2025</span>
-                                            </div>
-                                            <div class="detail-row">
-                                                <span class="detail-label">Peak Menge:</span>
-                                                <span class="detail-value">250</span>
-                                            </div>
-                                            <div class="detail-row">
-                                                <span class="detail-label">Start-Preis:</span>
-                                                <span class="detail-value">480,00€</span>
-                                            </div>
-                                            <div class="detail-row">
-                                                <span class="detail-label">Preis-Steigerung:</span>
-                                                <span class="detail-value">Fixpreis</span>
-                                            </div>
-                                            <div class="detail-row">
-                                                <span class="detail-label">DB2 (Ø):</span>
-                                                <span class="detail-value success">58%</span>
-                                            </div>
-                                            <div class="detail-row">
-                                                <span class="detail-label">Total Revenue:</span>
-                                                <span class="detail-value success">5,8M€</span>
-                                            </div>
-                                        </div>
-                                        <div class="artikel-assumptions">
-                                            <strong>Annahmen:</strong> 40% Aufteilung mit Bestückung
-                                        </div>
+                                    <!-- Wird dynamisch gefüllt -->
                                     </div>
                                 </div>
-                            </div>
                             
                             <!-- Compact View (initially hidden) -->
                             <div id="artikel-compact-view" style="display: none;">
                                 <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px;">
-                                    <div onclick="openArtikelDetail('crimp')" style="padding: 12px; background: white; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; transition: all 0.2s;"
-                                         onmouseover="this.style.borderColor='var(--primary)'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 6px rgba(0,0,0,0.1)'"
-                                         onmouseout="this.style.borderColor='var(--border)'; this.style.transform='translateY(0)'; this.style.boxShadow='none'">
-                                        <div style="font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 8px;">Crimpautomat</div>
-                                        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-                                            <span style="font-size: 11px; color: var(--gray);">DB2:</span>
-                                            <span style="font-size: 11px; font-weight: 600; color: var(--success);">37%</span>
-                                        </div>
-                                        <div style="display: flex; justify-content: space-between;">
-                                            <span style="font-size: 11px; color: var(--gray);">Revenue:</span>
-                                            <span style="font-size: 11px; font-weight: 600; color: var(--primary);">87,2M€</span>
-                                        </div>
-                                    </div>
-                                    
-                                    <div onclick="openArtikelDetail('komax')" style="padding: 12px; background: white; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; transition: all 0.2s;"
-                                         onmouseover="this.style.borderColor='var(--primary)'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 6px rgba(0,0,0,0.1)'"
-                                         onmouseout="this.style.borderColor='var(--border)'; this.style.transform='translateY(0)'; this.style.boxShadow='none'">
-                                        <div style="font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 8px;">Mini-Komax</div>
-                                        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-                                            <span style="font-size: 11px; color: var(--gray);">DB2:</span>
-                                            <span style="font-size: 11px; font-weight: 600; color: var(--success);">31%</span>
-                                        </div>
-                                        <div style="display: flex; justify-content: space-between;">
-                                            <span style="font-size: 11px; color: var(--gray);">Revenue:</span>
-                                            <span style="font-size: 11px; font-weight: 600; color: var(--primary);">24,8M€</span>
-                                        </div>
-                                    </div>
-                                    
-                                    <div onclick="openArtikelDetail('digital')" style="padding: 12px; background: white; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; transition: all 0.2s;"
-                                         onmouseover="this.style.borderColor='var(--primary)'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 6px rgba(0,0,0,0.1)'"
-                                         onmouseout="this.style.borderColor='var(--border)'; this.style.transform='translateY(0)'; this.style.boxShadow='none'">
-                                        <div style="font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 8px;">Digital Shopfloor</div>
-                                        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-                                            <span style="font-size: 11px; color: var(--gray);">DB2:</span>
-                                            <span style="font-size: 11px; font-weight: 600; color: var(--success);">58%</span>
-                                        </div>
-                                        <div style="display: flex; justify-content: space-between;">
-                                            <span style="font-size: 11px; color: var(--gray);">Revenue:</span>
-                                            <span style="font-size: 11px; font-weight: 600; color: var(--primary);">5,8M€</span>
-                                        </div>
-                                    </div>
+                                    <!-- Wird dynamisch gefüllt -->
                                 </div>
                             </div>
                             
@@ -1654,60 +1464,11 @@ function backToArtikelOverview() {
 Object.assign(cfoDashboard, {
     currentArtikel: null,
     artikelData: {
-    crimp: {
-        id: 'crimp',
-        name: 'Crimpautomat',
-        type: 'neu',
-        release: '2024-12',  // Release-Datum hinzugefügt
-        startMenge: 200,     // Start-Menge für Jahr 1
-        startPreis: 5.00,    // Start-Preis
-        hk: 3.00,
-        active: true,
-        // Volumes und Prices werden dynamisch berechnet
-    },
-    komax: {
-        id: 'komax',
-        name: 'Mini-Komax ohne CORE',
-        type: 'neu',
-        release: '2024-12',  // Release-Datum hinzugefügt
-        startMenge: 10,      // Start-Menge für Jahr 1
-        startPreis: 1000,    // Start-Preis
-        hk: 670.00,
-        active: true,
-        // Volumes und Prices werden dynamisch berechnet
-    },
-    digital: {
-        id: 'digital',
-        name: 'Digital Shopfloor Backend',
-        type: 'cross',
-        release: '2025-06',  // Release-Datum hinzugefügt
-        startMenge: 50,      // Start-Menge für Jahr 1
-        startPreis: 480,     // Start-Preis
-        hk: 192.00,
-        active: true,
-        // Volumes und Prices werden dynamisch berechnet
-    }
+        // Leer - Artikel werden dynamisch erstellt
 },
 
 projektData: {
-        'robotics': {
-            id: 'robotics',
-            name: 'Robotics im Schaltschrankbau',
-            beschreibung: 'Verdrahtungsautomatisierung',
-            artikel: ['crimp', 'komax', 'digital'],  // Verweise auf existierende Artikel
-            status: 'aktiv',
-            startDatum: '2024-01',
-            isDemo: 'true',
-        },
-        'cybersecurity': {
-            id: 'cybersecurity',
-            name: 'Cyber Security Consulting',
-            beschreibung: 'IT-Sicherheitslösungen',
-            artikel: [],  // Aktuell keine Artikel
-            status: 'aktiv',
-            startDatum: '2025-01',
-            isDemo: 'true',
-        }
+    //Leer - alle Projekte kommen aus der Datenbank
     },
 
     currentValues: {
