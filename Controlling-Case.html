@@ -89,6 +89,7 @@
             display: flex;
             flex: 1;
             overflow: hidden;
+            max-width: 100%;
         }
 
         .dashboard-content {
@@ -490,6 +491,23 @@
             box-shadow: var(--shadow);
             margin-bottom: 24px;
         }
+
+        /* FIX für Projekt-Overview Layout */
+        #projekt-overview {
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+            padding-left: 20px !important;
+            padding-right: 20px !important;
+            width: 100% !important;
+            max-width: 100% !important;
+        }
+
+        #projekt-list-view,
+        #projekt-card-view,
+        #projekt-compact-view {
+            width: 100%;
+            max-width: 100%;
+        }       
 
         .section-title {
             font-size: 18px;
