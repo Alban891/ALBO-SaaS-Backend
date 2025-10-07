@@ -2138,7 +2138,8 @@ async function saveQuickArtikel() {
                 investment_typ: null,
                 beschreibung: null
             }
-        ]);
+        ])
+        .select(); // 🔹 <--- Das hier hinzufügen, damit Supabase die neuen Daten zurückgibt
 
     if (error) {
     console.error('❌ Fehler beim Speichern in Supabase:', error);
