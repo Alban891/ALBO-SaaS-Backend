@@ -3098,11 +3098,48 @@ detailView.style.display = 'block';
 // NEU: Initialisiere die Modelle nach kurzer Verzögerung
 setTimeout(() => {
     if(document.getElementById('release-datum')) {
+        // Setze Zeithorizont aus DB
+        if (artikelData.zeitraum) {
+            currentHorizont = artikelData.zeitraum;
+            // Update Button-Styles
+            document.querySelectorAll('.zeitraum-btn').forEach(btn => {
+                btn.style.border = '1px solid var(--border)';
+                btn.style.background = 'white';
+                btn.style.color = 'var(--text)';
+                btn.style.fontWeight = 'normal';
+            });
+            const activeBtn = document.querySelector(`.zeitraum-btn:nth-child(${artikelData.zeitraum === 3 ? 1 : artikelData.zeitraum === 5 ? 2 : 3})`);
+            if (activeBtn) {
+                activeBtn.style.border = '2px solid var(--primary)';
+                activeBtn.style.background = 'var(--primary)';
+                activeBtn.style.color = 'white';
+                activeBtn.style.fontWeight = '600';
+            }
+        }
+        
         updateTabellenSpalten();
+        
+        // ✅ NEU: Lade gespeicherte Jahres-Daten in die Tabelle
+        loadSavedYearData();
+        
         updateErsteZeile();
         berechneModelle();
+        
+        // ✅ NEU: Setze die Radio-Buttons für Modelle
+        if (artikelData.mengen_modell) {
+            const mengenRadio = document.querySelector(`input[name="mengen-modell"][value="${artikelData.mengen_modell}"]`);
+            if (mengenRadio) mengenRadio.checked = true;
+        }
+        if (artikelData.preis_modell) {
+            const preisRadio = document.querySelector(`input[name="preis-modell"][value="${artikelData.preis_modell}"]`);
+            if (preisRadio) preisRadio.checked = true;
+        }
+        if (artikelData.kosten_modell) {
+            const kostenRadio = document.querySelector(`input[name="kosten-modell"][value="${artikelData.kosten_modell}"]`);
+            if (kostenRadio) kostenRadio.checked = true;
+        }
     }
-}, 100);
+}, 150);
 
 } catch (error) {
     console.error('Fehler:', error);
@@ -7416,6 +7453,44 @@ window.berechneModelle = function() {
     // Tabellen-Header aktualisieren
     updateTabellenSpalten();
 
+}
+
+// Lade gespeicherte Jahres-Daten aus der Datenbank in die Tabelle
+function loadSavedYearData() {
+    const artikelId = cfoDashboard.currentArtikel;
+    const artikel = cfoDashboard.artikelData[artikelId];
+    
+    if (!artikel) return;
+    
+    console.log('📥 Lade gespeicherte Jahres-Daten:', artikel.volumes, artikel.prices);
+    
+    // Bestimme Startjahr
+    const startYear = artikel.tableStartYear || parseInt((artikel.release_datum || '2025-01').split('-')[0]);
+    
+    // Lade Mengen, Preise und HK
+    for (let i = 1; i <= (artikel.zeitraum || currentHorizont || 5); i++) {
+        const year = startYear + i - 1;
+        
+        // Menge
+        const mengeInput = document.getElementById(`menge-jahr-${i}`);
+        if (mengeInput && artikel.volumes && artikel.volumes[year]) {
+            mengeInput.value = formatThousands(artikel.volumes[year]);
+        }
+        
+        // Preis
+        const preisInput = document.getElementById(`preis-jahr-${i}`);
+        if (preisInput && artikel.prices && artikel.prices[year]) {
+            preisInput.value = formatDecimal(artikel.prices[year]);
+        }
+        
+        // HK (falls gespeichert)
+        const hkInput = document.getElementById(`hk-jahr-${i}`);
+        if (hkInput && artikel.hk) {
+            hkInput.value = formatDecimal(artikel.hk);
+        }
+    }
+    
+    console.log('✅ Jahres-Daten geladen!');
 }
 
 function berechneMengen(start, modell) {
