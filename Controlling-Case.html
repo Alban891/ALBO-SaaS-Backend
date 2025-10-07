@@ -6167,6 +6167,9 @@ async function loadProjectsFromDatabase() {
                     artikel: [],
                     startDatum: dbProjekt.start_date,
                     endDatum: dbProjekt.end_date
+
+                    // 🔹 Artikel für dieses Projekt laden
+                    await loadArtikelFromDatabase(projektId);
                 };
             });
             
@@ -6778,6 +6781,51 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     }, 45000);
 });
+
+// 🔹 Funktion zum Laden der Artikel aus der Datenbank für ein bestimmtes Projekt
+async function loadArtikelFromDatabase(projektId) {
+    if (!window.supabaseClient) {
+        console.error('❌ Supabase Client nicht verfügbar');
+        return;
+    }
+
+    try {
+        // UUID aus "projekt-db-xxxx" extrahieren
+        const cleanProjektId = projektId.replace('projekt-db-', '');
+
+        // 🔹 Artikel aus Supabase laden
+        const { data, error } = await window.supabaseClient
+            .from('ALBO_Artikel')
+            .select('*')
+            .eq('project_id', cleanProjektId);
+
+        if (error) {
+            console.error('❌ Fehler beim Laden der Artikel:', error);
+            return;
+        }
+
+        console.log(`📦 ${data.length} Artikel für Projekt ${projektId} geladen`);
+
+        // 🔹 Artikel im Dashboard speichern
+        cfoDashboard.projektData[projektId].artikel = data.map(dbArtikel => ({
+            id: dbArtikel.id,
+            name: dbArtikel.name,
+            typ: dbArtikel.typ,
+            release_datum: dbArtikel.release_datum,
+            kategorie: dbArtikel.kategorie,
+            zielmarkt: dbArtikel.zielmarkt,
+            strategie: dbArtikel.strategie,
+            investment_typ: dbArtikel.investment_typ,
+            beschreibung: dbArtikel.beschreibung
+        }));
+
+        // 🔹 Liste oder Karten im UI aktualisieren
+        renderArtikelListByProjekt(projektId);
+
+    } catch (err) {
+        console.error('❌ Unerwarteter Fehler beim Laden der Artikel:', err);
+    }
+}
 
 // KI-Validierungs-Funktionen für flexible Eingaben
 function handleCategoryChange(select) {
