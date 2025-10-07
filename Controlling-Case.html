@@ -5793,6 +5793,10 @@ async function openProjektArtikel(projektId) {
 
                 // Verlinke Artikel mit Projekt
                 const projekt = cfoDashboard.projektData[projektId];
+                if (projekt && !projekt.artikel) {
+                    projekt.artikel = []; // ✅ Stelle sicher, dass das Array existiert
+                }
+
                 if (projekt && !projekt.artikel.includes(artikelId)) {
                     projekt.artikel.push(artikelId);
                 }
