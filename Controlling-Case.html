@@ -5742,7 +5742,7 @@ function switchProjektView(viewType) {
     if (viewType === 'compact') document.getElementById('projekt-compact-view').style.display = 'block';
 }
 
-function openProjektArtikel(projektId) {
+async function openProjektArtikel(projektId) {
     console.log('📂 Öffne Projekt:', projektId);
     
     cfoDashboard.currentProjekt = projektId;
@@ -5758,10 +5758,52 @@ function openProjektArtikel(projektId) {
     if (artikelOverview) {
         artikelOverview.style.display = 'block';
     }
-    
-    // 3. Filtere und rendere Artikel für dieses Projekt
+
+    // 3. Lade Artikel aus Supabase
+    if (window.supabaseClient) {
+        const supabaseProjektId = projektId.replace('projekt-db-', '');
+
+        const { data, error } = await window.supabaseClient
+            .from('ALBO_Artikel')
+            .select('*')
+            .eq('project_id', supabaseProjektId);
+
+        if (error) {
+            console.error('❌ Fehler beim Laden der Artikel:', error);
+        } else {
+            console.log(`📦 ${data.length} Artikel geladen`);
+
+            // Artikel im Dashboard speichern
+            data.forEach(artikel => {
+                const artikelId = 'artikel-db-' + artikel.id;
+
+                cfoDashboard.artikelData[artikelId] = {
+                    id: artikelId,
+                    projektId: projektId,
+                    name: artikel.name,
+                    typ: artikel.typ,
+                    kategorie: artikel.kategorie,
+                    geschaeftsmodell: artikel.geschaeftsmodell,
+                    zielmarkt: artikel.zielmarkt,
+                    strategie: artikel.strategie,
+                    investment_typ: artikel.investment_typ,
+                    beschreibung: artikel.beschreibung,
+                    release_datum: artikel.release_datum
+                };
+
+                // Verlinke Artikel mit Projekt
+                const projekt = cfoDashboard.projektData[projektId];
+                if (projekt && !projekt.artikel.includes(artikelId)) {
+                    projekt.artikel.push(artikelId);
+                }
+            });
+        }
+    }
+
+    // 4. Filtere und rendere Artikel für dieses Projekt
     filterArtikelByProjekt(projektId);
 }
+
 
 function filterArtikelByProjekt(projektId) {
     const projekt = cfoDashboard.projektData[projektId];
