@@ -4764,9 +4764,17 @@ function initUmsatzChart() {
 }
 
 
-function initAbsatzChart() {
-    const ctx = document.getElementById('absatz-chart').getContext('2d');
-    new Chart(ctx, {
+ffunction initAbsatzChart() {
+    const ctx = document.getElementById('absatz-chart')?.getContext('2d');
+    if (!ctx) return;
+
+    // 🧹 Falls ein alter Chart existiert → zerstören
+    if (window.absatzChartInstance) {
+        window.absatzChartInstance.destroy();
+    }
+
+    // 📊 Neuen Chart erstellen und global speichern
+    window.absatzChartInstance = new Chart(ctx, {
         type: 'bar',
         data: {
             labels: ['2024', '2025', '2026', '2027', '2028', '2029', '2030'],
@@ -4793,31 +4801,42 @@ function initAbsatzChart() {
     });
 }
 
+
 function initDB2Chart() {
-    const ctx = document.getElementById('db2-chart').getContext('2d');
-    
-    new Chart(ctx, {
+    const ctx = document.getElementById('db2-chart')?.getContext('2d');
+    if (!ctx) return;
+
+    // 🧹 Falls ein alter Chart existiert → zerstören
+    if (window.db2ChartInstance) {
+        window.db2ChartInstance.destroy();
+    }
+
+    // 📊 Neuen Chart erstellen und global speichern
+    window.db2ChartInstance = new Chart(ctx, {
         type: 'bar',
         data: {
             labels: ['2024', '2025', '2026', '2027', '2028', '2029', '2030'],
-            datasets: [{
-                label: 'DB2',
-                data: [0.0, 1.0, 3.7, 8.5, 15.4, 17.1, 17.8],
-                backgroundColor: '#9ca3af',
-                borderColor: '#6b7280',
-                borderWidth: 1,
-                yAxisID: 'y'
-            }, {
-                label: 'DB2 %',
-                data: [0, 33, 34, 35, 36, 36, 36],
-                type: 'line',
-                borderColor: '#6b7280',
-                backgroundColor: 'transparent',
-                borderWidth: 2,
-                yAxisID: 'y1',
-                pointStyle: 'circle',
-                pointRadius: 4
-            }]
+            datasets: [
+                {
+                    label: 'DB2',
+                    data: [0.0, 1.0, 3.7, 8.5, 15.4, 17.1, 17.8],
+                    backgroundColor: '#9ca3af',
+                    borderColor: '#6b7280',
+                    borderWidth: 1,
+                    yAxisID: 'y'
+                },
+                {
+                    label: 'DB2 %',
+                    data: [0, 33, 34, 35, 36, 36, 36],
+                    type: 'line',
+                    borderColor: '#6b7280',
+                    backgroundColor: 'transparent',
+                    borderWidth: 2,
+                    yAxisID: 'y1',
+                    pointStyle: 'circle',
+                    pointRadius: 4
+                }
+            ]
         },
         options: {
             responsive: true,
@@ -4839,22 +4858,31 @@ function initDB2Chart() {
                     beginAtZero: true,
                     max: 40,
                     ticks: {
-                        callback: function(value) {
+                        callback: function (value) {
                             return value + '%';
                         }
                     },
                     grid: {
-                        drawOnChartArea: false,
-                    },
+                        drawOnChartArea: false
+                    }
                 }
             }
         }
     });
 }
 
+
 function initProjektkostenChart() {
-    const ctx = document.getElementById('projektkosten-chart').getContext('2d');
-    new Chart(ctx, {
+    const ctx = document.getElementById('projektkosten-chart')?.getContext('2d');
+    if (!ctx) return;
+
+    // 🧹 Falls ein alter Chart existiert → zerstören
+    if (window.projektkostenChartInstance) {
+        window.projektkostenChartInstance.destroy();
+    }
+
+    // 📊 Neuen Chart erstellen und global speichern
+    window.projektkostenChartInstance = new Chart(ctx, {
         type: 'bar',
         data: {
             labels: ['2024', '2025', '2026', '2027', '2028', '2029', '2030'],
@@ -4881,17 +4909,25 @@ function initProjektkostenChart() {
     });
 }
 
+
 function initDB3JahrChart() {
-    const ctx = document.getElementById('db3-jahr-chart').getContext('2d');
-    
-    new Chart(ctx, {
+    const ctx = document.getElementById('db3-jahr-chart')?.getContext('2d');
+    if (!ctx) return;
+
+    // 🧹 Falls ein alter Chart existiert → zerstören
+    if (window.db3JahrChartInstance) {
+        window.db3JahrChartInstance.destroy();
+    }
+
+    // 📊 Neuen Chart erstellen und global speichern
+    window.db3JahrChartInstance = new Chart(ctx, {
         type: 'bar',
         data: {
             labels: ['2024', '2025', '2026', '2027', '2028', '2029', '2030'],
             datasets: [{
                 label: 'DB3',
                 data: [-1.6, -1.6, 0.5, 5.6, 12.4, 14.0, 15.3],
-                backgroundColor: function(context) {
+                backgroundColor: function (context) {
                     const value = context.parsed.y;
                     return value < 0 ? '#ef4444' : '#9ca3af';
                 },
@@ -4909,23 +4945,33 @@ function initDB3JahrChart() {
                 y: {
                     type: 'linear',
                     display: true,
-                    position: 'left'
+                    position: 'left',
+                    beginAtZero: true
                 }
             }
         }
     });
 }
 
+
 function initDB3KumuliertChart() {
-    const ctx = document.getElementById('db3-kumuliert-chart').getContext('2d');
-    new Chart(ctx, {
+    const ctx = document.getElementById('db3-kumuliert-chart')?.getContext('2d');
+    if (!ctx) return;
+
+    // 🧹 Falls ein alter Chart existiert → zerstören
+    if (window.db3KumuliertChartInstance) {
+        window.db3KumuliertChartInstance.destroy();
+    }
+
+    // 📊 Neuen Chart erstellen und global speichern
+    window.db3KumuliertChartInstance = new Chart(ctx, {
         type: 'bar',
         data: {
             labels: ['2024', '2025', '2026', '2027', '2028', '2029', '2030'],
             datasets: [{
                 label: 'DB3 kumuliert',
                 data: [-1.6, -3.1, -2.6, 3.0, 15.5, 29.4, 44.7],
-                backgroundColor: function(context) {
+                backgroundColor: function (context) {
                     const value = context.parsed.y;
                     return value < 0 ? '#ef4444' : '#9ca3af';
                 },
@@ -4947,6 +4993,7 @@ function initDB3KumuliertChart() {
         }
     });
 }
+
 
 // Dashboard control functions
 function adjustAssumption(type, value) {
