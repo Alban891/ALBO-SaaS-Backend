@@ -2037,31 +2037,40 @@ function addNewArtikel() {
     document.getElementById('new-artikel-name').focus();
 }
 
-function saveQuickArtikel() {
+async function saveQuickArtikel() {
     const name = document.getElementById('new-artikel-name').value.trim();
     const type = document.getElementById('new-artikel-type').value;
     const release = document.getElementById('new-artikel-release').value;
-    
+
     if (!name || !release) {
         alert('Bitte alle Pflichtfelder ausfüllen!');
         return;
     }
-    
+
     const artikelId = 'artikel-' + Date.now();
-    
-    // Minimale Daten speichern
+
+    // 🔹 Aktuelles Projekt bestimmen (wichtig für Supabase-Verknüpfung)
+    const projektId = cfoDashboard.currentProjekt || null;
+    if (!projektId) {
+        console.error("❌ Kein aktives Projekt gefunden!");
+        alert("Bitte zuerst ein Projekt auswählen oder erstellen.");
+        return;
+    }
+
+    // 🔹 Artikel lokal speichern
     cfoDashboard.artikelData[artikelId] = {
         id: artikelId,
+        projektId: projektId,
         name: name,
-        type: type,
-        release: release,
+        typ: type,
+        release_datum: release,
         status: 'entwurf',
         volumes: {},
         prices: {},
         hk: 0
     };
-    
-    // In Liste einfügen
+
+    // 🔹 Artikel im UI anzeigen
     const tbody = document.getElementById('artikel-list-tbody');
     if (tbody) {
         const newRow = document.createElement('tr');
@@ -2070,7 +2079,7 @@ function saveQuickArtikel() {
         newRow.style.transition = 'background 0.2s';
         newRow.onmouseover = function() { this.style.background = 'var(--gray-light)'; };
         newRow.onmouseout = function() { this.style.background = 'transparent'; };
-        
+
         newRow.innerHTML = `
             <td style="padding: 12px; font-weight: 500; color: var(--text); font-size: 13px;">
                 ${name} <span style="font-size: 10px; color: var(--warning); background: #fef3c7; padding: 2px 6px; border-radius: 4px; margin-left: 8px;">ENTWURF</span>
@@ -2095,19 +2104,49 @@ function saveQuickArtikel() {
                 </button>
             </td>
         `;
-        
+
         tbody.appendChild(newRow);
     }
-    
+
+    // 🔹 Neues Modal schließen
     closeNewArtikelModal();
-    
+
+    // 🔹 KI-Log schreiben
     cfoDashboard.aiController.addAIMessage({
         level: 'info',
         title: '📋 Artikel angelegt',
-        text: `"${name}" wurde als Entwurf angelegt. Klicken Sie auf "Vervollständigen" um die Details zu ergänzen.`,
+        text: `"${name}" wurde als Entwurf angelegt und wird in der Datenbank gespeichert...`,
         timestamp: 'Quick Create'
     });
+
+    // 🔹 Supabase speichern
+    if (window.supabaseClient) {
+        try {
+            const { data, error } = await window.supabaseClient
+                .from("ALBO_Artikel")
+                .insert([{
+                    project_id: projektId.replace('projekt-db-', ''),
+                    name: name,
+                    typ: type,
+                    release_datum: release,
+                    status: 'entwurf'
+                }])
+                .select();
+
+            if (error) {
+                console.error("❌ Fehler beim Speichern in Supabase:", error);
+                alert("Fehler beim Speichern des Artikels in der Datenbank!");
+            } else {
+                console.log("✅ Artikel erfolgreich in Supabase gespeichert:", data[0]);
+            }
+        } catch (err) {
+            console.error("⚠️ Unerwarteter Fehler bei Supabase:", err);
+        }
+    } else {
+        console.warn("⚠️ Supabase Client nicht initialisiert — Artikel nur lokal gespeichert.");
+    }
 }
+
 function closeNewArtikelModal() {
     const modal = document.getElementById('new-artikel-modal');
     if (modal) {
@@ -7269,4 +7308,3 @@ window.openProjektArtikel = function(projektId) {
 
 </body>
 </html>
-
