@@ -2121,7 +2121,7 @@ async function saveQuickArtikel() {
 
     // 🔹 Supabase speichern
     try {
-    const { data, error } = await supabase
+    const { data, error } = await window.supabaseClient
         .from('ALBO_Artikel')
         .insert([
             {
