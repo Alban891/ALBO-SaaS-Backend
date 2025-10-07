@@ -4729,43 +4729,40 @@ function initializeCharts() {
 }
 
 function initUmsatzChart() {
-    const ctx = document.getElementById('umsatz-chart').getContext('2d');
-    // Prüfe, ob bereits ein Chart existiert → wenn ja, zerstören
+    const ctx = document.getElementById('umsatz-chart')?.getContext('2d');
+    if (!ctx) return;
+
+    // 🧹 Falls ein alter Chart existiert → zerstören
     if (window.umsatzChartInstance) {
-    window.umsatzChartInstance.destroy();
+        window.umsatzChartInstance.destroy();
     }
 
-    new Chart(ctx, {
+    // 📊 Neuen Chart erzeugen und global speichern
+    window.umsatzChartInstance = new Chart(ctx, {
         type: 'bar',
         data: {
             labels: ['2024', '2025', '2026', '2027', '2028', '2029', '2030'],
             datasets: [{
                 label: 'Umsatz',
-                data: [0.0, 2.9, 10.8, 24.2, 42.3, 47.0, 48.8],
-                backgroundColor: '#9ca3af',
-                borderColor: '#6b7280',
+                data: [0, 2.9, 10.8, 24.2, 42.3, 47.0, 48.8],
                 borderWidth: 1
             }]
         },
         options: {
             responsive: true,
-            maintainAspectRatio: false,
             plugins: {
-                legend: { display: false }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        callback: function(value) {
-                            return value + '';
-                        }
-                    }
+                legend: {
+                    position: 'top'
+                },
+                title: {
+                    display: true,
+                    text: 'Umsatzentwicklung'
                 }
             }
         }
     });
 }
+
 
 function initAbsatzChart() {
     const ctx = document.getElementById('absatz-chart').getContext('2d');
