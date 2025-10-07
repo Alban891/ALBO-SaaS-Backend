@@ -1940,16 +1940,21 @@ window.switchTab = function(tabName) {
 
 // Neue Funktion zum dynamischen Rendern der Artikel-Liste
 function renderArtikelListByProjekt() {
-    const tbody = document.getElementById('artikel-list-tbody');
-    if (!tbody) return;
-    
-    tbody.innerHTML = '';  // <-- Nur Semikolon, KEIN Komma!
-    
     const currentProjekt = cfoDashboard.currentProjekt;
     const projekt = cfoDashboard.projektData[currentProjekt];
-    
+
+    // 🟢 Sicherheitszeile – falls noch keine Artikel existieren
+    if (projekt && !projekt.artikel) {
+        projekt.artikel = [];
+    }
+
+    const tbody = document.getElementById('artikel-list-tbody');
+    if (!tbody) return;
+
+    tbody.innerHTML = ''; // <-- Nur Semikolon, kein Komma!
+
     if (!projekt) return;
-    
+
     // Prüfe ob Demo-Projekt mit Dummy-Artikeln
     if (projekt.isDemo && projekt.artikel.length > 0) {
         // Zeige die Dummy-Artikel für Demo-Projekte
