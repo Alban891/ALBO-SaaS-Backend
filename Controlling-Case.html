@@ -1938,6 +1938,8 @@ window.switchTab = function(tabName) {
     saveNavigationState();
 }
 
+console.log('Geladene Artikel aus Supabase:', data);
+
 // Neue Funktion zum dynamischen Rendern der Artikel-Liste
 function renderArtikelListByProjekt() {
     const currentProjekt = cfoDashboard.currentProjekt;
