@@ -6155,7 +6155,8 @@ async function loadProjectsFromDatabase() {
             .select('*');
         
         if (!error && data) {
-            data.forEach(dbProjekt => {
+            // 🔹 Verwende for...of statt forEach()
+             for (const dbProjekt of data) {
                 const projektId = 'projekt-db-' + dbProjekt.id;
                 cfoDashboard.projektData[projektId] = {
                     id: projektId,
@@ -6167,15 +6168,16 @@ async function loadProjectsFromDatabase() {
                     artikel: [],
                     startDatum: dbProjekt.start_date,
                     endDatum: dbProjekt.end_date
-
-                    // 🔹 Artikel für dieses Projekt laden
-                    await loadArtikelFromDatabase(projektId);
                 };
-            });
+
+                // 🔹 Artikel für dieses Projekt laden
+                await loadArtikelFromDatabase(projektId);
+                }
+            }
             
             // NEU: Render NACH dem Laden
             renderProjektOverview();
-        }
+    
     } catch (err) {
         console.error('Fehler:', err);
     }
