@@ -3417,7 +3417,6 @@ function getArtikelTabContent() {
     `;
 }
 
-
 // ============================================
 // PROJEKT-KOSTEN KI-REGEL ENGINE (ERWEITERT)
 // ============================================
@@ -4895,7 +4894,6 @@ function initUmsatzChart() {
     });
 }
 
-
 function initAbsatzChart() {
     const ctx = document.getElementById('absatz-chart')?.getContext('2d');
     if (!ctx) return;
@@ -4932,7 +4930,6 @@ function initAbsatzChart() {
         }
     });
 }
-
 
 function initDB2Chart() {
     const ctx = document.getElementById('db2-chart')?.getContext('2d');
@@ -5003,7 +5000,6 @@ function initDB2Chart() {
     });
 }
 
-
 function initProjektkostenChart() {
     const ctx = document.getElementById('projektkosten-chart')?.getContext('2d');
     if (!ctx) return;
@@ -5040,7 +5036,6 @@ function initProjektkostenChart() {
         }
     });
 }
-
 
 function initDB3JahrChart() {
     const ctx = document.getElementById('db3-jahr-chart')?.getContext('2d');
@@ -5085,7 +5080,6 @@ function initDB3JahrChart() {
     });
 }
 
-
 function initDB3KumuliertChart() {
     const ctx = document.getElementById('db3-kumuliert-chart')?.getContext('2d');
     if (!ctx) return;
@@ -5125,7 +5119,6 @@ function initDB3KumuliertChart() {
         }
     });
 }
-
 
 // Dashboard control functions
 function adjustAssumption(type, value) {
@@ -5172,42 +5165,182 @@ function aiAction(action) {
     });
 }
 
-window.saveArtikelChanges = function() {
-    if (!cfoDashboard.currentArtikel) return;
+window.saveArtikelChanges = async function() {
+    if (!cfoDashboard.currentArtikel) {
+        alert('Kein Artikel ausgewählt!');
+        return;
+    }
     
-    // WICHTIG: Hier werden die Eingaben aus den Feldern geholt und gespeichert
-    for (let year = 2025; year <= 2030; year++) {
-        const volumeInput = document.getElementById(`year-${year}-volume`);
-        const priceInput = document.getElementById(`year-${year}-price`);
+    const artikelId = cfoDashboard.currentArtikel;
+    const artikel = cfoDashboard.artikelData[artikelId];
+    
+    if (!artikel) {
+        alert('Artikel nicht gefunden!');
+        return;
+    }
+    
+    console.log('💾 Speichere Artikel:', artikelId);
+    
+    // ============================================
+    // 1. SAMMLE ALLE DATEN AUS DEN FORMULAREN
+    // ============================================
+    
+    // Basis-Informationen
+    const name = document.getElementById('artikel-name')?.value || artikel.name;
+    const kategorie = document.getElementById('produkt-kategorie')?.value;
+    const geschaeftsmodell = document.getElementById('geschaeftsmodell')?.value;
+    const zielmarkt = document.getElementById('zielmarkt')?.value;
+    const effektTyp = document.getElementById('effekt-typ')?.value;
+    const strategie = document.getElementById('strategie')?.value;
+    const investitionstyp = document.getElementById('investitionstyp')?.value;
+    const releaseDatum = document.getElementById('release-datum')?.value;
+    const annahmen = document.getElementById('annahmen')?.value;
+    
+    // Startwerte
+    const startMenge = parseFormattedNumber(document.getElementById('start-menge')?.value || '0');
+    const startPreis = parseFormattedNumber(document.getElementById('start-preis')?.value || '0');
+    const startHK = parseFormattedNumber(document.getElementById('start-hk')?.value || '0');
+    
+    // Entwicklungsmodelle
+    const mengenModell = document.querySelector('input[name="mengen-modell"]:checked')?.value || 'realistisch';
+    const preisModell = document.querySelector('input[name="preis-modell"]:checked')?.value || 'konstant';
+    const kostenModell = document.querySelector('input[name="kosten-modell"]:checked')?.value || 'lernkurve';
+    
+    // Zeithorizont
+    const zeitraum = currentHorizont || 5;
+    
+    // ============================================
+    // 2. SAMMLE JAHRES-DATEN (VOLUMES & PRICES)
+    // ============================================
+    
+    const volumes = {};
+    const prices = {};
+    const hkValues = {};
+    
+    // Bestimme Startjahr aus Release-Datum
+    const startYear = artikel.tableStartYear || parseInt(releaseDatum?.split('-')[0]) || 2025;
+    
+    for (let i = 1; i <= zeitraum; i++) {
+        const year = startYear + i - 1;
         
-        if (volumeInput) {
-            cfoDashboard.artikelData[cfoDashboard.currentArtikel].volumes[year] = 
-                parseFormattedNumber(volumeInput.value);
+        const mengeInput = document.getElementById(`menge-jahr-${i}`);
+        const preisInput = document.getElementById(`preis-jahr-${i}`);
+        const hkInput = document.getElementById(`hk-jahr-${i}`);
+        
+        if (mengeInput) {
+            volumes[year] = parseFormattedNumber(mengeInput.value);
         }
-        if (priceInput) {
-            cfoDashboard.artikelData[cfoDashboard.currentArtikel].prices[year] = 
-                parseFormattedNumber(priceInput.value);
+        if (preisInput) {
+            prices[year] = parseFormattedNumber(preisInput.value);
+        }
+        if (hkInput) {
+            hkValues[year] = parseFormattedNumber(hkInput.value);
         }
     }
     
-    // Update HK if changed
-    const hkInput = document.getElementById('param-hk-stueck');
-    if (hkInput) {
-        cfoDashboard.artikelData[cfoDashboard.currentArtikel].hk = 
-            parseFormattedNumber(hkInput.value);
+    // ============================================
+    // 3. UPDATE LOKALER CACHE
+    // ============================================
+    
+    artikel.name = name;
+    artikel.kategorie = kategorie;
+    artikel.geschaeftsmodell = geschaeftsmodell;
+    artikel.zielmarkt = zielmarkt;
+    artikel.typ = effektTyp;
+    artikel.strategie = strategie;
+    artikel.investment_typ = investitionstyp;
+    artikel.release_datum = releaseDatum;
+    artikel.annahmen = annahmen;
+    artikel.volumes = volumes;
+    artikel.prices = prices;
+    artikel.hk = startHK; // Durchschnittlicher HK
+    artikel.start_menge = startMenge;
+    artikel.start_preis = startPreis;
+    artikel.start_hk = startHK;
+    artikel.mengen_modell = mengenModell;
+    artikel.preis_modell = preisModell;
+    artikel.kosten_modell = kostenModell;
+    artikel.zeitraum = zeitraum;
+    
+    console.log('📊 Gesammelte Daten:', {
+        name,
+        volumes,
+        prices,
+        mengenModell,
+        preisModell,
+        kostenModell
+    });
+    
+    // ============================================
+    // 4. SPEICHERE IN SUPABASE
+    // ============================================
+    
+    if (window.supabaseClient && artikelId.startsWith('artikel-db-')) {
+        try {
+            const dbId = artikelId.replace('artikel-db-', '');
+            
+            const { data, error } = await window.supabaseClient
+                .from('ALBO_Artikel')
+                .update({
+                    name: name,
+                    typ: effektTyp,
+                    kategorie: kategorie,
+                    geschaeftsmodell: geschaeftsmodell,
+                    zielmarkt: zielmarkt,
+                    strategie: strategie,
+                    investment_typ: investitionstyp,
+                    release_datum: releaseDatum,
+                    annahmen: annahmen,
+                    volumes: volumes,
+                    prices: prices,
+                    hk: startHK,
+                    start_menge: startMenge,
+                    start_preis: startPreis,
+                    start_hk: startHK,
+                    mengen_modell: mengenModell,
+                    preis_modell: preisModell,
+                    kosten_modell: kostenModell,
+                    zeitraum: zeitraum
+                })
+                .eq('id', dbId)
+                .select();
+            
+            if (error) {
+                console.error('❌ Supabase Fehler:', error);
+                alert('Fehler beim Speichern in der Datenbank: ' + error.message);
+                return;
+            }
+            
+            console.log('✅ In Supabase gespeichert:', data);
+            
+        } catch (err) {
+            console.error('❌ Unerwarteter Fehler:', err);
+            alert('Fehler beim Speichern: ' + err.message);
+            return;
+        }
     }
     
-    // HIER PASSIERT DIE ECHTZEIT-AKTUALISIERUNG
+    // ============================================
+    // 5. UPDATE DASHBOARD & CHARTS
+    // ============================================
+    
     updateAllCharts();
+    
+    // ============================================
+    // 6. SUCCESS FEEDBACK
+    // ============================================
     
     cfoDashboard.aiController.addAIMessage({
         level: 'success',
-        title: '✅ Änderungen gespeichert & Dashboard aktualisiert',
-        text: `Artikel "${cfoDashboard.artikelData[cfoDashboard.currentArtikel].name}" wurde aktualisiert. Alle Diagramme neu berechnet.`,
+        title: '✅ Artikel gespeichert',
+        text: `"${name}" wurde erfolgreich in der Datenbank aktualisiert. Alle Änderungen sind permanent gespeichert.`,
         timestamp: new Date().toLocaleTimeString('de-DE', {hour: '2-digit', minute: '2-digit'})
     });
     
-    backToArtikelOverview();
+    // Zurück zur Übersicht
+    setTimeout(() => {
+        backToArtikelOverview();
+    }, 1000);
 };
 
 // Artikel data loading functions
@@ -5794,7 +5927,6 @@ async function renderProjektList() {
     updateProjektStats?.();
 }
 
-
 function renderProjektCards() {
     const container = document.getElementById('projekt-grid-container');
     if (!container) return;
@@ -5998,7 +6130,6 @@ async function openProjektArtikel(projektId) {
     // 4. Filtere und rendere Artikel für dieses Projekt
     filterArtikelByProjekt(projektId);
 }
-
 
 function filterArtikelByProjekt(projektId) {
     const projekt = cfoDashboard.projektData[projektId];
@@ -6334,8 +6465,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderProjektOverview();
     }, 1000); // künstliche Verzögerung von 1 Sekunde (optional, angenehm fürs Auge)
 });
-
-
 
 // ============================================
 // HILFSFUNKTIONEN FÜR PROJEKT-TABELLE
