@@ -1486,7 +1486,7 @@
                                 </div>
                             </div>
                             
-                            <div style="text-align: center; margin-top: 20px;">
+                            <div id="bottom-add-artikel-button" style="text-align: center; margin-top: 20px;">
                                 <button class="add-artikel-btn" onclick="addNewArtikel()">
                                     ➕ Neuer Artikel hinzufügen
                                 </button>
@@ -1962,6 +1962,9 @@ function renderArtikelListByProjekt() {
 
     tbody.innerHTML = ''; // Tabelle leeren
 
+    // 🔴 BUTTON-STEUERUNG: Hole Button-Element
+    const bottomButton = document.getElementById('bottom-add-artikel-button');
+
     // ✅ Wenn keine Artikel vorhanden → Platzhalter
     if (projekt.artikel.length === 0) {
         tbody.innerHTML = `
@@ -1979,6 +1982,12 @@ function renderArtikelListByProjekt() {
                 </td>
             </tr>
         `;
+        
+        // 🔴 VERSTECKE UNTEREN BUTTON
+        if (bottomButton) {
+            bottomButton.style.display = 'none';
+            console.log('✓ Unterer Button versteckt (keine Artikel)');
+        }
         return;
     }
 
@@ -2062,7 +2071,13 @@ function renderArtikelListByProjekt() {
         tbody.appendChild(row);
     });
 
-    console.log(`✅ ${projekt.artikel.length} Artikel gerendert`);
+    // 🔴 ZEIGE UNTEREN BUTTON WIEDER
+    if (bottomButton) {
+        bottomButton.style.display = 'block';
+        console.log(`✓ ${projekt.artikel.length} Artikel gerendert, unterer Button angezeigt`);
+    } else {
+        console.log(`✅ ${projekt.artikel.length} Artikel gerendert`);
+    }
 }
 
 // Alle anderen bestehenden Funktionen bleiben unverändert
