@@ -5193,7 +5193,13 @@ window.saveArtikelChanges = async function() {
     const effektTyp = document.getElementById('effekt-typ')?.value;
     const strategie = document.getElementById('strategie')?.value;
     const investitionstyp = document.getElementById('investitionstyp')?.value;
-    const releaseDatum = document.getElementById('release-datum')?.value;
+
+    // ✅ NEUE ZEILEN - Release-Datum konvertieren
+    let releaseDatum = document.getElementById('release-datum')?.value;
+    if (releaseDatum && releaseDatum.length === 7) {
+        releaseDatum = releaseDatum + '-01'; // "2024-12" → "2024-12-01"
+    }
+    
     const annahmen = document.getElementById('annahmen')?.value;
     
     // Startwerte
