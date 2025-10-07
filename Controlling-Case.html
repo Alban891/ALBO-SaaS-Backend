@@ -2125,7 +2125,7 @@ async function saveQuickArtikel() {
         .from('ALBO_Artikel')
         .insert([
             {
-                project_id: cfoDashboard.projektData[cfoDashboard.currentProjekt]?.id || null                            // Referenz auf das Projekt
+                project_id: cfoDashboard.projektData[cfoDashboard.currentProjekt]?.id || null,                            // Referenz auf das Projekt
                 name: name,                                                                                             // Artikelbezeichnung
                 typ: type,                                                                                              // Effekt-Typ
                 release_datum: release ? release + '-01' : null,                                                        // Startdatum (Date oder Text)
@@ -7317,3 +7317,4 @@ window.openProjektArtikel = function(projektId) {
 
 </body>
 </html>
+
