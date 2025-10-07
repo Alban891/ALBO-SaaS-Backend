@@ -2139,10 +2139,14 @@ async function saveQuickArtikel() {
         ]);
 
     if (error) {
-        console.error('Fehler beim Speichern in Supabase:', error);
-        alert('Fehler beim Speichern des Artikels in der Datenbank!');
-        return;
-    }
+    console.error('❌ Fehler beim Speichern in Supabase:', error);
+    alert('Fehler beim Speichern des Artikels in der Datenbank!');
+
+    // 🔍 Zusätzliche Debug-Ausgabe für Details
+    console.log('Supabase Error Details:', JSON.stringify(error, null, 2));
+
+    return;
+}
 
     console.log('✅ Artikel erfolgreich gespeichert:', data);
 } catch (err) {
