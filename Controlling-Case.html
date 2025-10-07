@@ -1943,24 +1943,19 @@ function renderArtikelListByProjekt() {
     const currentProjekt = cfoDashboard.currentProjekt;
     const projekt = cfoDashboard.projektData[currentProjekt];
 
-    // 🟢 Sicherheitszeile – falls noch keine Artikel existieren
-    if (projekt && !projekt.artikel) {
-        projekt.artikel = [];
-    }
+    // 🟢 Sicherheitscheck
+    if (!projekt) return;
+
+    // 🟢 Falls keine Artikel vorhanden sind, leeres Array erstellen
+    if (!projekt.artikel) projekt.artikel = [];
 
     const tbody = document.getElementById('artikel-list-tbody');
     if (!tbody) return;
 
-    tbody.innerHTML = ''; // <-- Nur Semikolon, kein Komma!
+    tbody.innerHTML = ''; // Bestehende Zeilen löschen
 
-    if (!projekt) return;
-
-    // Prüfe ob Demo-Projekt mit Dummy-Artikeln
-    if (projekt.isDemo && projekt.artikel.length > 0) {
-        // Zeige die Dummy-Artikel für Demo-Projekte
-        // Hier kannst du den existierenden HTML-Code wiederverwenden
-    } else if (projekt.artikel.length === 0) {
-        // Zeige "Keine Artikel" Message
+    // 🔹 Wenn keine Artikel vorhanden sind → Platzhalter anzeigen
+    if (projekt.artikel.length === 0) {
         tbody.innerHTML = `
             <tr>
                 <td colspan="8" style="padding: 60px; text-align: center;">
@@ -1976,10 +1971,26 @@ function renderArtikelListByProjekt() {
                 </td>
             </tr>
         `;
-    } else {
-        // Rendere die echten Artikel
-        // Hier Code für echte Artikel
+        return;
     }
+
+    // 🔹 Wenn Artikel existieren → Tabelle füllen
+    projekt.artikel.forEach((artikel) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${artikel.name || '-'}</td>
+            <td>${artikel.typ || '-'}</td>
+            <td>${artikel.release_datum ? artikel.release_datum.substring(0, 10) : '-'}</td>
+            <td>${artikel.start_preis || '-'}</td>
+            <td>${artikel.peak_menge || '-'}</td>
+            <td>${artikel.db2 || '-'}</td>
+            <td>${artikel.total_revenue || '-'}</td>
+            <td style="text-align:right;">
+                <button class="btn-small" onclick="openArtikelDetail('${artikel.id}')">🔍</button>
+            </td>
+        `;
+        tbody.appendChild(row);
+    });
 }
 
 // Alle anderen bestehenden Funktionen bleiben unverändert
@@ -6792,7 +6803,7 @@ async function loadArtikelFromDatabase(projektId) {
     }
 
     try {
-        // UUID aus "projekt-db-xxxx" extrahieren
+        // 🔹 UUID aus "projekt-db-xxxx" extrahieren
         const cleanProjektId = projektId.replace('projekt-db-', '');
 
         // 🔹 Artikel aus Supabase laden
@@ -6801,15 +6812,22 @@ async function loadArtikelFromDatabase(projektId) {
             .select('*')
             .eq('project_id', cleanProjektId);
 
+        // 🔹 Fehlerprüfung
         if (error) {
             console.error('❌ Fehler beim Laden der Artikel:', error);
             return;
         }
 
-        console.log(`📦 ${data.length} Artikel für Projekt ${projektId} geladen`);
+        console.log(`📦 ${data?.length || 0} Artikel für Projekt ${projektId} geladen`);
+
+        // 🔹 Sicherheits-Check: Existiert das Projektobjekt im Dashboard?
+        if (!cfoDashboard.projektData[projektId]) {
+            console.warn(`⚠️ Projekt ${projektId} nicht im Dashboard gefunden – wird neu erstellt.`);
+            cfoDashboard.projektData[projektId] = { artikel: [] };
+        }
 
         // 🔹 Artikel im Dashboard speichern
-        cfoDashboard.projektData[projektId].artikel = data.map(dbArtikel => ({
+        cfoDashboard.projektData[projektId].artikel = (data || []).map(dbArtikel => ({
             id: dbArtikel.id,
             name: dbArtikel.name,
             typ: dbArtikel.typ,
