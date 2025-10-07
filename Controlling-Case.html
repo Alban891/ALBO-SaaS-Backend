@@ -2455,40 +2455,114 @@ function formatRevenue(revenue) {
     }
 }
 
-function openArtikelDetail(id) {
+async function openArtikelDetail(id) {
     try {
         console.log('Opening artikel detail for ID:', id);
         
         // Store current artikel ID
         cfoDashboard.currentArtikel = id;
+
+        // ============================================
+// LADE DATEN AUS SUPABASE
+// ============================================
+
+if (window.supabaseClient && id.startsWith('artikel-db-')) {
+    const dbId = id.replace('artikel-db-', '');
+    
+    console.log('🔄 Lade Artikel-Daten aus Datenbank...');
+    
+    const { data, error } = await window.supabaseClient
+        .from('ALBO_Artikel')
+        .select('*')
+        .eq('id', dbId)
+        .single();
+    
+    if (error) {
+        console.error('❌ Fehler beim Laden:', error);
+    } else if (data) {
+        console.log('✅ Artikel-Daten geladen:', data);
         
-        // Get artikel data with expanded properties
-        // Get artikel data - use existing data or create defaults
+        // Update lokalen Cache mit DB-Daten
+        cfoDashboard.artikelData[id] = {
+            ...cfoDashboard.artikelData[id],
+            id: id,
+            name: data.name,
+            typ: data.typ,
+            kategorie: data.kategorie,
+            geschaeftsmodell: data.geschaeftsmodell,
+            zielmarkt: data.zielmarkt,
+            strategie: data.strategie,
+            investment_typ: data.investment_typ,
+            release_datum: data.release_datum,
+            annahmen: data.annahmen,
+            volumes: data.volumes || {},
+            prices: data.prices || {},
+            hk: data.hk || 0,
+            start_menge: data.start_menge || 0,
+            start_preis: data.start_preis || 0,
+            start_hk: data.start_hk || 0,
+            mengen_modell: data.mengen_modell || 'realistisch',
+            preis_modell: data.preis_modell || 'konstant',
+            kosten_modell: data.kosten_modell || 'lernkurve',
+            zeitraum: data.zeitraum || 5
+        };
+    }
+}
+        
+// Get artikel data - use existing data or create defaults
 let artikelData = cfoDashboard.artikelData[id];
 
 // If no data exists yet, create complete default structure
-if (!artikelData) {
-    artikelData = {
-        id: id,
-        name: id === 'crimp' ? 'Crimpautomat' : 
-              id === 'komax' ? 'Mini-Komax ohne CORE' : 
-              id === 'digital' ? 'Digital Shopfloor Backend' : 'Unbekannt',
-        type: id === 'digital' ? 'cross' : 'neu',
-        release: id === 'digital' ? '2025-06' : '2024-12',
-        price: id === 'crimp' ? 5.00 : id === 'komax' ? 1000.00 : 480.00,
-        volume: id === 'crimp' ? 5000 : id === 'komax' ? 115 : 250,
-        hk: id === 'crimp' ? 3.00 : id === 'komax' ? 670.00 : 192.00,
-        volumes: {},
-        prices: {}
-    };
+        if (!artikelData) {
+            artikelData = {
+                id: id,
+                name: 'Neuer Artikel',
+                typ: 'neu',
+                kategorie: 'hardware',
+                geschaeftsmodell: 'einmalverkauf',
+                zielmarkt: 'b2b',
+                strategie: 'core',
+                investment_typ: 'capex',
+                release_datum: '2025-01',
+                annahmen: 'Neue Innovation',
+                price: 100,
+                volume: 100,
+                hk: 60,
+                volumes: {},
+                prices: {},
+                start_menge: 100,
+                start_preis: 100,
+                start_hk: 60,
+                mengen_modell: 'realistisch',
+                preis_modell: 'konstant',
+                kosten_modell: 'lernkurve',
+                zeitraum: 5
+            };
     
     // Store in cfoDashboard for future use
     cfoDashboard.artikelData[id] = artikelData;
 }
 
+    
 // Ensure all properties exist with defaults
 artikelData.volumes = artikelData.volumes || {};
 artikelData.prices = artikelData.prices || {};
+artikelData.kategorie = artikelData.kategorie || 'hardware';
+artikelData.geschaeftsmodell = artikelData.geschaeftsmodell || 'einmalverkauf';
+artikelData.zielmarkt = artikelData.zielmarkt || 'b2b';
+artikelData.strategie = artikelData.strategie || 'core';
+artikelData.investment_typ = artikelData.investment_typ || 'capex';
+artikelData.annahmen = artikelData.annahmen || '';
+artikelData.mengen_modell = artikelData.mengen_modell || 'realistisch';
+artikelData.preis_modell = artikelData.preis_modell || 'konstant';
+artikelData.kosten_modell = artikelData.kosten_modell || 'lernkurve';
+artikelData.zeitraum = artikelData.zeitraum || 5;
+
+// Verstecke die Artikel-Übersicht
+        const artikelOverview = document.getElementById('artikel-overview');
+        if (artikelOverview) {
+            artikelOverview.style.display = 'none';
+        }
         
         // Calculate metrics
         const revenue = artikelData.price * artikelData.volume;
@@ -2498,12 +2572,6 @@ artikelData.prices = artikelData.prices || {};
             const year = 2025 + idx;
             return sum + (vol * artikelData.prices[year]);
         }, 0);
-        
-        // Verstecke die Artikel-Übersicht
-        const artikelOverview = document.getElementById('artikel-overview');
-        if (artikelOverview) {
-            artikelOverview.style.display = 'none';
-        }
         
         // Prüfe ob Detail-View schon existiert
         let detailView = document.getElementById('artikel-detail-temporary');
@@ -2581,11 +2649,11 @@ artikelData.prices = artikelData.prices || {};
             </label>
             <select id="produkt-kategorie" onchange="handleCategoryChange(this)" 
                     style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; background: white;">
-                <option value="hardware">Hardware</option>
-                <option value="software">Software</option>
-                <option value="service">Service</option>
-                <option value="hybrid">Hybrid</option>
-                <option value="andere">Andere...</option>
+                <option value="hardware" ${artikelData.kategorie === 'hardware' ? 'selected' : ''}>Hardware</option>
+                <option value="software" ${artikelData.kategorie === 'software' ? 'selected' : ''}>Software</option>
+                <option value="service" ${artikelData.kategorie === 'service' ? 'selected' : ''}>Service</option>
+                <option value="hybrid" ${artikelData.kategorie === 'hybrid' ? 'selected' : ''}>Hybrid</option>
+                <option value="andere" ${artikelData.kategorie && !['hardware','software','service','hybrid'].includes(artikelData.kategorie) ? 'selected' : ''}>Andere...</option>
             </select>
             <input type="text" id="kategorie-andere" placeholder="Kategorie eingeben..." 
                    style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; background: white; margin-top: 8px; display: none;"
@@ -2602,12 +2670,12 @@ artikelData.prices = artikelData.prices || {};
             </label>
             <select id="geschaeftsmodell" onchange="handleBusinessModelChange(this)"
                     style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; background: white;">
-                <option value="einmalverkauf">Einmalverkauf</option>
-                <option value="subscription">Subscription</option>
-                <option value="pay-per-use">Pay-per-Use</option>
-                <option value="lizenz">Lizenz</option>
-                <option value="wartungsvertrag">Wartungsvertrag</option>
-                <option value="andere">Andere...</option>
+                <option value="einmalverkauf" ${artikelData.geschaeftsmodell === 'einmalverkauf' ? 'selected' : ''}>Einmalverkauf</option>
+                <option value="subscription" ${artikelData.geschaeftsmodell === 'subscription' ? 'selected' : ''}>Subscription</option>
+                <option value="pay-per-use" ${artikelData.geschaeftsmodell === 'pay-per-use' ? 'selected' : ''}>Pay-per-Use</option>
+                <option value="lizenz" ${artikelData.geschaeftsmodell === 'lizenz' ? 'selected' : ''}>Lizenz</option>
+                <option value="wartungsvertrag" ${artikelData.geschaeftsmodell === 'wartungsvertrag' ? 'selected' : ''}>Wartungsvertrag</option>
+                <option value="andere" ${artikelData.geschaeftsmodell && !['einmalverkauf','subscription','pay-per-use','lizenz','wartungsvertrag'].includes(artikelData.geschaeftsmodell) ? 'selected' : ''}>Andere...</option>
             </select>
             <input type="text" id="geschaeftsmodell-andere" placeholder="Geschäftsmodell eingeben..." 
                    style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; background: white; margin-top: 8px; display: none;"
@@ -2620,9 +2688,9 @@ artikelData.prices = artikelData.prices || {};
                 <span class="info-icon" title="Kundensegment - bestimmt Vertriebsweg und Margen"></span>
             </label>
             <select id="zielmarkt" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; background: white;">
-                <option value="b2b">B2B</option>
-                <option value="b2c">B2C</option>
-                <option value="b2b2c">B2B2C</option>
+                <option value="b2b" ${artikelData.zielmarkt === 'b2b' ? 'selected' : ''}>B2B</option>
+                <option value="b2c" ${artikelData.zielmarkt === 'b2c' ? 'selected' : ''}>B2C</option>
+                <option value="b2b2c" ${artikelData.zielmarkt === 'b2b2c' ? 'selected' : ''}>B2B2C</option>
             </select>
         </div>
     </div>
@@ -2635,10 +2703,10 @@ artikelData.prices = artikelData.prices || {};
                 <span class="info-icon" title="Auswirkung auf bestehendes Portfolio"></span>
             </label>
             <select id="effekt-typ" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; background: white;">
-                <option value="neu" ${artikelData.type === 'neu' ? 'selected' : ''}>Neu-Produkt</option>
-                <option value="cross" ${artikelData.type === 'cross' ? 'selected' : ''}>Cross-Selling</option>
-                <option value="substitution">Substitution</option>
-                <option value="kannibalisierung">Kannibalisierung</option>
+                <option value="neu" ${(artikelData.typ || artikelData.type) === 'neu' ? 'selected' : ''}>Neu-Produkt</option>
+                <option value="cross" ${(artikelData.typ || artikelData.type) === 'cross' ? 'selected' : ''}>Cross-Selling</option>
+                <option value="substitution" ${(artikelData.typ || artikelData.type) === 'substitution' ? 'selected' : ''}>Substitution</option>
+                <option value="kannibalisierung" ${(artikelData.typ || artikelData.type) === 'kannibalisierung' ? 'selected' : ''}>Kannibalisierung</option>
             </select>
         </div>
         
@@ -2648,9 +2716,9 @@ artikelData.prices = artikelData.prices || {};
                 <span class="info-icon" title="Core = Kerngeschäft, Adjacent = Angrenzende Märkte, Transformational = Neue Geschäftsfelder"></span>
             </label>
             <select id="strategie" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; background: white;">
-                <option value="core">Core Business</option>
-                <option value="adjacent">Adjacent Business</option>
-                <option value="transformational">Transformational</option>
+                <option value="core" ${artikelData.strategie === 'core' ? 'selected' : ''}>Core Business</option>
+                <option value="adjacent" ${artikelData.strategie === 'adjacent' ? 'selected' : ''}>Adjacent Business</option>
+                <option value="transformational" ${artikelData.strategie === 'transformational' ? 'selected' : ''}>Transformational</option>
             </select>
         </div>
     </div>
@@ -2663,9 +2731,9 @@ artikelData.prices = artikelData.prices || {};
                 <span class="info-icon" title="CAPEX = Einmalig aktiviert, OPEX = Laufend GuV-wirksam"></span>
             </label>
             <select id="investitionstyp" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; background: white;">
-                <option value="capex">CAPEX</option>
-                <option value="opex">OPEX</option>
-                <option value="mixed">Mixed (CAPEX & OPEX)</option>
+                <option value="capex" ${artikelData.investment_typ === 'capex' ? 'selected' : ''}>CAPEX</option>
+                <option value="opex" ${artikelData.investment_typ === 'opex' ? 'selected' : ''}>OPEX</option>
+                <option value="mixed" ${artikelData.investment_typ === 'mixed' ? 'selected' : ''}>Mixed (CAPEX & OPEX)</option>
             </select>
         </div>
         
@@ -2674,8 +2742,8 @@ artikelData.prices = artikelData.prices || {};
                 Release-Datum 
                 <span class="info-icon" title="Geplanter Marktstart - Basis für Zeitschiene"></span>
             </label>
-            <input type="month" id="release-datum" value="${artikelData.release || '2024-12'}" 
-                   style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; background: white;">
+            <input type="month" id="release-datum" value="${(artikelData.release_datum || artikelData.release || '2025-01').substring(0, 7)}"
+                    style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; background: white;">
         </div>
     </div>
     
@@ -2709,7 +2777,7 @@ ${artikelData.annahmen || 'Innovation durch neue Linie'}
                 <label style="font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase; display: block; margin-bottom: 6px;">
                     📅 Release / Startdatum
                 </label>
-                <input type="month" id="release-datum" value="${artikelData.release || '2025-01'}"  
+                <<input type="month" id="release-datum" value="${(artikelData.release_datum || artikelData.release || '2025-01').substring(0, 7)}"
                        onchange="updateZeithorizont(); updateTabellenSpalten(); berechneModelle();"
                        style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px;">
             </div>
@@ -5199,7 +5267,7 @@ window.saveArtikelChanges = async function() {
     if (releaseDatum && releaseDatum.length === 7) {
         releaseDatum = releaseDatum + '-01'; // "2024-12" → "2024-12-01"
     }
-    
+
     const annahmen = document.getElementById('annahmen')?.value;
     
     // Startwerte
