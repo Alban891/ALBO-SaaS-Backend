@@ -6803,7 +6803,7 @@ async function loadArtikelFromDatabase(projektId) {
     }
 
     try {
-        // 🔹 UUID aus "projekt-db-xxxx" extrahieren
+        // UUID aus "projekt-db-xxxx" extrahieren
         const cleanProjektId = projektId.replace('projekt-db-', '');
 
         // 🔹 Artikel aus Supabase laden
@@ -6812,19 +6812,15 @@ async function loadArtikelFromDatabase(projektId) {
             .select('*')
             .eq('project_id', cleanProjektId);
 
-        // 🔹 Fehlerprüfung
         if (error) {
             console.error('❌ Fehler beim Laden der Artikel:', error);
             return;
         }
 
-        console.log(`📦 ${data?.length || 0} Artikel für Projekt ${projektId} geladen`);
+        console.log(`📦 ${data.length} Artikel für Projekt ${projektId} geladen`);
 
-        // 🔹 Sicherheits-Check: Existiert das Projektobjekt im Dashboard?
-        if (!cfoDashboard.projektData[projektId]) {
-            console.warn(`⚠️ Projekt ${projektId} nicht im Dashboard gefunden – wird neu erstellt.`);
-            cfoDashboard.projektData[projektId] = { artikel: [] };
-        }
+        // ✅ Debug-Ausgabe — wichtig: noch innerhalb von try/catch
+        console.log('Geladene Artikel aus Supabase:', data);
 
         // 🔹 Artikel im Dashboard speichern
         cfoDashboard.projektData[projektId].artikel = (data || []).map(dbArtikel => ({
@@ -6838,9 +6834,6 @@ async function loadArtikelFromDatabase(projektId) {
             investment_typ: dbArtikel.investment_typ,
             beschreibung: dbArtikel.beschreibung
         }));
-
-        // ✅ Debug-Ausgabe – zeigt dir, was wirklich geladen wurde
-        console.log('Geladene Artikel aus Supabase:', data);
 
         // 🔹 Liste oder Karten im UI aktualisieren
         renderArtikelListByProjekt(projektId);
