@@ -2805,31 +2805,34 @@ ${artikelData.annahmen || 'Innovation durch neue Linie'}
     </div>
     
     <!-- Startwerte -->
-    <div style="background: white; padding: 12px; border-radius: 6px; margin-bottom: 16px;">
-        <div style="font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 12px;">
-            📊 Startwerte (Jahr 1)
+<div style="background: white; padding: 12px; border-radius: 6px; margin-bottom: 16px;">
+    <div style="font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 12px;">
+        📊 Startwerte (Jahr 1)
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+        <div>
+            <label style="font-size: 10px; color: var(--gray); display: block; margin-bottom: 4px;">MENGE (Stück)</label>
+            <input type="text" id="start-menge" value="${artikelData.start_menge ? formatThousands(artikelData.start_menge) : ''}" 
+                   placeholder="z.B. 1.000"       
+                   onchange="updateErsteZeile(); formatNumberInput(this);" onblur="formatNumberInput(this)"
+                   style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; text-align: center; font-weight: 600;">
         </div>
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
-            <div>
-                <label style="font-size: 10px; color: var(--gray); display: block; margin-bottom: 4px;">MENGE (Stück)</label>
-                <input type="text" id="start-menge" value="${formatThousands(artikelData.volumes?.[2025] || 100)}"
-                       onchange="updateErsteZeile(); formatNumberInput(this);" onblur="formatNumberInput(this)"
-                       style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; text-align: center; font-weight: 600;">
-            </div>
-            <div>
-                <label style="font-size: 10px; color: var(--gray); display: block; margin-bottom: 4px;">PREIS (€/Stück)</label>
-                <input type="text" id="start-preis" value="${formatDecimal(artikelData.price || 100)}"
-                       onchange="updateErsteZeile(); formatDecimalInput(this);" onblur="formatDecimalInput(this)"
-                       style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; text-align: center; font-weight: 600;">
-            </div>
-            <div>
-                <label style="font-size: 10px; color: var(--gray); display: block; margin-bottom: 4px;">HK (€/Stück)</label>
-                <input type="text" id="start-hk" value="${formatDecimal(artikelData.hk || 60)}"
-                       onchange="updateErsteZeile(); formatDecimalInput(this);" onblur="formatDecimalInput(this)"
-                       style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; text-align: center; font-weight: 600;">
-            </div>
+        <div>
+            <label style="font-size: 10px; color: var(--gray); display: block; margin-bottom: 4px;">PREIS (€/Stück)</label>
+            <input type="text" id="start-preis" value="${artikelData.start_preis ? formatDecimal(artikelData.start_preis) : ''}"
+                   placeholder="z.B. 50,00"
+                   onchange="updateErsteZeile(); formatDecimalInput(this);" onblur="formatDecimalInput(this)"
+                   style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; text-align: center; font-weight: 600;">
+        </div>
+        <div>
+            <label style="font-size: 10px; color: var(--gray); display: block; margin-bottom: 4px;">HK (€/Stück)</label>
+            <input type="text" id="start-hk" value="${artikelData.start_hk ? formatDecimal(artikelData.start_hk) : ''}"
+                   placeholder="z.B. 20,00"
+                   onchange="updateErsteZeile(); formatDecimalInput(this);" onblur="formatDecimalInput(this)"
+                   style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; text-align: center; font-weight: 600;">
         </div>
     </div>
+</div>
     
     <!-- Entwicklungsmodelle -->
     <div style="margin-bottom: 16px;">
@@ -7414,9 +7417,30 @@ function applyModell(typ, modell) {
 
 // Stelle sicher, dass diese Funktion global verfügbar ist
 window.berechneModelle = function() {
+    // ✅ VALIDIERUNG: Prüfe ob Startwerte ausgefüllt sind
     const startMenge = parseFormattedNumber(document.getElementById('start-menge').value);
     const startPreis = parseFormattedNumber(document.getElementById('start-preis').value);
     const startHK = parseFormattedNumber(document.getElementById('start-hk').value);
+
+    if (!startMenge || startMenge === 0) {
+        alert('⚠️ Bitte tragen Sie zuerst die MENGE (Stück) ein, bevor Sie die Modelle berechnen können.');
+        document.getElementById('start-menge')?.focus();
+        return;
+    }
+    
+    if (!startPreis || startPreis === 0) {
+        alert('⚠️ Bitte tragen Sie zuerst den PREIS (€/Stück) ein, bevor Sie die Modelle berechnen können.');
+        document.getElementById('start-preis')?.focus();
+        return;
+    }
+    
+    if (!startHK || startHK === 0) {
+        alert('⚠️ Bitte tragen Sie zuerst die HERSTELLKOSTEN (€/Stück) ein, bevor Sie die Modelle berechnen können.');
+        document.getElementById('start-hk')?.focus();
+        return;
+    }
+    
+    // ✅ Alles ausgefüllt → Weiter mit Berechnung
     
     // Mengen berechnen
     if (selectedModels.menge !== 'manuell') {
