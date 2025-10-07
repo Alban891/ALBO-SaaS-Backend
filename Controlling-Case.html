@@ -1938,8 +1938,6 @@ window.switchTab = function(tabName) {
     saveNavigationState();
 }
 
-console.log('Geladene Artikel aus Supabase:', data);
-
 // Neue Funktion zum dynamischen Rendern der Artikel-Liste
 function renderArtikelListByProjekt() {
     const currentProjekt = cfoDashboard.currentProjekt;
@@ -6840,6 +6838,9 @@ async function loadArtikelFromDatabase(projektId) {
             investment_typ: dbArtikel.investment_typ,
             beschreibung: dbArtikel.beschreibung
         }));
+
+        // ✅ Debug-Ausgabe – zeigt dir, was wirklich geladen wurde
+        console.log('Geladene Artikel aus Supabase:', data);
 
         // 🔹 Liste oder Karten im UI aktualisieren
         renderArtikelListByProjekt(projektId);
