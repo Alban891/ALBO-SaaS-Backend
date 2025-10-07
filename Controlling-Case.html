@@ -7214,7 +7214,6 @@ document.addEventListener('DOMContentLoaded', function() {
 window.addEventListener('load', function() {
     // Supabase Konfiguration
     const SUPABASE_URL = 'https://oibmbhkmqkjumtteysvi.supabase.co';
-    // WICHTIG: Ersetze dies mit deinem VOLLSTÄNDIGEN anon key aus Supabase!
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9pYm1iaGttcWtqdW10dGV5c3ZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk1ODIyNzMsImV4cCI6MjA3NTE1ODI3M30.ePL5g9d1xcZH3ClX4fA9txuu9l8UmHnaBiBF8nRnL2A';
     
     // Supabase Client initialisieren
@@ -7222,7 +7221,9 @@ window.addEventListener('load', function() {
         window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         console.log('✅ Supabase erfolgreich initialisiert');
         
-        // Test-Abruf
+    // 🟢 Kurzreferenz setzen
+        window.supabase = window.supabaseClient;
+
         testSupabaseConnection();
     } else {
         console.error('❌ Supabase Library konnte nicht geladen werden');
