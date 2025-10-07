@@ -2120,31 +2120,34 @@ async function saveQuickArtikel() {
     });
 
     // 🔹 Supabase speichern
-    if (window.supabaseClient) {
-        try {
-            const { data, error } = await window.supabaseClient
-                .from("ALBO_Artikel")
-                .insert([{
-                    project_id: projektId.replace('projekt-db-', ''),
-                    name: name,
-                    typ: type,
-                    release_datum: release,
-                    status: 'entwurf'
-                }])
-                .select();
-
-            if (error) {
-                console.error("❌ Fehler beim Speichern in Supabase:", error);
-                alert("Fehler beim Speichern des Artikels in der Datenbank!");
-            } else {
-                console.log("✅ Artikel erfolgreich in Supabase gespeichert:", data[0]);
+    try {
+    const { data, error } = await supabase
+        .from('ALBO_Artikel')
+        .insert([
+            {
+                project_id: cfoDashboard.currentProjekt,                            // Referenz auf das Projekt
+                name: name,                                                         // Artikelbezeichnung
+                typ: type,                                                          // Effekt-Typ
+                release_datum: release ? release + '-01' : null,                    // Startdatum (Date oder Text)
+                kategorie: null,                                                    // aktuell leer, kannst du später füllen
+                geschaeftsmodell: null,
+                zielmarkt: null,
+                strategie: null,
+                investment_typ: null,
+                beschreibung: null
             }
-        } catch (err) {
-            console.error("⚠️ Unerwarteter Fehler bei Supabase:", err);
-        }
-    } else {
-        console.warn("⚠️ Supabase Client nicht initialisiert — Artikel nur lokal gespeichert.");
+        ]);
+
+    if (error) {
+        console.error('Fehler beim Speichern in Supabase:', error);
+        alert('Fehler beim Speichern des Artikels in der Datenbank!');
+        return;
     }
+
+    console.log('✅ Artikel erfolgreich gespeichert:', data);
+} catch (err) {
+    console.error('Unerwarteter Fehler beim Supabase-Speichern:', err);
+    alert('Unerwarteter Fehler beim Speichern!');
 }
 
 function closeNewArtikelModal() {
