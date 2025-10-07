@@ -1940,21 +1940,29 @@ window.switchTab = function(tabName) {
 
 // Neue Funktion zum dynamischen Rendern der Artikel-Liste
 function renderArtikelListByProjekt() {
+    const tbody = document.getElementById('artikel-list-tbody');
+    if (!tbody) {
+        console.error('❌ artikel-list-tbody nicht gefunden!');
+        return;
+    }
+
     const currentProjekt = cfoDashboard.currentProjekt;
     const projekt = cfoDashboard.projektData[currentProjekt];
 
-    // 🟢 Sicherheitscheck
-    if (!projekt) return;
+    if (!projekt) {
+        console.warn('⚠️ Projekt nicht gefunden:', currentProjekt);
+        tbody.innerHTML = '<tr><td colspan="8" style="padding: 40px; text-align: center; color: var(--gray);">Projekt nicht gefunden</td></tr>';
+        return;
+    }
 
-    // 🟢 Falls keine Artikel vorhanden sind, leeres Array erstellen
-    if (!projekt.artikel) projekt.artikel = [];
+    // Stelle sicher dass artikel-Array existiert
+    if (!projekt.artikel) {
+        projekt.artikel = [];
+    }
 
-    const tbody = document.getElementById('artikel-list-tbody');
-    if (!tbody) return;
+    tbody.innerHTML = ''; // Tabelle leeren
 
-    tbody.innerHTML = ''; // Bestehende Zeilen löschen
-
-    // 🔹 Wenn keine Artikel vorhanden sind → Platzhalter anzeigen
+    // ✅ Wenn keine Artikel vorhanden → Platzhalter
     if (projekt.artikel.length === 0) {
         tbody.innerHTML = `
             <tr>
@@ -1974,23 +1982,87 @@ function renderArtikelListByProjekt() {
         return;
     }
 
-    // 🔹 Wenn Artikel existieren → Tabelle füllen
-    projekt.artikel.forEach((artikel) => {
+    // ✅ Rendere jeden Artikel
+    projekt.artikel.forEach((artikelId) => {
+        // Hole Artikel-Daten aus artikelData
+        const artikel = cfoDashboard.artikelData[artikelId];
+        
+        if (!artikel) {
+            console.warn('⚠️ Artikel nicht gefunden:', artikelId);
+            return; // Überspringe diesen Artikel
+        }
+
         const row = document.createElement('tr');
+        row.style.cursor = 'pointer';
+        row.style.transition = 'background 0.2s';
+        
+        row.onmouseover = function() { this.style.background = 'var(--gray-light)'; };
+        row.onmouseout = function() { this.style.background = 'transparent'; };
+
+        // ✅ Formatiere Datum sicher
+        let releaseDate = '-';
+        if (artikel.release_datum) {
+            try {
+                const date = new Date(artikel.release_datum);
+                if (!isNaN(date.getTime())) {
+                    releaseDate = date.toISOString().substring(0, 10);
+                }
+            } catch(e) {
+                console.warn('Datumsformat ungültig:', artikel.release_datum);
+            }
+        }
+
+        // ✅ Formatiere Zahlen sicher
+        const startPreis = artikel.start_preis ? formatDecimal(artikel.start_preis) + '€' : '-';
+        const peakMenge = artikel.peak_menge ? formatThousands(artikel.peak_menge) : '-';
+        const db2 = artikel.db2 ? artikel.db2.toFixed(1) + '%' : '-';
+        const totalRevenue = artikel.total_revenue ? formatRevenue(artikel.total_revenue) : '-';
+
         row.innerHTML = `
-            <td>${artikel.name || '-'}</td>
-            <td>${artikel.typ || '-'}</td>
-            <td>${artikel.release_datum ? artikel.release_datum.substring(0, 10) : '-'}</td>
-            <td>${artikel.start_preis || '-'}</td>
-            <td>${artikel.peak_menge || '-'}</td>
-            <td>${artikel.db2 || '-'}</td>
-            <td>${artikel.total_revenue || '-'}</td>
-            <td style="text-align:right;">
-                <button class="btn-small" onclick="openArtikelDetail('${artikel.id}')">🔍</button>
+            <td style="padding: 12px; font-weight: 500; color: var(--text); font-size: 13px;">
+                ${artikel.name || 'Unbenannt'}
+            </td>
+            <td style="padding: 12px;">
+                <span style="padding: 2px 8px; background: ${artikel.typ === 'neu' ? '#dbeafe' : '#dcfce7'}; 
+                      color: ${artikel.typ === 'neu' ? 'var(--primary)' : 'var(--success)'}; 
+                      border-radius: 12px; font-size: 11px; font-weight: 500;">
+                    ${artikel.typ === 'neu' ? 'Neu-Produkt' : artikel.typ === 'cross' ? 'Cross-Selling' : (artikel.typ || '-')}
+                </span>
+            </td>
+            <td style="padding: 12px; text-align: center; font-size: 12px; color: var(--gray);">
+                ${releaseDate}
+            </td>
+            <td style="padding: 12px; text-align: right; font-size: 13px;">
+                ${startPreis}
+            </td>
+            <td style="padding: 12px; text-align: right; font-size: 13px;">
+                ${peakMenge}
+            </td>
+            <td style="padding: 12px; text-align: right; font-size: 13px;">
+                ${db2}
+            </td>
+            <td style="padding: 12px; text-align: right; font-size: 13px; font-weight: 600; color: var(--primary);">
+                ${totalRevenue}
+            </td>
+            <td style="padding: 12px; text-align: center;">
+                <button onclick="event.stopPropagation(); openArtikelDetail('${artikelId}')" 
+                        class="table-btn view" title="Artikel bearbeiten">
+                    👁️
+                </button>
+                <button onclick="event.stopPropagation(); deleteArtikel('${artikelId}')" 
+                        class="table-btn delete" title="Artikel löschen">
+                    🗑️
+                </button>
             </td>
         `;
+
+        // Click-Handler für gesamte Zeile
+        row.onclick = function() { openArtikelDetail(artikelId); };
+
         tbody.appendChild(row);
     });
+
+    console.log(`✅ ${projekt.artikel.length} Artikel gerendert`);
 }
 
 // Alle anderen bestehenden Funktionen bleiben unverändert
@@ -2059,70 +2131,41 @@ async function saveQuickArtikel() {
     }
 
     const artikelId = 'artikel-' + Date.now();
-
-    // 🔹 Aktuelles Projekt bestimmen (wichtig für Supabase-Verknüpfung)
     const projektId = cfoDashboard.currentProjekt || null;
+    
     if (!projektId) {
         console.error("❌ Kein aktives Projekt gefunden!");
         alert("Bitte zuerst ein Projekt auswählen oder erstellen.");
         return;
     }
 
-    // 🔹 Artikel lokal speichern
+    // ✅ Speichere lokal ZUERST
     cfoDashboard.artikelData[artikelId] = {
         id: artikelId,
         projektId: projektId,
         name: name,
         typ: type,
-        release_datum: release,
+        release_datum: release + '-01', // Format: 2025-01-01
         status: 'entwurf',
         volumes: {},
         prices: {},
         hk: 0
     };
 
-    // 🔹 Artikel im UI anzeigen
-    const tbody = document.getElementById('artikel-list-tbody');
-    if (tbody) {
-        const newRow = document.createElement('tr');
-        newRow.onclick = function() { openArtikelDetail(artikelId); };
-        newRow.style.cursor = 'pointer';
-        newRow.style.transition = 'background 0.2s';
-        newRow.onmouseover = function() { this.style.background = 'var(--gray-light)'; };
-        newRow.onmouseout = function() { this.style.background = 'transparent'; };
-
-        newRow.innerHTML = `
-            <td style="padding: 12px; font-weight: 500; color: var(--text); font-size: 13px;">
-                ${name} <span style="font-size: 10px; color: var(--warning); background: #fef3c7; padding: 2px 6px; border-radius: 4px; margin-left: 8px;">ENTWURF</span>
-            </td>
-            <td style="padding: 12px;">
-                <span style="padding: 2px 8px; background: ${type === 'neu' ? '#dbeafe' : '#dcfce7'}; 
-                      color: ${type === 'neu' ? 'var(--primary)' : 'var(--success)'}; 
-                      border-radius: 12px; font-size: 11px; font-weight: 500;">
-                    ${type === 'neu' ? 'Neu-Produkt' : 'Cross-Selling'}
-                </span>
-            </td>
-            <td style="padding: 12px; text-align: center; font-size: 12px; color: var(--gray);">${release}</td>
-            <td style="padding: 12px; text-align: right; font-size: 13px;">-</td>
-            <td style="padding: 12px; text-align: right; font-size: 13px;">-</td>
-            <td style="padding: 12px; text-align: right; font-size: 13px;">-</td>
-            <td style="padding: 12px; text-align: right; font-size: 13px;">-</td>
-            <td style="padding: 12px; text-align: center;">
-                <button onclick="event.stopPropagation(); openArtikelDetail('${artikelId}')" 
-                        style="padding: 4px 8px; border: 1px solid var(--primary); background: var(--primary); color: white;
-                               border-radius: 4px; font-size: 11px; cursor: pointer; transition: all 0.2s;">
-                    Vervollständigen
-                </button>
-            </td>
-        `;
-
-        tbody.appendChild(newRow);
+    // ✅ Verknüpfe mit Projekt
+    const projekt = cfoDashboard.projektData[projektId];
+    if (projekt) {
+        if (!projekt.artikel) projekt.artikel = [];
+        projekt.artikel.push(artikelId);
     }
 
-    // 🔹 Neues Modal schließen
+    // ✅ Render sofort (BEVOR Supabase)
+    renderArtikelListByProjekt();
+
+    // Schließe Modal
     closeNewArtikelModal();
 
-    // 🔹 KI-Log schreiben
+    // KI-Feedback
     cfoDashboard.aiController.addAIMessage({
         level: 'info',
         title: '📋 Artikel angelegt',
@@ -2130,43 +2173,56 @@ async function saveQuickArtikel() {
         timestamp: 'Quick Create'
     });
 
-    // 🔹 Supabase speichern
+    // ✅ Supabase-Speicherung im Hintergrund
     try {
-    const { data, error } = await window.supabaseClient
-        .from('ALBO_Artikel')
-        .insert([
-            {
-                project_id: cfoDashboard.currentProjekt
-                    ? cfoDashboard.currentProjekt.replace('projekt-db-', '')
-                    : null,            
-                name: name,                                                                                             // Artikelbezeichnung
-                typ: type,                                                                                              // Effekt-Typ
-                release_datum: release ? release + '-01' : null,                                                        // Startdatum (Date oder Text)
-                kategorie: null,                                                                                        // aktuell leer, kannst du später füllen
-                geschaeftsmodell: null,
-                zielmarkt: null,
-                strategie: null,
-                investment_typ: null,
-                beschreibung: null
+        const cleanProjektId = projektId.replace('projekt-db-', '');
+        
+        const { data, error } = await window.supabaseClient
+            .from('ALBO_Artikel')
+            .insert([{
+                project_id: cleanProjektId,
+                name: name,
+                typ: type,
+                release_datum: release + '-01'
+            }])
+            .select();
+
+        if (error) {
+            console.error('❌ Fehler beim Speichern in Supabase:', error);
+            alert('Warnung: Artikel konnte nicht in Datenbank gespeichert werden!');
+            return;
+        }
+
+        console.log('✅ Artikel erfolgreich in Supabase gespeichert:', data);
+        
+        // ✅ Update lokale ID mit Datenbank-ID
+        if (data && data[0]) {
+            const dbId = 'artikel-db-' + data[0].id;
+            
+            // Kopiere Daten zu neuer ID
+            cfoDashboard.artikelData[dbId] = {
+                ...cfoDashboard.artikelData[artikelId],
+                id: dbId
+            };
+            
+            // Lösche alte temp ID
+            delete cfoDashboard.artikelData[artikelId];
+            
+            // Update Projekt-Verknüpfung
+            if (projekt && projekt.artikel) {
+                const index = projekt.artikel.indexOf(artikelId);
+                if (index > -1) {
+                    projekt.artikel[index] = dbId;
+                }
             }
-        ])
-        .select(); // 🔹 <--- Das hier hinzufügen, damit Supabase die neuen Daten zurückgibt
+            
+            // Re-render mit korrekter ID
+            renderArtikelListByProjekt();
+        }
 
-    if (error) {
-    console.error('❌ Fehler beim Speichern in Supabase:', error);
-    alert('Fehler beim Speichern des Artikels in der Datenbank!');
-
-    // 🔍 Zusätzliche Debug-Ausgabe für Details
-    console.log('Supabase Error Details:', JSON.stringify(error, null, 2));
-
-    return;
-}
-
-    console.log('✅ Artikel erfolgreich gespeichert:', data);
-} catch (err) {
-    console.error('Unerwarteter Fehler beim Supabase-Speichern:', err);
-    alert('Unerwarteter Fehler beim Speichern!');
-}
+    } catch (err) {
+        console.error('Unerwarteter Fehler beim Supabase-Speichern:', err);
+    }
 }
 
 function closeNewArtikelModal() {
@@ -5914,6 +5970,16 @@ async function openProjektArtikel(projektId) {
         }
     }
 
+    await loadArtikelFromDatabase(projektId);
+    
+    // 🔍 DEBUG
+    console.log('=== DEBUG: Artikel-Status ===');
+    console.log('Aktuelles Projekt:', projektId);
+    console.log('Projekt-Daten:', cfoDashboard.projektData[projektId]);
+    console.log('Artikel-Array:', cfoDashboard.projektData[projektId]?.artikel);
+    console.log('Artikel-Data:', cfoDashboard.artikelData);
+    console.log('===========================');
+
     // 4. Filtere und rendere Artikel für dieses Projekt
     filterArtikelByProjekt(projektId);
 }
@@ -6803,10 +6869,8 @@ async function loadArtikelFromDatabase(projektId) {
     }
 
     try {
-        // UUID aus "projekt-db-xxxx" extrahieren
         const cleanProjektId = projektId.replace('projekt-db-', '');
 
-        // 🔹 Artikel aus Supabase laden
         const { data, error } = await window.supabaseClient
             .from('ALBO_Artikel')
             .select('*')
@@ -6818,25 +6882,57 @@ async function loadArtikelFromDatabase(projektId) {
         }
 
         console.log(`📦 ${data.length} Artikel für Projekt ${projektId} geladen`);
+        console.log('Geladene Artikel:', data);
 
-        // ✅ Debug-Ausgabe — wichtig: noch innerhalb von try/catch
-        console.log('Geladene Artikel aus Supabase:', data);
+        // ✅ FIX: Speichere Artikel sowohl im Projekt als auch in artikelData
+        const projekt = cfoDashboard.projektData[projektId];
+        if (!projekt) {
+            console.error('❌ Projekt nicht gefunden:', projektId);
+            return;
+        }
 
-        // 🔹 Artikel im Dashboard speichern
-        cfoDashboard.projektData[projektId].artikel = (data || []).map(dbArtikel => ({
-            id: dbArtikel.id,
-            name: dbArtikel.name,
-            typ: dbArtikel.typ,
-            release_datum: dbArtikel.release_datum,
-            kategorie: dbArtikel.kategorie,
-            zielmarkt: dbArtikel.zielmarkt,
-            strategie: dbArtikel.strategie,
-            investment_typ: dbArtikel.investment_typ,
-            beschreibung: dbArtikel.beschreibung
-        }));
+        // Initialisiere artikel-Array wenn nicht vorhanden
+        if (!projekt.artikel) {
+            projekt.artikel = [];
+        }
 
-        // 🔹 Liste oder Karten im UI aktualisieren
-        renderArtikelListByProjekt(projektId);
+        // Leere das Array (wichtig für Re-Loads)
+        projekt.artikel = [];
+
+        // ✅ Speichere jeden Artikel in cfoDashboard.artikelData UND verlinke im Projekt
+        (data || []).forEach(dbArtikel => {
+            const artikelId = 'artikel-db-' + dbArtikel.id;
+            
+            // Speichere in globalem artikelData
+            cfoDashboard.artikelData[artikelId] = {
+                id: artikelId,
+                projektId: projektId,
+                name: dbArtikel.name || 'Unbenannt',
+                typ: dbArtikel.typ || '-',
+                release_datum: dbArtikel.release_datum || '-',
+                start_preis: dbArtikel.start_preis || 0,
+                peak_menge: dbArtikel.peak_menge || 0,
+                db2: dbArtikel.db2 || 0,
+                total_revenue: dbArtikel.total_revenue || 0,
+                kategorie: dbArtikel.kategorie,
+                zielmarkt: dbArtikel.zielmarkt,
+                strategie: dbArtikel.strategie,
+                investment_typ: dbArtikel.investment_typ,
+                beschreibung: dbArtikel.beschreibung,
+                // Weitere Felder nach Bedarf
+                volumes: {},
+                prices: {},
+                hk: 0
+            };
+            
+            // Verlinke im Projekt (nur ID speichern)
+            projekt.artikel.push(artikelId);
+        });
+
+        console.log(`✅ ${projekt.artikel.length} Artikel verknüpft mit Projekt`);
+        
+        // ✅ Jetzt rendern
+        renderArtikelListByProjekt();
 
     } catch (err) {
         console.error('❌ Unerwarteter Fehler beim Laden der Artikel:', err);
